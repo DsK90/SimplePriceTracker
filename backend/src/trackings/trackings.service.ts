@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PlanTier, Prisma } from '@prisma/client';
+import { PlanTier, Prisma, PriceTracking } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { FREE_TRACKING_LIMIT, minRecheckIntervalMinutes } from '../common/constants';
@@ -18,6 +18,9 @@ import {
   fallbackProductNameFromUrl,
 } from './extract-product-metadata';
 import { fetchSteamProduct, parseSteamAppIdFromUrl } from './steam-store';
+
+/** Synthetic URL for dev-only demo tracking (price adjusted via API, not scraped). */
+const DEMO_URL = 'demo://price-test';
 
 const TRACKING_LIST = Prisma.validator<Prisma.PriceTrackingDefaultArgs>()({
   include: { snapshots: { orderBy: { recordedAt: 'desc' }, take: 30 } },
@@ -41,6 +44,79 @@ export class TrackingsService {
   private clampIntervalMinutes(n: number): number {
     const min = minRecheckIntervalMinutes(this.config.get<string>('NODE_ENV'));
     return Math.min(10080, Math.max(min, Math.round(n)));
+  }
+
+  /** Dev/staging only unless ENABLE_DEMO_PRICE=true (never in production by default). */
+  private isDemoPriceApiEnabled(): boolean {
+    const env = this.config.get<string>('NODE_ENV');
+    const enable = this.config.get<string>('ENABLE_DEMO_PRICE');
+    return env !== 'production' || enable === 'true';
+  }
+
+  private assertDemoPriceApi(): void {
+    if (!this.isDemoPriceApiEnabled()) {
+      throw new ForbiddenException('Demo price API is disabled');
+    }
+  }
+
+  private decimalEquals(a: Prisma.Decimal | null, b: Prisma.Decimal | null): boolean {
+    if (a === null && b === null) return true;
+    if (a === null || b === null) return false;
+    return a.equals(b);
+  }
+
+  /** When user saves new thresholds and current price already satisfies them, notify once (not only on next price refresh crossing). */
+  private async maybeNotifyImmediateThresholdsAfterPatch(
+    before: {
+      id: string;
+      userId: string;
+      productName: string;
+      productNameOverride: string | null;
+      lastPrice: Prisma.Decimal | null;
+      currency: string;
+      alertBelowPrice: Prisma.Decimal | null;
+      alertAbovePrice: Prisma.Decimal | null;
+    },
+    after: PriceTracking & { user: { email: string } },
+    dto: UpdateTrackingDto,
+  ): Promise<void> {
+    const lp = after.lastPrice;
+    if (lp === null) return;
+
+    const label = (after.productNameOverride ?? after.productName).slice(0, 120);
+    const email = after.user.email;
+
+    if (dto.alertBelowPrice !== undefined) {
+      const changed = !this.decimalEquals(before.alertBelowPrice, after.alertBelowPrice);
+      if (changed && after.alertBelowPrice != null) {
+        const th = after.alertBelowPrice;
+        if (lp.lte(th)) {
+          await this.notifications.notifyPriceAlert(
+            after.userId,
+            email,
+            after.id,
+            `Price at or below ${th.toString()} ${after.currency}`,
+            `${label} is now ${lp.toString()} ${after.currency} (target: ≤ ${th.toString()} ${after.currency}).`,
+          );
+        }
+      }
+    }
+
+    if (dto.alertAbovePrice !== undefined) {
+      const changed = !this.decimalEquals(before.alertAbovePrice, after.alertAbovePrice);
+      if (changed && after.alertAbovePrice != null) {
+        const th = after.alertAbovePrice;
+        if (lp.gte(th)) {
+          await this.notifications.notifyPriceAlert(
+            after.userId,
+            email,
+            after.id,
+            `Price at or above ${th.toString()} ${after.currency}`,
+            `${label} is now ${lp.toString()} ${after.currency} (target: ≥ ${th.toString()} ${after.currency}).`,
+          );
+        }
+      }
+    }
   }
 
   private toPublicTracking(t: TrackingRow): PublicTracking {
@@ -218,6 +294,15 @@ export class TrackingsService {
       data,
       ...TRACKING_LIST,
     });
+
+    if (dto.alertBelowPrice !== undefined || dto.alertAbovePrice !== undefined) {
+      const afterWithUser = await this.prisma.priceTracking.findUniqueOrThrow({
+        where: { id },
+        include: { user: { select: { email: true } } },
+      });
+      await this.maybeNotifyImmediateThresholdsAfterPatch(existing, afterWithUser, dto);
+    }
+
     return this.toPublicTracking(row);
   }
 
@@ -293,6 +378,55 @@ export class TrackingsService {
     return { ok: true };
   }
 
+  /** Dev: one synthetic tracking per user to test price alerts without scraping. */
+  async createDemo(userId: string): Promise<PublicTracking> {
+    this.assertDemoPriceApi();
+    const existing = await this.prisma.priceTracking.findFirst({
+      where: { userId, url: DEMO_URL },
+    });
+    if (existing) {
+      return this.toPublicTracking(
+        await this.prisma.priceTracking.findUniqueOrThrow({
+          where: { id: existing.id },
+          ...TRACKING_LIST,
+        }),
+      );
+    }
+    await this.assertCanAddActive(userId);
+    const dec50 = new Prisma.Decimal(50);
+    const row = await this.prisma.priceTracking.create({
+      data: {
+        userId,
+        url: DEMO_URL,
+        productName: 'Demo product',
+        companyName: 'Pricefly',
+        recheckIntervalMinutes: 60,
+        lastPrice: dec50,
+        currency: 'EUR',
+        lastCheckedAt: new Date(),
+        active: true,
+        snapshots: { create: { price: dec50, currency: 'EUR' } },
+      },
+      ...TRACKING_LIST,
+    });
+    return this.toPublicTracking(row);
+  }
+
+  /** Dev: nudge demo price up/down to trigger threshold notifications. */
+  async adjustDemoPrice(userId: string, id: string, delta: number): Promise<PublicTracking> {
+    this.assertDemoPriceApi();
+    const t = await this.prisma.priceTracking.findFirst({ where: { id, userId } });
+    if (!t) throw new NotFoundException();
+    if (!t.url.startsWith('demo://')) {
+      throw new BadRequestException('Only demo trackings support demo price changes');
+    }
+    const lp = t.lastPrice ? Number(t.lastPrice) : 50;
+    const next = Math.round((lp + delta) * 100) / 100;
+    if (next < 0) throw new BadRequestException('Price cannot be negative');
+    const row = await this.persistPrice(id, next, t.currency);
+    return this.toPublicTracking(row);
+  }
+
   async refresh(userId: string, id: string) {
     const t = await this.prisma.priceTracking.findFirst({ where: { id, userId } });
     if (!t) throw new NotFoundException();
@@ -305,6 +439,7 @@ export class TrackingsService {
     const due = await this.prisma.$queryRaw<{ id: string }[]>`
       SELECT id FROM "PriceTracking"
       WHERE "active" = true
+      AND url NOT LIKE 'demo://%'
       AND (
         "lastCheckedAt" IS NULL OR
         "lastCheckedAt" <= NOW() - ("recheckIntervalMinutes" * INTERVAL '1 minute')
@@ -322,7 +457,7 @@ export class TrackingsService {
   /** Legacy: refresh all active (heavy); prefer refreshDueTrackings */
   async refreshAllActive() {
     const ids = await this.prisma.priceTracking.findMany({
-      where: { active: true },
+      where: { active: true, NOT: { url: { startsWith: 'demo://' } } },
       select: { id: true },
     });
     for (const { id } of ids) {
@@ -336,6 +471,13 @@ export class TrackingsService {
 
   private async refreshOneInternal(id: string): Promise<TrackingRow> {
     const t = await this.prisma.priceTracking.findUniqueOrThrow({ where: { id } });
+
+    if (t.url.startsWith('demo://')) {
+      return this.prisma.priceTracking.findUniqueOrThrow({
+        where: { id },
+        ...TRACKING_LIST,
+      });
+    }
 
     const steamAppId = parseSteamAppIdFromUrl(t.url);
     if (steamAppId) {

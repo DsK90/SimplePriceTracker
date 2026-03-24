@@ -86,10 +86,27 @@
     "bottomAlerts": "Alerts",
     "addAria": "Add tracking",
     "deleteConfirm": "Delete this tracking?",
+    "demo": {
+      "add": "Add demo product",
+      "hint": "Use ±1 to change the demo price and test notifications (development only).",
+      "down": "Decrease price by 1",
+      "up": "Increase price by 1"
+    },
+    "push": {
+      "title": "System notifications",
+      "hint": "Get price alerts on this device even when the app is closed (best when installed as an app).",
+      "enable": "Enable",
+      "enabled": "On",
+      "disable": "Turn off",
+      "denied": "Notifications blocked — enable them in browser settings.",
+      "unsupported": "Browser notifications are not available in this environment.",
+      "serverOff": "Web Push is not configured on the server (set VAPID keys in the API environment)."
+    },
     "errors": {
       "addFailed": "Could not add tracking",
       "saveFailed": "Could not save",
-      "refreshFailed": "Refresh failed"
+      "refreshFailed": "Refresh failed",
+      "invalidDecimal": "Enter a valid price (e.g. 25.99 or 25,99)."
     },
     "edit": {
       "productOptional": "Product name (optional)",

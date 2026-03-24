@@ -14,15 +14,29 @@ enum PlanTier {
 }
 
 model User {
-  id                   String          @id @default(uuid())
-  email                String          @unique
+  id                   String             @id @default(uuid())
+  email                String             @unique
   passwordHash         String
-  planTier             PlanTier        @default(FREE)
-  paypalSubscriptionId String?         @unique
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
+  planTier             PlanTier           @default(FREE)
+  paypalSubscriptionId String?            @unique
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
   trackings            PriceTracking[]
   notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
+}
+
+/// Web Push subscription (VAPID) — one row per browser/device endpoint.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 /// Published pricing / PayPal subscription product (seeded + configurable via env)

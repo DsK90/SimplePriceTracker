@@ -86,10 +86,27 @@
     "bottomAlerts": "Avvisi",
     "addAria": "Aggiungi monitoraggio",
     "deleteConfirm": "Eliminare questo monitoraggio?",
+    "demo": {
+      "add": "Aggiungi prodotto demo",
+      "hint": "Usa ±1 per modificare il prezzo demo e testare le notifiche (solo sviluppo).",
+      "down": "Diminuisci prezzo di 1",
+      "up": "Aumenta prezzo di 1"
+    },
+    "push": {
+      "title": "Notifiche di sistema",
+      "hint": "Avvisi prezzo su questo dispositivo anche con l’app chiusa (meglio come app installata).",
+      "enable": "Attiva",
+      "enabled": "Attive",
+      "disable": "Disattiva",
+      "denied": "Notifiche bloccate — abilitale nelle impostazioni del browser.",
+      "unsupported": "Le notifiche del browser non sono disponibili qui.",
+      "serverOff": "Web Push non configurato sul server (imposta le chiavi VAPID nell’API)."
+    },
     "errors": {
       "addFailed": "Impossibile aggiungere il monitoraggio",
       "saveFailed": "Impossibile salvare",
-      "refreshFailed": "Aggiornamento non riuscito"
+      "refreshFailed": "Aggiornamento non riuscito",
+      "invalidDecimal": "Inserisci un prezzo valido (es. 25,99 o 25.99)."
     },
     "edit": {
       "productOptional": "Nome prodotto (opzionale)",

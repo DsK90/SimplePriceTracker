@@ -86,10 +86,27 @@
     "bottomAlerts": "Alarme",
     "addAria": "Tracking hinzufügen",
     "deleteConfirm": "Dieses Tracking löschen?",
+    "demo": {
+      "add": "Demo-Produkt hinzufügen",
+      "hint": "Mit ±1 den Demo-Preis ändern und Benachrichtigungen testen (nur Entwicklung).",
+      "down": "Preis um 1 senken",
+      "up": "Preis um 1 erhöhen"
+    },
+    "push": {
+      "title": "System-Benachrichtigungen",
+      "hint": "Preisalarme auf diesem Gerät auch bei geschlossener App (am besten als installierte App).",
+      "enable": "Aktivieren",
+      "enabled": "An",
+      "disable": "Ausschalten",
+      "denied": "Benachrichtigungen blockiert — in den Browsereinstellungen erlauben.",
+      "unsupported": "Browser-Benachrichtigungen sind hier nicht verfügbar.",
+      "serverOff": "Web Push ist auf dem Server nicht konfiguriert (VAPID-Schlüssel in der API-Umgebung setzen)."
+    },
     "errors": {
       "addFailed": "Tracking konnte nicht hinzugefügt werden",
       "saveFailed": "Speichern fehlgeschlagen",
-      "refreshFailed": "Aktualisierung fehlgeschlagen"
+      "refreshFailed": "Aktualisierung fehlgeschlagen",
+      "invalidDecimal": "Bitte einen gültigen Preis eingeben (z. B. 25,99 oder 25.99)."
     },
     "edit": {
       "productOptional": "Produktname (optional)",

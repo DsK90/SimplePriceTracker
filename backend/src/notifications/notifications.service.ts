@@ -1,12 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
+import { WebPushService } from './web-push.service';
+import type { PushSubscribeDto } from './dto/push-subscribe.dto';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     private prisma: PrismaService,
     private mail: MailService,
+    private webPush: WebPushService,
   ) {}
 
   list(userId: string) {
@@ -46,5 +49,35 @@ export class NotificationsService {
       data: { userId, trackingId, kind: 'PRICE_ALERT', title, body },
     });
     await this.mail.sendPriceAlert(userEmail, title, body);
+    await this.webPush.sendToUser(userId, title, body);
+  }
+
+  pushVapidPublicKey() {
+    return { publicKey: this.webPush.getPublicKey() };
+  }
+
+  async savePushSubscription(userId: string, dto: PushSubscribeDto) {
+    await this.prisma.pushSubscription.upsert({
+      where: { endpoint: dto.endpoint },
+      create: {
+        userId,
+        endpoint: dto.endpoint,
+        p256dh: dto.keys.p256dh,
+        auth: dto.keys.auth,
+      },
+      update: {
+        userId,
+        p256dh: dto.keys.p256dh,
+        auth: dto.keys.auth,
+      },
+    });
+    return { ok: true as const };
+  }
+
+  async removePushSubscription(userId: string, endpoint: string) {
+    const r = await this.prisma.pushSubscription.deleteMany({
+      where: { userId, endpoint },
+    });
+    return { ok: true as const, removed: r.count };
   }
 }

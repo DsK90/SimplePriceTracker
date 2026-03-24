@@ -86,10 +86,27 @@
     "bottomAlerts": "Alertes",
     "addAria": "Ajouter un suivi",
     "deleteConfirm": "Supprimer ce suivi ?",
+    "demo": {
+      "add": "Ajouter un produit démo",
+      "hint": "Utilisez ±1 pour modifier le prix démo et tester les notifications (développement uniquement).",
+      "down": "Diminuer le prix de 1",
+      "up": "Augmenter le prix de 1"
+    },
+    "push": {
+      "title": "Notifications système",
+      "hint": "Alertes prix sur cet appareil même quand l’app est fermée (idéal en app installée).",
+      "enable": "Activer",
+      "enabled": "Activé",
+      "disable": "Désactiver",
+      "denied": "Notifications bloquées — activez-les dans les paramètres du navigateur.",
+      "unsupported": "Les notifications navigateur ne sont pas disponibles ici.",
+      "serverOff": "Web Push n’est pas configuré sur le serveur (clés VAPID dans l’API)."
+    },
     "errors": {
       "addFailed": "Impossible d’ajouter le suivi",
       "saveFailed": "Impossible d’enregistrer",
-      "refreshFailed": "Échec de l’actualisation"
+      "refreshFailed": "Échec de l’actualisation",
+      "invalidDecimal": "Saisissez un prix valide (p. ex. 25,99 ou 25.99)."
     },
     "edit": {
       "productOptional": "Nom du produit (facultatif)",

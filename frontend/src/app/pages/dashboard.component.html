@@ -81,6 +81,67 @@
           {{ 'dashboard.add' | translate }}
         </button>
       </form>
+      @if (demoPriceEnabled && !hasDemoRow()) {
+        <div class="mt-3">
+          <button
+            type="button"
+            (click)="addDemoProduct()"
+            [disabled]="demoAdding()"
+            class="rounded-lg border border-dashed border-tertiary/40 bg-tertiary/5 px-3 py-2 text-xs font-semibold text-tertiary transition hover:bg-tertiary/10 disabled:opacity-50"
+          >
+            {{ 'dashboard.demo.add' | translate }}
+          </button>
+          <p class="mt-1.5 max-w-md text-[10px] text-on-surface-variant/80">
+            {{ 'dashboard.demo.hint' | translate }}
+          </p>
+        </div>
+      }
+
+      @if (!pushLoading()) {
+        <div class="mt-3 rounded-lg border border-outline-variant/15 bg-surface-container-low/60 px-3 py-2.5">
+          @if (pushUnsupported()) {
+            <p class="text-[11px] text-on-surface-variant/85">{{ 'dashboard.push.unsupported' | translate }}</p>
+          } @else if (!pushServerOn()) {
+            <p class="text-[11px] text-on-surface-variant/85">{{ 'dashboard.push.serverOff' | translate }}</p>
+          } @else {
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined mt-0.5 text-lg text-primary">notifications_active</span>
+                <div>
+                  <p class="text-xs font-semibold text-on-surface">{{ 'dashboard.push.title' | translate }}</p>
+                  <p class="text-[10px] text-on-surface-variant/80">{{ 'dashboard.push.hint' | translate }}</p>
+                </div>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                @if (pushSubscribed()) {
+                  <span class="text-[10px] font-medium uppercase tracking-wide text-tertiary">{{
+                    'dashboard.push.enabled' | translate
+                  }}</span>
+                  <button
+                    type="button"
+                    (click)="disablePush()"
+                    [disabled]="pushBusy()"
+                    class="rounded-md border border-outline-variant/30 px-2.5 py-1 text-[11px] font-semibold text-on-surface-variant transition hover:bg-surface-container-highest disabled:opacity-50"
+                  >
+                    {{ 'dashboard.push.disable' | translate }}
+                  </button>
+                } @else if (pushDenied()) {
+                  <span class="text-[10px] text-on-surface-variant/90">{{ 'dashboard.push.denied' | translate }}</span>
+                } @else {
+                  <button
+                    type="button"
+                    (click)="enablePush()"
+                    [disabled]="pushBusy()"
+                    class="rounded-md bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-on-primary shadow-sm active:scale-95 disabled:opacity-50"
+                  >
+                    {{ 'dashboard.push.enable' | translate }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
     </header>
 
     @if (formError()) {
@@ -163,11 +224,17 @@
                     {{ t.displayCompanyName ?? ('dashboard.store' | translate) }}
                   </p>
                   <h3 class="truncate text-xs font-semibold leading-tight text-on-surface">
-                    <a [href]="t.url" target="_blank" rel="noopener" class="hover:text-primary">{{ t.displayProductName }}</a>
+                    @if (isDemoTracking(t)) {
+                      <span class="text-on-surface">{{ t.displayProductName }}</span>
+                    } @else {
+                      <a [href]="t.url" target="_blank" rel="noopener" class="hover:text-primary">{{ t.displayProductName }}</a>
+                    }
                   </h3>
                   <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
                     @if (t.lastPrice !== null) {
-                      <span class="text-sm font-bold text-primary">{{ t.lastPrice }} {{ t.currency }}</span>
+                      <span class="text-sm font-bold text-primary"
+                        >{{ t.lastPrice | number: '1.2-2' }} {{ t.currency }}</span
+                      >
                     }
                     @if (priceDelta(t); as d) {
                       @if (d.pct === 0) {
@@ -181,16 +248,40 @@
                       }
                     }
                   </div>
+                  @if (demoPriceEnabled && isDemoTracking(t)) {
+                    <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                      <button
+                        type="button"
+                        (click)="adjustDemoPrice(t.id, -1)"
+                        [disabled]="refreshingId() === t.id"
+                        class="rounded border border-outline-variant/30 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant hover:bg-surface-container-highest disabled:opacity-50"
+                        [attr.title]="'dashboard.demo.down' | translate"
+                      >
+                        −1
+                      </button>
+                      <button
+                        type="button"
+                        (click)="adjustDemoPrice(t.id, 1)"
+                        [disabled]="refreshingId() === t.id"
+                        class="rounded border border-outline-variant/30 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant hover:bg-surface-container-highest disabled:opacity-50"
+                        [attr.title]="'dashboard.demo.up' | translate"
+                      >
+                        +1
+                      </button>
+                    </div>
+                  }
                 </div>
                 <div class="flex items-center gap-1">
-                  <button
-                    type="button"
-                    (click)="refresh(t.id)"
-                    [disabled]="refreshingId() === t.id"
-                    class="flex h-7 w-7 items-center justify-center rounded bg-surface-container-highest/50 text-on-surface-variant transition hover:text-primary active:scale-90 disabled:opacity-50"
-                  >
-                    <span class="material-symbols-outlined text-[16px]">refresh</span>
-                  </button>
+                  @if (!isDemoTracking(t)) {
+                    <button
+                      type="button"
+                      (click)="refresh(t.id)"
+                      [disabled]="refreshingId() === t.id"
+                      class="flex h-7 w-7 items-center justify-center rounded bg-surface-container-highest/50 text-on-surface-variant transition hover:text-primary active:scale-90 disabled:opacity-50"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">refresh</span>
+                    </button>
+                  }
                   <button
                     type="button"
                     (click)="toggleEdit(t.id)"
@@ -238,13 +329,19 @@
                           {{ thumbChar(t) }}
                         </div>
                         <div>
-                          <a
-                            [href]="t.url"
-                            target="_blank"
-                            rel="noopener"
-                            class="font-headline text-sm font-bold leading-tight text-on-surface hover:text-primary"
-                            >{{ t.displayProductName }}</a
-                          >
+                          @if (isDemoTracking(t)) {
+                            <span class="font-headline text-sm font-bold leading-tight text-on-surface">{{
+                              t.displayProductName
+                            }}</span>
+                          } @else {
+                            <a
+                              [href]="t.url"
+                              target="_blank"
+                              rel="noopener"
+                              class="font-headline text-sm font-bold leading-tight text-on-surface hover:text-primary"
+                              >{{ t.displayProductName }}</a
+                            >
+                          }
                           <div class="text-[11px] font-medium text-on-surface-variant opacity-80">
                             {{ 'dashboard.trackedProduct' | translate }}
                           </div>
@@ -261,7 +358,7 @@
                       @if (t.lastPrice !== null) {
                         <div class="flex flex-col">
                           <span class="font-headline text-base font-bold text-on-surface"
-                            >{{ t.lastPrice }} {{ t.currency }}</span
+                            >{{ t.lastPrice | number: '1.2-2' }} {{ t.currency }}</span
                           >
                           @if (priceDelta(t); as d) {
                             @if (d.pct === 0) {
@@ -299,14 +396,35 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                       <div class="flex justify-end gap-1">
-                        <button
-                          type="button"
-                          (click)="refresh(t.id)"
-                          [disabled]="refreshingId() === t.id"
-                          class="rounded p-1.5 text-on-surface-variant transition hover:bg-primary/10 hover:text-primary disabled:opacity-50"
-                        >
-                          <span class="material-symbols-outlined text-lg">refresh</span>
-                        </button>
+                        @if (demoPriceEnabled && isDemoTracking(t)) {
+                          <button
+                            type="button"
+                            (click)="adjustDemoPrice(t.id, -1)"
+                            [disabled]="refreshingId() === t.id"
+                            class="rounded p-1.5 text-on-surface-variant transition hover:bg-tertiary/15 hover:text-tertiary disabled:opacity-50"
+                            [attr.title]="'dashboard.demo.down' | translate"
+                          >
+                            <span class="material-symbols-outlined text-lg">remove</span>
+                          </button>
+                          <button
+                            type="button"
+                            (click)="adjustDemoPrice(t.id, 1)"
+                            [disabled]="refreshingId() === t.id"
+                            class="rounded p-1.5 text-on-surface-variant transition hover:bg-tertiary/15 hover:text-tertiary disabled:opacity-50"
+                            [attr.title]="'dashboard.demo.up' | translate"
+                          >
+                            <span class="material-symbols-outlined text-lg">add</span>
+                          </button>
+                        } @else {
+                          <button
+                            type="button"
+                            (click)="refresh(t.id)"
+                            [disabled]="refreshingId() === t.id"
+                            class="rounded p-1.5 text-on-surface-variant transition hover:bg-primary/10 hover:text-primary disabled:opacity-50"
+                          >
+                            <span class="material-symbols-outlined text-lg">refresh</span>
+                          </button>
+                        }
                         <button
                           type="button"
                           (click)="toggleEdit(t.id)"

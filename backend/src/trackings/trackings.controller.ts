@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, RequestUser } from '../auth/decorators/current-user.decorator';
+import { DemoPriceDto } from './dto/demo-price.dto';
 import { CreateTrackingDto } from './dto/create-tracking.dto';
 import { UpdateTrackingDto } from './dto/update-tracking.dto';
 import { TrackingsService } from './trackings.service';
@@ -20,6 +21,11 @@ export class TrackingsController {
     return this.trackings.create(user.userId, dto);
   }
 
+  @Post('demo')
+  createDemo(@CurrentUser() user: RequestUser) {
+    return this.trackings.createDemo(user.userId);
+  }
+
   @Patch(':id')
   update(
     @CurrentUser() user: RequestUser,
@@ -37,5 +43,14 @@ export class TrackingsController {
   @Post(':id/refresh')
   refresh(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.trackings.refresh(user.userId, id);
+  }
+
+  @Post(':id/demo-price')
+  adjustDemoPrice(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: DemoPriceDto,
+  ) {
+    return this.trackings.adjustDemoPrice(user.userId, id, dto.delta);
   }
 }

@@ -12,7 +12,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService, UserProfile } from '../core/auth.service';
+import { parseDecimalInput } from '../core/parse-decimal-input';
 import { PwaInstallService } from '../core/pwa-install.service';
+import { PushNotificationService } from '../core/push-notification.service';
 import { environment } from '../../environments/environment';
 
 type Tracking = {
@@ -58,6 +60,8 @@ function intervalOptionsForMin(minMinutes: number) {
 })
 export class DashboardComponent implements OnInit {
   protected readonly intervalOptions = intervalOptionsForMin(environment.minRecheckIntervalMinutes);
+  /** Only true in non-production Angular environment (see `environment.prod.ts`). */
+  protected readonly demoPriceEnabled = environment.enableDemoProduct;
 
   @ViewChild('addUrlInput') private addUrlInput?: ElementRef<HTMLInputElement>;
 
@@ -67,6 +71,7 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
   private translate = inject(TranslateService);
   protected pwa = inject(PwaInstallService);
+  protected push = inject(PushNotificationService);
 
   form = this.fb.nonNullable.group({
     url: ['', [Validators.required]],
@@ -96,6 +101,15 @@ export class DashboardComponent implements OnInit {
   notifOpen = signal(false);
   notifLoading = signal(false);
 
+  demoAdding = signal(false);
+
+  pushLoading = signal(true);
+  pushUnsupported = signal(false);
+  pushServerOn = signal(false);
+  pushSubscribed = signal(false);
+  pushDenied = signal(false);
+  pushBusy = signal(false);
+
   ngOnInit() {
     this.auth.loadProfile().subscribe({
       next: (p) => {
@@ -105,6 +119,53 @@ export class DashboardComponent implements OnInit {
     });
     this.load();
     this.loadNotifCount();
+    void this.initPush();
+  }
+
+  async initPush(): Promise<void> {
+    this.pushLoading.set(true);
+    try {
+      const st = await this.push.refreshPushState();
+      if (st.permission === 'unsupported') {
+        this.pushUnsupported.set(true);
+        return;
+      }
+      this.pushServerOn.set(st.serverConfigured);
+      this.pushSubscribed.set(st.subscribed);
+      this.pushDenied.set(st.permission === 'denied');
+      if (st.serverConfigured && st.subscribed) {
+        await this.push.syncSubscriptionToServer();
+      }
+    } finally {
+      this.pushLoading.set(false);
+    }
+  }
+
+  async enablePush(): Promise<void> {
+    this.pushBusy.set(true);
+    try {
+      const r = await this.push.subscribe();
+      if (r.ok) {
+        this.pushSubscribed.set(true);
+        this.pushDenied.set(false);
+      } else if (r.reason === 'denied') {
+        this.pushDenied.set(true);
+      }
+    } finally {
+      this.pushBusy.set(false);
+      await this.initPush();
+    }
+  }
+
+  async disablePush(): Promise<void> {
+    this.pushBusy.set(true);
+    try {
+      await this.push.unsubscribe();
+      this.pushSubscribed.set(false);
+    } finally {
+      this.pushBusy.set(false);
+      await this.initPush();
+    }
   }
 
   thumbChar(t: Tracking): string {
@@ -152,6 +213,46 @@ export class DashboardComponent implements OnInit {
       return;
     }
     void this.router.navigate(['/pricing']);
+  }
+
+  isDemoTracking(t: Tracking): boolean {
+    return t.url?.startsWith('demo://') ?? false;
+  }
+
+  hasDemoRow(): boolean {
+    return this.items().some((x) => this.isDemoTracking(x));
+  }
+
+  addDemoProduct(): void {
+    if (!this.demoPriceEnabled) return;
+    this.demoAdding.set(true);
+    this.formError.set(null);
+    this.http.post<Tracking>(`${environment.apiUrl}/trackings/demo`, {}).subscribe({
+      next: () => {
+        this.demoAdding.set(false);
+        this.load();
+      },
+      error: (e) => {
+        this.demoAdding.set(false);
+        const m = e.error?.message;
+        this.formError.set(
+          Array.isArray(m) ? m[0] : m || this.translate.instant('dashboard.errors.addFailed'),
+        );
+      },
+    });
+  }
+
+  adjustDemoPrice(id: string, delta: number): void {
+    if (!this.demoPriceEnabled) return;
+    this.refreshingId.set(id);
+    this.http.post<Tracking>(`${environment.apiUrl}/trackings/${id}/demo-price`, { delta }).subscribe({
+      next: () => {
+        this.refreshingId.set(null);
+        this.load();
+        this.loadNotifCount();
+      },
+      error: () => this.refreshingId.set(null),
+    });
   }
 
   load() {
@@ -259,21 +360,35 @@ export class DashboardComponent implements OnInit {
   }
 
   saveEdit(id: string) {
-    this.savingEdit.set(true);
     this.patchError.set(null);
     const v = this.editForm.getRawValue();
+
+    const belowRaw = v.alertBelowPrice;
+    const aboveRaw = v.alertAbovePrice;
+    const belowEmpty =
+      belowRaw === '' || belowRaw === null || belowRaw === undefined;
+    const aboveEmpty =
+      aboveRaw === '' || aboveRaw === null || aboveRaw === undefined;
+
+    const alertBelowPrice = belowEmpty ? null : parseDecimalInput(String(belowRaw));
+    const alertAbovePrice = aboveEmpty ? null : parseDecimalInput(String(aboveRaw));
+
+    if (!belowEmpty && alertBelowPrice === null) {
+      this.patchError.set(this.translate.instant('dashboard.errors.invalidDecimal'));
+      return;
+    }
+    if (!aboveEmpty && alertAbovePrice === null) {
+      this.patchError.set(this.translate.instant('dashboard.errors.invalidDecimal'));
+      return;
+    }
+
+    this.savingEdit.set(true);
     const body: Record<string, unknown> = {
       recheckIntervalMinutes: v.recheckIntervalMinutes,
       productNameOverride: v.productNameOverride.trim() === '' ? null : v.productNameOverride.trim(),
       companyNameOverride: v.companyNameOverride.trim() === '' ? null : v.companyNameOverride.trim(),
-      alertBelowPrice:
-        v.alertBelowPrice === '' || v.alertBelowPrice === null || v.alertBelowPrice === undefined
-          ? null
-          : Number(v.alertBelowPrice),
-      alertAbovePrice:
-        v.alertAbovePrice === '' || v.alertAbovePrice === null || v.alertAbovePrice === undefined
-          ? null
-          : Number(v.alertAbovePrice),
+      alertBelowPrice,
+      alertAbovePrice,
     };
     this.http.patch<Tracking>(`${environment.apiUrl}/trackings/${id}`, body).subscribe({
       next: () => {

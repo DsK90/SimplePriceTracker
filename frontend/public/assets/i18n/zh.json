@@ -82,6 +82,22 @@
     "bottomAlerts": "提醒",
     "addAria": "添加追踪",
     "deleteConfirm": "删除此追踪？",
+    "demo": {
+      "add": "添加演示商品",
+      "hint": "使用 ±1 调整演示价格以测试通知（仅开发环境）。",
+      "down": "价格减 1",
+      "up": "价格加 1"
+    },
+    "push": {
+      "title": "系统通知",
+      "hint": "即使关闭应用也能在此设备上收到价格提醒（安装为应用后体验最佳）。",
+      "enable": "开启",
+      "enabled": "已开启",
+      "disable": "关闭",
+      "denied": "通知已被阻止 — 请在浏览器设置中允许。",
+      "unsupported": "当前环境不支持浏览器通知。",
+      "serverOff": "服务器未配置 Web Push（请在 API 环境中设置 VAPID 密钥）。"
+    },
     "placeholderUrl": "粘贴商品链接…",
     "add": "添加",
     "notifications": "通知",
@@ -89,7 +105,8 @@
     "errors": {
       "addFailed": "无法添加追踪",
       "saveFailed": "无法保存",
-      "refreshFailed": "刷新失败"
+      "refreshFailed": "刷新失败",
+      "invalidDecimal": "请输入有效价格（例如 25.99 或 25,99）。"
     },
     "edit": {
       "productOptional": "商品名称（可选）",

@@ -86,10 +86,27 @@
     "bottomAlerts": "Alarmer",
     "addAria": "Tilføj overvågning",
     "deleteConfirm": "Slette denne overvågning?",
+    "demo": {
+      "add": "Tilføj demo-produkt",
+      "hint": "Brug ±1 til at ændre demo-prisen og teste notifikationer (kun udvikling).",
+      "down": "Sænk pris med 1",
+      "up": "Hæv pris med 1"
+    },
+    "push": {
+      "title": "Systemnotifikationer",
+      "hint": "Prisalarmer på denne enhed, også når appen er lukket (bedst som installeret app).",
+      "enable": "Aktivér",
+      "enabled": "Til",
+      "disable": "Slå fra",
+      "denied": "Notifikationer blokeret — tillad dem i browserindstillinger.",
+      "unsupported": "Browsernotifikationer er ikke tilgængelige her.",
+      "serverOff": "Web Push er ikke konfigureret på serveren (VAPID-nøgler i API-miljøet)."
+    },
     "errors": {
       "addFailed": "Kunne ikke tilføje overvågning",
       "saveFailed": "Kunne ikke gemme",
-      "refreshFailed": "Opdatering mislykkedes"
+      "refreshFailed": "Opdatering mislykkedes",
+      "invalidDecimal": "Angiv en gyldig pris (f.eks. 25,99 eller 25.99)."
     },
     "edit": {
       "productOptional": "Produktnavn (valgfrit)",

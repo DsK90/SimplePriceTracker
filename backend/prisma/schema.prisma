@@ -1,0 +1,98 @@
+// Prisma 7: connection URL is in prisma.config.ts (see `defineConfig` datasource).
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PlanTier {
+  FREE
+  PRO
+}
+
+model User {
+  id                   String          @id @default(uuid())
+  email                String          @unique
+  passwordHash         String
+  planTier             PlanTier        @default(FREE)
+  paypalSubscriptionId String?         @unique
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  trackings            PriceTracking[]
+  notifications        Notification[]
+}
+
+/// Published pricing / PayPal subscription product (seeded + configurable via env)
+model Plan {
+  id           String  @id @default(uuid())
+  name         String
+  slug         String  @unique
+  description  String?
+  /// Yearly price for display (e.g. cents)
+  priceCents   Int
+  currency     String  @default("EUR")
+  paypalPlanId String
+  /// null = unlimited trackings
+  maxTrackings Int?
+  sortOrder    Int     @default(0)
+}
+
+model PriceTracking {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url           String
+  /// Scraped product name (refreshed with price)
+  productName   String
+  /// Store / brand / site name when detectable
+  companyName   String?
+  /// User-facing label; when set, shown instead of scraped productName
+  productNameOverride   String?
+  /// User-facing label; when set, shown instead of scraped companyName
+  companyNameOverride   String?
+  /// How often automatic price checks run (minutes). Min 15, max 10080 (7d).
+  recheckIntervalMinutes Int      @default(360)
+  /// Notify once when price crosses down to this level or below (optional)
+  alertBelowPrice Decimal? @db.Decimal(12, 4)
+  /// Notify once when price crosses up to this level or above (optional)
+  alertAbovePrice Decimal? @db.Decimal(12, 4)
+  lastPrice     Decimal? @db.Decimal(12, 4)
+  currency      String   @default("EUR")
+  lastCheckedAt DateTime?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  snapshots     PriceSnapshot[]
+  notifications Notification[]
+
+  @@index([userId])
+}
+
+model Notification {
+  id          String         @id @default(uuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackingId  String?
+  tracking    PriceTracking? @relation(fields: [trackingId], references: [id], onDelete: Cascade)
+  kind        String         @default("PRICE_ALERT")
+  title       String
+  body        String
+  read        Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+
+  @@index([userId, read, createdAt])
+}
+
+model PriceSnapshot {
+  id         String        @id @default(uuid())
+  trackingId String
+  tracking   PriceTracking @relation(fields: [trackingId], references: [id], onDelete: Cascade)
+  price      Decimal       @db.Decimal(12, 4)
+  currency   String
+  recordedAt DateTime      @default(now())
+
+  @@index([trackingId, recordedAt])
+}

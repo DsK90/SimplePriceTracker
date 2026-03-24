@@ -1,0 +1,27 @@
+:root {
+  --bg: #0f1419;
+  --card: #1a222d;
+  --text: #e8edf4;
+  --muted: #8b9aad;
+  --border: #2a3848;
+  --accent: #3b82f6;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}

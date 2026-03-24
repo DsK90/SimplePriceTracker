@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pricetracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pricetracker}
+      POSTGRES_DB: ${POSTGRES_DB:-pricetracker}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5460:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://pricetracker:pricetracker@postgres:5432/pricetracker?schema=public}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_SEC: ${JWT_EXPIRES_SEC:-604800}
+      PAYPAL_USE_SANDBOX: ${PAYPAL_USE_SANDBOX:-true}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_SECRET: ${PAYPAL_SECRET:-}
+      PAYPAL_SANDBOX_CLIENT_ID: ${PAYPAL_SANDBOX_CLIENT_ID:-}
+      PAYPAL_SANDBOX_SECRET: ${PAYPAL_SANDBOX_SECRET:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@example.com}
+      PAYPAL_PRO_PLAN_ID: ${PAYPAL_PRO_PLAN_ID:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080,http://localhost,http://127.0.0.1}
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+        PAYPAL_SANDBOX_CLIENT_ID: ${PAYPAL_SANDBOX_CLIENT_ID:-}
+    ports:
+      - '8080:80'
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

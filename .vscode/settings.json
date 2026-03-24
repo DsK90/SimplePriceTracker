@@ -1,0 +1,4 @@
+{
+  "prisma.pinToPrisma6": false,
+  "prisma.prismaConfigFilePath": "backend/prisma.config.ts"
+}

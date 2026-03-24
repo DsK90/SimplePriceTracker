@@ -2,26 +2,27 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../core/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="card">
-      <h1>Sign in</h1>
+      <h1>{{ 'login.title' | translate }}</h1>
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <label>Email</label>
+        <label>{{ 'login.email' | translate }}</label>
         <input type="email" formControlName="email" autocomplete="email" />
-        <label>Password</label>
+        <label>{{ 'login.password' | translate }}</label>
         <input type="password" formControlName="password" autocomplete="current-password" />
         @if (error()) {
           <p class="err">{{ error() }}</p>
         }
-        <button type="submit" [disabled]="form.invalid || loading()">Sign in</button>
+        <button type="submit" [disabled]="form.invalid || loading()">{{ 'login.submit' | translate }}</button>
       </form>
-      <p class="muted"><a routerLink="/register">Create an account</a></p>
+      <p class="muted"><a routerLink="/register">{{ 'login.createAccount' | translate }}</a></p>
     </div>
   `,
   styles: [
@@ -91,6 +92,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -116,7 +118,9 @@ export class LoginComponent {
       error: (e) => {
         this.loading.set(false);
         const m = e.error?.message;
-        this.error.set(Array.isArray(m) ? m[0] : m || 'Login failed');
+        this.error.set(
+          Array.isArray(m) ? m[0] : m || this.translate.instant('login.failed'),
+        );
       },
     });
   }

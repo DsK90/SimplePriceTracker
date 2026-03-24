@@ -1,0 +1,119 @@
+{
+  "app": {
+    "pageTitle": "Pricefly | 价格追踪",
+    "brand": "Pricefly",
+    "tagline": "追踪价格，即时提醒。"
+  },
+  "nav": {
+    "dashboard": "控制台",
+    "pricing": "定价",
+    "signOut": "退出",
+    "signIn": "登录",
+    "register": "注册",
+    "installApp": "安装应用",
+    "installAppShort": "应用"
+  },
+  "pwa": {
+    "iosHint": "在 iPhone 或 iPad 上安装 Pricefly：\n\n1. 点按“共享” \n2. 向下滚动并点按“添加到主屏幕”\n3. 点按“添加”"
+  },
+  "login": {
+    "title": "登录",
+    "email": "电子邮箱",
+    "password": "密码",
+    "submit": "登录",
+    "createAccount": "创建账户",
+    "failed": "登录失败"
+  },
+  "register": {
+    "title": "创建账户",
+    "email": "电子邮箱",
+    "password": "密码（至少 8 位）",
+    "submit": "注册",
+    "hasAccount": "已有账户？",
+    "failed": "注册失败"
+  },
+  "pricing": {
+    "title": "定价",
+    "lead": "最多免费追踪 5 个商品。升级可无限追踪。",
+    "freeTitle": "免费",
+    "proTitle": "专业版",
+    "perYear": "/ 年",
+    "free1": "5 个活跃价格追踪",
+    "free2": "每 6 小时自动检查",
+    "free3": "价格历史（每项最近 30 条快照）",
+    "pro1": "无限活跃追踪",
+    "pro2": "相同的刷新与历史功能",
+    "pro3": "可随时在 PayPal 中取消",
+    "getStarted": "开始使用",
+    "goDashboard": "控制台",
+    "afterSignInToSubscribe": "以使用 PayPal 订阅。",
+    "onPro": "您已订阅专业版。",
+    "cancelSub": "取消订阅",
+    "loadingPaypal": "正在加载 PayPal…",
+    "paypalConfigHint": "构建时设置 PayPal 客户端 ID，并为 API 种子配置 PAYPAL_PRO_PLAN_ID。",
+    "cancelConfirm": "要取消专业版订阅吗？"
+  },
+  "dashboard": {
+    "title": "追踪列表",
+    "proSubtitle": "专业版 — 无限活跃条目",
+    "freeLine": "免费 — 已用 {{current}} / {{max}} 个名额。",
+    "upgrade": "升级",
+    "activeAlerts": "{{count}} 个活跃价格提醒",
+    "activeAlertsPlural": "{{count}} 个活跃价格提醒",
+    "loading": "加载中…",
+    "noNotifications": "暂无通知。价格提醒将显示在这里。",
+    "watchlist": "活跃关注列表",
+    "recent": "最近",
+    "store": "商店",
+    "stable": "持平",
+    "stableUpper": "持平",
+    "trackedProduct": "追踪中的商品",
+    "colProduct": "商品",
+    "colStore": "商店",
+    "colPrice": "当前价格",
+    "colUpdated": "上次更新",
+    "colFrequency": "频率",
+    "colActions": "操作",
+    "showing": "显示 {{count}} 条结果",
+    "showingPlural": "显示 {{count}} 条结果",
+    "empty": "暂无追踪。",
+    "bottomDash": "概览",
+    "bottomPricing": "定价",
+    "bottomAlerts": "提醒",
+    "addAria": "添加追踪",
+    "deleteConfirm": "删除此追踪？",
+    "placeholderUrl": "粘贴商品链接…",
+    "add": "添加",
+    "notifications": "通知",
+    "markAllRead": "全部标为已读",
+    "errors": {
+      "addFailed": "无法添加追踪",
+      "saveFailed": "无法保存",
+      "refreshFailed": "刷新失败"
+    },
+    "edit": {
+      "productOptional": "商品名称（可选）",
+      "storeOptional": "商店名称（可选）",
+      "placeholderAuto": "留空则自动识别",
+      "detected": "识别为：",
+      "recheckEvery": "重新检查间隔",
+      "alertBelow": "价格 ≤ 时提醒",
+      "alertAbove": "价格 ≥ 时提醒",
+      "placeholderPrice": "例如 {{n}}",
+      "hint": "清空提醒字段并保存可移除阈值。价格达到目标时会提醒。",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "interval": {
+      "m1": "每分钟",
+      "m15": "每 15 分钟",
+      "m30": "每 30 分钟",
+      "m60": "每小时",
+      "m360": "每 6 小时",
+      "m720": "每 12 小时",
+      "m1440": "每天",
+      "m10080": "每周",
+      "unknown": "{{minutes}} 分钟"
+    }
+  }
+}

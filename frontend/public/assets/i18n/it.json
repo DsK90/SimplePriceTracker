@@ -1,0 +1,119 @@
+{
+  "app": {
+    "pageTitle": "Pricefly | Monitoraggio prezzi",
+    "brand": "Pricefly",
+    "tagline": "Tieni traccia dei prezzi. Notifiche istantanee."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "pricing": "Prezzi",
+    "signOut": "Esci",
+    "signIn": "Accedi",
+    "register": "Registrati",
+    "installApp": "Installa app",
+    "installAppShort": "App"
+  },
+  "pwa": {
+    "iosHint": "Per installare Pricefly su iPhone o iPad:\n\n1. Tocca Condividi \n2. Scorri e tocca «Aggiungi alla schermata Home»\n3. Tocca Aggiungi"
+  },
+  "login": {
+    "title": "Accedi",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Accedi",
+    "createAccount": "Crea un account",
+    "failed": "Accesso non riuscito"
+  },
+  "register": {
+    "title": "Crea account",
+    "email": "Email",
+    "password": "Password (min. 8 caratteri)",
+    "submit": "Registrati",
+    "hasAccount": "Hai già un account?",
+    "failed": "Registrazione non riuscita"
+  },
+  "pricing": {
+    "title": "Prezzi",
+    "lead": "Traccia fino a 5 prodotti gratis. Passa a Pro per monitoraggi illimitati.",
+    "freeTitle": "Gratis",
+    "proTitle": "Pro",
+    "perYear": "/ anno",
+    "free1": "5 monitoraggi prezzi attivi",
+    "free2": "Controlli automatici ogni 6 ore",
+    "free3": "Storico prezzi (ultimi 30 snapshot per articolo)",
+    "pro1": "Monitoraggi attivi illimitati",
+    "pro2": "Stesse funzioni di aggiornamento e cronologia",
+    "pro3": "Annulla quando vuoi in PayPal",
+    "getStarted": "Inizia",
+    "goDashboard": "Dashboard",
+    "afterSignInToSubscribe": " per abbonarti con PayPal.",
+    "onPro": "Sei su Pro.",
+    "cancelSub": "Annulla abbonamento",
+    "loadingPaypal": "Caricamento PayPal…",
+    "paypalConfigHint": "Imposta il client ID PayPal in build e PAYPAL_PRO_PLAN_ID per il seed API.",
+    "cancelConfirm": "Annullare l'abbonamento Pro?"
+  },
+  "dashboard": {
+    "title": "Monitoraggi",
+    "proSubtitle": "Pro — elementi attivi illimitati",
+    "freeLine": "Gratis — {{current}} di {{max}} slot. ",
+    "upgrade": "Upgrade",
+    "activeAlerts": "{{count}} avviso prezzo attivo",
+    "activeAlertsPlural": "{{count}} avvisi prezzo attivi",
+    "placeholderUrl": "Incolla URL prodotto…",
+    "add": "Aggiungi",
+    "notifications": "Notifiche",
+    "markAllRead": "Segna tutto come letto",
+    "loading": "Caricamento…",
+    "noNotifications": "Nessuna notifica. Gli avvisi prezzo appariranno qui.",
+    "watchlist": "Lista attiva",
+    "recent": "Recenti",
+    "store": "Negozio",
+    "stable": "Stabile",
+    "stableUpper": "STABILE",
+    "trackedProduct": "Prodotto monitorato",
+    "colProduct": "Prodotto",
+    "colStore": "Negozio",
+    "colPrice": "Prezzo attuale",
+    "colUpdated": "Ultimo aggiornamento",
+    "colFrequency": "Frequenza",
+    "colActions": "Azioni",
+    "showing": "Mostra {{count}} risultato",
+    "showingPlural": "Mostra {{count}} risultati",
+    "empty": "Nessun monitoraggio.",
+    "bottomDash": "Home",
+    "bottomPricing": "Prezzi",
+    "bottomAlerts": "Avvisi",
+    "addAria": "Aggiungi monitoraggio",
+    "deleteConfirm": "Eliminare questo monitoraggio?",
+    "errors": {
+      "addFailed": "Impossibile aggiungere il monitoraggio",
+      "saveFailed": "Impossibile salvare",
+      "refreshFailed": "Aggiornamento non riuscito"
+    },
+    "edit": {
+      "productOptional": "Nome prodotto (opzionale)",
+      "storeOptional": "Nome negozio (opzionale)",
+      "placeholderAuto": "Vuoto per automatico",
+      "detected": "Rilevato:",
+      "recheckEvery": "Controlla ogni",
+      "alertBelow": "Avviso se prezzo ≤",
+      "alertAbove": "Avviso se prezzo ≥",
+      "placeholderPrice": "es. {{n}}",
+      "hint": "Svuota i campi avviso e salva per rimuovere le soglie. Gli avvisi scattano al superamento dell'obiettivo.",
+      "save": "Salva",
+      "cancel": "Annulla"
+    },
+    "interval": {
+      "m1": "Ogni minuto",
+      "m15": "Ogni 15 minuti",
+      "m30": "Ogni 30 minuti",
+      "m60": "Ogni ora",
+      "m360": "Ogni 6 ore",
+      "m720": "Ogni 12 ore",
+      "m1440": "Giornaliero",
+      "m10080": "Settimanale",
+      "unknown": "{{minutes}} min"
+    }
+  }
+}

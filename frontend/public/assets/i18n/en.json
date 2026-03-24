@@ -1,0 +1,119 @@
+{
+  "app": {
+    "pageTitle": "Pricefly | Price tracker",
+    "brand": "Pricefly",
+    "tagline": "Track prices. Get notified instantly."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "pricing": "Pricing",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "register": "Register",
+    "installApp": "Install app",
+    "installAppShort": "App"
+  },
+  "pwa": {
+    "iosHint": "To install Pricefly on your iPhone or iPad:\n\n1. Tap the Share button \n2. Scroll and tap \"Add to Home Screen\"\n3. Tap Add"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "createAccount": "Create an account",
+    "failed": "Login failed"
+  },
+  "register": {
+    "title": "Create account",
+    "email": "Email",
+    "password": "Password (min 8 characters)",
+    "submit": "Register",
+    "hasAccount": "Already have an account?",
+    "failed": "Registration failed"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "lead": "Track up to 5 products for free. Upgrade for unlimited active trackings.",
+    "freeTitle": "Free",
+    "proTitle": "Pro",
+    "perYear": "/ year",
+    "free1": "5 active price trackings",
+    "free2": "Automatic checks every 6 hours",
+    "free3": "Price history (last 30 snapshots per item)",
+    "pro1": "Unlimited active trackings",
+    "pro2": "Same refresh & history features",
+    "pro3": "Cancel anytime in PayPal",
+    "getStarted": "Get started",
+    "goDashboard": "Dashboard",
+    "afterSignInToSubscribe": " to subscribe with PayPal.",
+    "onPro": "You are on Pro.",
+    "cancelSub": "Cancel subscription",
+    "loadingPaypal": "Loading PayPal…",
+    "paypalConfigHint": "Set PayPal client ID at build time and PAYPAL_PRO_PLAN_ID for the API seed.",
+    "cancelConfirm": "Cancel your Pro subscription?"
+  },
+  "dashboard": {
+    "title": "Trackings",
+    "proSubtitle": "Pro — unlimited active items",
+    "freeLine": "Free — {{current}} of {{max}} slots. ",
+    "upgrade": "Upgrade",
+    "activeAlerts": "{{count}} active price alert",
+    "activeAlertsPlural": "{{count}} active price alerts",
+    "placeholderUrl": "Paste product URL…",
+    "add": "Add",
+    "notifications": "Notifications",
+    "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "noNotifications": "No notifications yet. Price alerts appear here.",
+    "watchlist": "Active watchlist",
+    "recent": "Recent",
+    "store": "Store",
+    "stable": "Stable",
+    "stableUpper": "STABLE",
+    "trackedProduct": "Tracked product",
+    "colProduct": "Product",
+    "colStore": "Store",
+    "colPrice": "Current price",
+    "colUpdated": "Last update",
+    "colFrequency": "Frequency",
+    "colActions": "Actions",
+    "showing": "Showing {{count}} result",
+    "showingPlural": "Showing {{count}} results",
+    "empty": "No trackings yet.",
+    "bottomDash": "Dash",
+    "bottomPricing": "Pricing",
+    "bottomAlerts": "Alerts",
+    "addAria": "Add tracking",
+    "deleteConfirm": "Delete this tracking?",
+    "errors": {
+      "addFailed": "Could not add tracking",
+      "saveFailed": "Could not save",
+      "refreshFailed": "Refresh failed"
+    },
+    "edit": {
+      "productOptional": "Product name (optional)",
+      "storeOptional": "Store name (optional)",
+      "placeholderAuto": "Leave empty for auto",
+      "detected": "Detected:",
+      "recheckEvery": "Recheck every",
+      "alertBelow": "Alert when price ≤",
+      "alertAbove": "Alert when price ≥",
+      "placeholderPrice": "e.g. {{n}}",
+      "hint": "Clear alert fields and save to remove thresholds. Alerts fire when the price crosses your target.",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "interval": {
+      "m1": "Every minute",
+      "m15": "Every 15 minutes",
+      "m30": "Every 30 minutes",
+      "m60": "Every hour",
+      "m360": "Every 6 hours",
+      "m720": "Every 12 hours",
+      "m1440": "Daily",
+      "m10080": "Weekly",
+      "unknown": "{{minutes}} min"
+    }
+  }
+}

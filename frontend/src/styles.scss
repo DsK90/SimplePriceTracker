@@ -1,27 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html.dark,
+  html {
+    @apply bg-background text-on-background font-body antialiased;
+  }
+  body {
+    @apply min-h-[100dvh] selection:bg-primary selection:text-on-primary;
+  }
+}
+
+/* Legacy CSS variables for pages not yet on Tailwind */
 :root {
-  --bg: #0f1419;
-  --card: #1a222d;
-  --text: #e8edf4;
-  --muted: #8b9aad;
-  --border: #2a3848;
-  --accent: #3b82f6;
+  --bg: #0b1326;
+  --card: #171f33;
+  --text: #dae2fd;
+  --muted: #c2c6d6;
+  --border: #424754;
+  --accent: #adc6ff;
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
-body {
-  margin: 0;
-  font-family:
-    'Segoe UI',
-    system-ui,
-    -apple-system,
-    sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.5;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

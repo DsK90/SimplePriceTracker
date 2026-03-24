@@ -2,26 +2,27 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../core/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="card">
-      <h1>Create account</h1>
+      <h1>{{ 'register.title' | translate }}</h1>
       <form [formGroup]="form" (ngSubmit)="submit()">
-        <label>Email</label>
+        <label>{{ 'register.email' | translate }}</label>
         <input type="email" formControlName="email" autocomplete="email" />
-        <label>Password (min 8 characters)</label>
+        <label>{{ 'register.password' | translate }}</label>
         <input type="password" formControlName="password" autocomplete="new-password" />
         @if (error()) {
           <p class="err">{{ error() }}</p>
         }
-        <button type="submit" [disabled]="form.invalid || loading()">Register</button>
+        <button type="submit" [disabled]="form.invalid || loading()">{{ 'register.submit' | translate }}</button>
       </form>
-      <p class="muted"><a routerLink="/login">Already have an account?</a></p>
+      <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
     </div>
   `,
   styles: [
@@ -91,6 +92,7 @@ export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -116,7 +118,9 @@ export class RegisterComponent {
       error: (e) => {
         this.loading.set(false);
         this.error.set(
-          Array.isArray(e.error?.message) ? e.error.message[0] : e.error?.message || 'Registration failed',
+          Array.isArray(e.error?.message)
+            ? e.error.message[0]
+            : e.error?.message || this.translate.instant('register.failed'),
         );
       },
     });

@@ -1,0 +1,119 @@
+{
+  "app": {
+    "pageTitle": "Pricefly | Preis-Tracker",
+    "brand": "Pricefly",
+    "tagline": "Preise verfolgen. Sofort benachrichtigt werden."
+  },
+  "nav": {
+    "dashboard": "Übersicht",
+    "pricing": "Preise",
+    "signOut": "Abmelden",
+    "signIn": "Anmelden",
+    "register": "Registrieren",
+    "installApp": "App installieren",
+    "installAppShort": "App"
+  },
+  "pwa": {
+    "iosHint": "So installieren Sie Pricefly auf iPhone oder iPad:\n\n1. Tippen Sie auf Teilen \n2. Nach unten scrollen und „Zum Home-Bildschirm“ wählen\n3. Auf Hinzufügen tippen"
+  },
+  "login": {
+    "title": "Anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "createAccount": "Konto erstellen",
+    "failed": "Anmeldung fehlgeschlagen"
+  },
+  "register": {
+    "title": "Konto erstellen",
+    "email": "E-Mail",
+    "password": "Passwort (mind. 8 Zeichen)",
+    "submit": "Registrieren",
+    "hasAccount": "Bereits ein Konto?",
+    "failed": "Registrierung fehlgeschlagen"
+  },
+  "pricing": {
+    "title": "Preise",
+    "lead": "Bis zu 5 Produkte kostenlos verfolgen. Upgrade für unbegrenzte aktive Überwachungen.",
+    "freeTitle": "Kostenlos",
+    "proTitle": "Pro",
+    "perYear": "/ Jahr",
+    "free1": "5 aktive Preis-Trackings",
+    "free2": "Automatische Prüfungen alle 6 Stunden",
+    "free3": "Preisverlauf (letzte 30 Snapshots pro Artikel)",
+    "pro1": "Unbegrenzte aktive Trackings",
+    "pro2": "Gleiche Aktualisierungs- und Verlaufsfunktionen",
+    "pro3": "Jederzeit in PayPal kündbar",
+    "getStarted": "Loslegen",
+    "goDashboard": "Übersicht",
+    "afterSignInToSubscribe": ", um mit PayPal zu abonnieren.",
+    "onPro": "Sie nutzen Pro.",
+    "cancelSub": "Abonnement kündigen",
+    "loadingPaypal": "PayPal wird geladen…",
+    "paypalConfigHint": "PayPal-Client-ID beim Build setzen und PAYPAL_PRO_PLAN_ID für den API-Seed.",
+    "cancelConfirm": "Pro-Abonnement kündigen?"
+  },
+  "dashboard": {
+    "title": "Trackings",
+    "proSubtitle": "Pro — unbegrenzt aktive Einträge",
+    "freeLine": "Kostenlos — {{current}} von {{max}} Plätzen. ",
+    "upgrade": "Upgrade",
+    "activeAlerts": "{{count}} aktiver Preisalarm",
+    "activeAlertsPlural": "{{count}} aktive Preisalarme",
+    "placeholderUrl": "Produkt-URL einfügen…",
+    "add": "Hinzufügen",
+    "notifications": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen",
+    "loading": "Laden…",
+    "noNotifications": "Noch keine Benachrichtigungen. Preisalarme erscheinen hier.",
+    "watchlist": "Aktive Merkliste",
+    "recent": "Neu",
+    "store": "Shop",
+    "stable": "Stabil",
+    "stableUpper": "STABIL",
+    "trackedProduct": "Verfolgtes Produkt",
+    "colProduct": "Produkt",
+    "colStore": "Shop",
+    "colPrice": "Aktueller Preis",
+    "colUpdated": "Letzte Aktualisierung",
+    "colFrequency": "Intervall",
+    "colActions": "Aktionen",
+    "showing": "{{count}} Ergebnis",
+    "showingPlural": "{{count}} Ergebnisse",
+    "empty": "Noch keine Trackings.",
+    "bottomDash": "Start",
+    "bottomPricing": "Preise",
+    "bottomAlerts": "Alarme",
+    "addAria": "Tracking hinzufügen",
+    "deleteConfirm": "Dieses Tracking löschen?",
+    "errors": {
+      "addFailed": "Tracking konnte nicht hinzugefügt werden",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "refreshFailed": "Aktualisierung fehlgeschlagen"
+    },
+    "edit": {
+      "productOptional": "Produktname (optional)",
+      "storeOptional": "Shopname (optional)",
+      "placeholderAuto": "Leer lassen für automatisch",
+      "detected": "Erkannt:",
+      "recheckEvery": "Erneut prüfen alle",
+      "alertBelow": "Alarm wenn Preis ≤",
+      "alertAbove": "Alarm wenn Preis ≥",
+      "placeholderPrice": "z. B. {{n}}",
+      "hint": "Alarmfelder leeren und speichern, um Schwellen zu entfernen. Alarme, wenn der Preis Ihr Ziel überschreitet oder unterschreitet.",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "interval": {
+      "m1": "Jede Minute",
+      "m15": "Alle 15 Minuten",
+      "m30": "Alle 30 Minuten",
+      "m60": "Stündlich",
+      "m360": "Alle 6 Stunden",
+      "m720": "Alle 12 Stunden",
+      "m1440": "Täglich",
+      "m10080": "Wöchentlich",
+      "unknown": "{{minutes}} Min."
+    }
+  }
+}

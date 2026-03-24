@@ -5,10 +5,12 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { loadScript } from '@paypal/paypal-js';
 import { AuthService } from '../core/auth.service';
 import { environment } from '../../environments/environment';
@@ -28,58 +30,62 @@ type Plan = {
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   template: `
     <div class="wrap">
-      <h1>Pricing</h1>
+      <h1>{{ 'pricing.title' | translate }}</h1>
       <p class="lead">
-        Track up to <strong>5 products</strong> for free. Upgrade for unlimited active trackings.
+        {{ 'pricing.lead' | translate }}
       </p>
 
       <div class="grid">
         <article class="card">
-          <h2>Free</h2>
+          <h2>{{ 'pricing.freeTitle' | translate }}</h2>
           <p class="price">€0</p>
           <ul>
-            <li>5 active price trackings</li>
-            <li>Automatic checks every 6 hours</li>
-            <li>Price history (last 30 snapshots per item)</li>
+            <li>{{ 'pricing.free1' | translate }}</li>
+            <li>{{ 'pricing.free2' | translate }}</li>
+            <li>{{ 'pricing.free3' | translate }}</li>
           </ul>
           @if (!auth.isLoggedIn()) {
-            <a class="btn secondary" routerLink="/register">Get started</a>
+            <a class="btn secondary" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
           } @else {
-            <a class="btn secondary" routerLink="/dashboard">Dashboard</a>
+            <a class="btn secondary" routerLink="/dashboard">{{ 'pricing.goDashboard' | translate }}</a>
           }
         </article>
 
         <article class="card featured">
-          <h2>Pro</h2>
+          <h2>{{ 'pricing.proTitle' | translate }}</h2>
           @if (proPlan()) {
             <p class="price">
-              {{ (proPlan()!.priceCents / 100) | number: '1.2-2' }} {{ proPlan()!.currency }} / year
+              {{ (proPlan()!.priceCents / 100) | number: '1.2-2' }} {{ proPlan()!.currency }}
+              {{ 'pricing.perYear' | translate }}
             </p>
             <p class="muted">{{ proPlan()!.description }}</p>
           }
           <ul>
-            <li>Unlimited active trackings</li>
-            <li>Same refresh & history features</li>
-            <li>Cancel anytime in PayPal</li>
+            <li>{{ 'pricing.pro1' | translate }}</li>
+            <li>{{ 'pricing.pro2' | translate }}</li>
+            <li>{{ 'pricing.pro3' | translate }}</li>
           </ul>
           @if (!auth.isLoggedIn()) {
-            <p class="hint"><a routerLink="/login">Sign in</a> to subscribe with PayPal.</p>
+            <p class="hint">
+              <a routerLink="/login">{{ 'nav.signIn' | translate }}</a
+              >{{ 'pricing.afterSignInToSubscribe' | translate }}
+            </p>
           } @else if (auth.user()?.planTier === 'PRO') {
-            <p class="ok">You are on Pro.</p>
+            <p class="ok">{{ 'pricing.onPro' | translate }}</p>
             <button type="button" class="btn danger" (click)="cancel()" [disabled]="cancelling()">
-              Cancel subscription
+              {{ 'pricing.cancelSub' | translate }}
             </button>
           } @else {
             <div #paypalHost class="paypal-host"></div>
             @if (!paypalReady() && paypalClientConfigured()) {
-              <p class="muted small">Loading PayPal…</p>
+              <p class="muted small">{{ 'pricing.loadingPaypal' | translate }}</p>
             }
             @if (!paypalClientConfigured()) {
               <p class="muted small">
-                Set PayPal client ID at build time and <code>PAYPAL_PRO_PLAN_ID</code> for the API seed.
+                {{ 'pricing.paypalConfigHint' | translate }}
               </p>
             }
           }
@@ -190,10 +196,10 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   private paypalSdk: { Buttons: (opts: unknown) => { render: (s: string) => Promise<void> } } | null =
     null;
 
-  constructor(
-    protected auth: AuthService,
-    private http: HttpClient,
-  ) {}
+  private http = inject(HttpClient);
+  private translate = inject(TranslateService);
+
+  constructor(protected auth: AuthService) {}
 
   paypalClientConfigured(): boolean {
     const id = environment.paypalClientId;
@@ -283,7 +289,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   }
 
   cancel() {
-    if (!confirm('Cancel your Pro subscription?')) return;
+    if (!confirm(this.translate.instant('pricing.cancelConfirm'))) return;
     this.cancelling.set(true);
     this.http.post(`${environment.apiUrl}/paypal/cancel`, {}).subscribe({
       next: () => {

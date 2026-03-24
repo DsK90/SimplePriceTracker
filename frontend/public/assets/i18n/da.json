@@ -1,0 +1,119 @@
+{
+  "app": {
+    "pageTitle": "Pricefly | Prisovervågning",
+    "brand": "Pricefly",
+    "tagline": "Spor priser. Få besked med det samme."
+  },
+  "nav": {
+    "dashboard": "Oversigt",
+    "pricing": "Priser",
+    "signOut": "Log ud",
+    "signIn": "Log ind",
+    "register": "Opret konto",
+    "installApp": "Installer app",
+    "installAppShort": "App"
+  },
+  "pwa": {
+    "iosHint": "Sådan installerer du Pricefly på iPhone eller iPad:\n\n1. Tryk på Del \n2. Scroll ned og tryk på \"Tilføj til hjemmeskærm\"\n3. Tryk Tilføj"
+  },
+  "login": {
+    "title": "Log ind",
+    "email": "E-mail",
+    "password": "Adgangskode",
+    "submit": "Log ind",
+    "createAccount": "Opret en konto",
+    "failed": "Login mislykkedes"
+  },
+  "register": {
+    "title": "Opret konto",
+    "email": "E-mail",
+    "password": "Adgangskode (min. 8 tegn)",
+    "submit": "Registrer",
+    "hasAccount": "Har du allerede en konto?",
+    "failed": "Registrering mislykkedes"
+  },
+  "pricing": {
+    "title": "Priser",
+    "lead": "Spor op til 5 produkter gratis. Opgrader for ubegrænset aktive overvågninger.",
+    "freeTitle": "Gratis",
+    "proTitle": "Pro",
+    "perYear": "/ år",
+    "free1": "5 aktive prisovervågninger",
+    "free2": "Automatiske tjek hver 6. time",
+    "free3": "Prishistorik (seneste 30 øjebliksbilleder pr. vare)",
+    "pro1": "Ubegrænset aktive overvågninger",
+    "pro2": "Samme opdaterings- og historikfunktioner",
+    "pro3": "Opsig når som helst i PayPal",
+    "getStarted": "Kom i gang",
+    "goDashboard": "Oversigt",
+    "afterSignInToSubscribe": " for at abonnere med PayPal.",
+    "onPro": "Du er på Pro.",
+    "cancelSub": "Opsig abonnement",
+    "loadingPaypal": "Indlæser PayPal…",
+    "paypalConfigHint": "Angiv PayPal-klient-ID ved build og PAYPAL_PRO_PLAN_ID til API-seed.",
+    "cancelConfirm": "Opsige dit Pro-abonnement?"
+  },
+  "dashboard": {
+    "title": "Overvågninger",
+    "proSubtitle": "Pro — ubegrænset aktive elementer",
+    "freeLine": "Gratis — {{current}} af {{max}} pladser. ",
+    "upgrade": "Opgrader",
+    "activeAlerts": "{{count}} aktiv prisalarm",
+    "activeAlertsPlural": "{{count}} aktive prisalarmer",
+    "placeholderUrl": "Indsæt produkt-URL…",
+    "add": "Tilføj",
+    "notifications": "Notifikationer",
+    "markAllRead": "Marker alle som læst",
+    "loading": "Indlæser…",
+    "noNotifications": "Ingen notifikationer endnu. Prisalarmer vises her.",
+    "watchlist": "Aktiv overvågningsliste",
+    "recent": "Seneste",
+    "store": "Butik",
+    "stable": "Uændret",
+    "stableUpper": "UÆNDRET",
+    "trackedProduct": "Overvåget produkt",
+    "colProduct": "Produkt",
+    "colStore": "Butik",
+    "colPrice": "Aktuel pris",
+    "colUpdated": "Seneste opdatering",
+    "colFrequency": "Frekvens",
+    "colActions": "Handlinger",
+    "showing": "Viser {{count}} resultat",
+    "showingPlural": "Viser {{count}} resultater",
+    "empty": "Ingen overvågninger endnu.",
+    "bottomDash": "Overblik",
+    "bottomPricing": "Priser",
+    "bottomAlerts": "Alarmer",
+    "addAria": "Tilføj overvågning",
+    "deleteConfirm": "Slette denne overvågning?",
+    "errors": {
+      "addFailed": "Kunne ikke tilføje overvågning",
+      "saveFailed": "Kunne ikke gemme",
+      "refreshFailed": "Opdatering mislykkedes"
+    },
+    "edit": {
+      "productOptional": "Produktnavn (valgfrit)",
+      "storeOptional": "Butiksnavn (valgfrit)",
+      "placeholderAuto": "Tom for automatisk",
+      "detected": "Registreret:",
+      "recheckEvery": "Tjek igen hver",
+      "alertBelow": "Alarm når pris ≤",
+      "alertAbove": "Alarm når pris ≥",
+      "placeholderPrice": "f.eks. {{n}}",
+      "hint": "Ryd alarmfelter og gem for at fjerne grænser. Alarmer når prisen krydser dit mål.",
+      "save": "Gem",
+      "cancel": "Annuller"
+    },
+    "interval": {
+      "m1": "Hvert minut",
+      "m15": "Hvert 15. minut",
+      "m30": "Hvert 30. minut",
+      "m60": "Hver time",
+      "m360": "Hver 6. time",
+      "m720": "Hver 12. time",
+      "m1440": "Dagligt",
+      "m10080": "Ugentligt",
+      "unknown": "{{minutes}} min"
+    }
+  }
+}

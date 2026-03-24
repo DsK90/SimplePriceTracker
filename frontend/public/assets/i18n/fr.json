@@ -1,0 +1,119 @@
+{
+  "app": {
+    "pageTitle": "Pricefly | Suivi des prix",
+    "brand": "Pricefly",
+    "tagline": "Suivez les prix. Soyez averti instantanément."
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "pricing": "Tarifs",
+    "signOut": "Déconnexion",
+    "signIn": "Connexion",
+    "register": "Inscription",
+    "installApp": "Installer l’app",
+    "installAppShort": "App"
+  },
+  "pwa": {
+    "iosHint": "Pour installer Pricefly sur iPhone ou iPad :\n\n1. Touchez Partager \n2. Faites défiler et touchez « Sur l’écran d’accueil »\n3. Touchez Ajouter"
+  },
+  "login": {
+    "title": "Connexion",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Connexion",
+    "createAccount": "Créer un compte",
+    "failed": "Échec de la connexion"
+  },
+  "register": {
+    "title": "Créer un compte",
+    "email": "E-mail",
+    "password": "Mot de passe (min. 8 caractères)",
+    "submit": "S’inscrire",
+    "hasAccount": "Vous avez déjà un compte ?",
+    "failed": "Échec de l’inscription"
+  },
+  "pricing": {
+    "title": "Tarifs",
+    "lead": "Suivez jusqu’à 5 produits gratuitement. Passez à une offre supérieure pour un suivi illimité.",
+    "freeTitle": "Gratuit",
+    "proTitle": "Pro",
+    "perYear": "/ an",
+    "free1": "5 suivis de prix actifs",
+    "free2": "Vérifications automatiques toutes les 6 heures",
+    "free3": "Historique des prix (30 derniers instantanés par article)",
+    "pro1": "Suivis actifs illimités",
+    "pro2": "Mêmes fonctions d’actualisation et d’historique",
+    "pro3": "Annulation à tout moment dans PayPal",
+    "getStarted": "Commencer",
+    "goDashboard": "Tableau de bord",
+    "afterSignInToSubscribe": " pour vous abonner avec PayPal.",
+    "onPro": "Vous êtes sur l’offre Pro.",
+    "cancelSub": "Annuler l’abonnement",
+    "loadingPaypal": "Chargement de PayPal…",
+    "paypalConfigHint": "Définissez l’ID client PayPal au build et PAYPAL_PRO_PLAN_ID pour l’amorçage API.",
+    "cancelConfirm": "Annuler votre abonnement Pro ?"
+  },
+  "dashboard": {
+    "title": "Suivis",
+    "proSubtitle": "Pro — éléments actifs illimités",
+    "freeLine": "Gratuit — {{current}} sur {{max}} emplacements. ",
+    "upgrade": "Mettre à niveau",
+    "activeAlerts": "{{count}} alerte prix active",
+    "activeAlertsPlural": "{{count}} alertes prix actives",
+    "placeholderUrl": "Collez l’URL du produit…",
+    "add": "Ajouter",
+    "notifications": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "loading": "Chargement…",
+    "noNotifications": "Aucune notification pour l’instant. Les alertes prix apparaîtront ici.",
+    "watchlist": "Liste active",
+    "recent": "Récent",
+    "store": "Boutique",
+    "stable": "Stable",
+    "stableUpper": "STABLE",
+    "trackedProduct": "Produit suivi",
+    "colProduct": "Produit",
+    "colStore": "Boutique",
+    "colPrice": "Prix actuel",
+    "colUpdated": "Dernière mise à jour",
+    "colFrequency": "Fréquence",
+    "colActions": "Actions",
+    "showing": "Affichage de {{count}} résultat",
+    "showingPlural": "Affichage de {{count}} résultats",
+    "empty": "Aucun suivi pour l’instant.",
+    "bottomDash": "Accueil",
+    "bottomPricing": "Tarifs",
+    "bottomAlerts": "Alertes",
+    "addAria": "Ajouter un suivi",
+    "deleteConfirm": "Supprimer ce suivi ?",
+    "errors": {
+      "addFailed": "Impossible d’ajouter le suivi",
+      "saveFailed": "Impossible d’enregistrer",
+      "refreshFailed": "Échec de l’actualisation"
+    },
+    "edit": {
+      "productOptional": "Nom du produit (facultatif)",
+      "storeOptional": "Nom de la boutique (facultatif)",
+      "placeholderAuto": "Vide pour automatique",
+      "detected": "Détecté :",
+      "recheckEvery": "Revérifier tous les",
+      "alertBelow": "Alerte si prix ≤",
+      "alertAbove": "Alerte si prix ≥",
+      "placeholderPrice": "ex. {{n}}",
+      "hint": "Videz les champs d’alerte et enregistrez pour supprimer les seuils. Alertes lorsque le prix croise votre objectif.",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
+    },
+    "interval": {
+      "m1": "Chaque minute",
+      "m15": "Toutes les 15 minutes",
+      "m30": "Toutes les 30 minutes",
+      "m60": "Chaque heure",
+      "m360": "Toutes les 6 heures",
+      "m720": "Toutes les 12 heures",
+      "m1440": "Quotidien",
+      "m10080": "Hebdomadaire",
+      "unknown": "{{minutes}} min"
+    }
+  }
+}

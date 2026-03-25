@@ -1,6 +1,7 @@
 # Daily deploy (default 23:55 UTC). Runs backend e2e + frontend production build;
 # if both pass, rsyncs to the server and runs docker-update.sh.
-# Secrets: DEPLOY_SSH_KEY, DEPLOY_HOST. Optional: adjust deploy path in rsync/ssh steps (default /usr/src/pricefly).
+# Secrets: DEPLOY_SSH_KEY, DEPLOY_HOST, SSL_PRIMARY_DOMAIN, LETSENCRYPT_EMAIL (certbot-init / edge).
+# Optional secret: SSL_EXTRA_DOMAINS. Deploy path default /usr/src/pricefly.
 name: Daily Deploy
 
 on:
@@ -113,6 +114,25 @@ jobs:
             --exclude '.git' \
             --exclude 'nginx/certbot_conf' \
             ./ root@${{ secrets.DEPLOY_HOST }}:${{ env.DEPLOY_PATH }}/
+
+      # certbot-init reads SSL_* from repo-root .env; merge from secrets so CI does not require manual .env on host
+      - name: Merge TLS settings into server .env
+        env:
+          SSL_PRIMARY_DOMAIN: ${{ secrets.SSL_PRIMARY_DOMAIN }}
+          LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+          SSL_EXTRA_DOMAINS: ${{ secrets.SSL_EXTRA_DOMAINS }}
+        run: |
+          if [ -z "$SSL_PRIMARY_DOMAIN" ] || [ -z "$LETSENCRYPT_EMAIL" ]; then
+            echo "::error::Add repository secrets SSL_PRIMARY_DOMAIN and LETSENCRYPT_EMAIL (required for certbot-init)."
+            exit 1
+          fi
+          printf '%s\n' "SSL_PRIMARY_DOMAIN=$SSL_PRIMARY_DOMAIN" "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" > /tmp/ssl_fragment.env
+          if [ -n "$SSL_EXTRA_DOMAINS" ]; then
+            printf '%s\n' "SSL_EXTRA_DOMAINS=$SSL_EXTRA_DOMAINS" >> /tmp/ssl_fragment.env
+          fi
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no /tmp/ssl_fragment.env root@${{ secrets.DEPLOY_HOST }}:/tmp/ssl_fragment.env
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
+            "cd '${{ env.DEPLOY_PATH }}' && touch .env && (grep -vE '^(SSL_PRIMARY_DOMAIN|LETSENCRYPT_EMAIL|SSL_EXTRA_DOMAINS)=' .env > .env.tmp || true) && mv .env.tmp .env && cat /tmp/ssl_fragment.env >> .env && rm -f /tmp/ssl_fragment.env"
 
       - name: Run docker-update on server
         run: |

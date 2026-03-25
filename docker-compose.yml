@@ -46,6 +46,8 @@ services:
       args:
         PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
         PAYPAL_SANDBOX_CLIENT_ID: ${PAYPAL_SANDBOX_CLIENT_ID:-}
+        UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+        UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
     ports:
       - '8080:80'
     depends_on:

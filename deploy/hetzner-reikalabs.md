@@ -1,0 +1,91 @@
+# Deploying `pricefly.reikalabs.com` + Umami + Cloudflare + Resend
+
+Use this checklist on your Hetzner server together with the repo’s Docker Compose stack.
+
+## 1. DNS (Cloudflare: zone `reikalabs.com`)
+
+1. **A record** `pricefly` → your Hetzner server **public IPv4** (proxy status: **Proxied** orange cloud if you want Cloudflare features).
+2. **A record** `umami` → **same** server IP (Proxied or **DNS only** — see SSL below).
+3. Optional: **AAAA** for IPv6 if your server has one.
+
+### Cloudflare SSL mode
+
+- If the **origin** (nginx on Hetzner) terminates HTTPS with a valid certificate (Let’s Encrypt): set SSL/TLS to **Full (strict)**.
+- If the origin is only HTTP on port 80: use **Full** (not ideal) or add TLS on the origin and switch to **Full (strict)**.
+
+## 2. Umami on the server
+
+1. Copy `deploy/umami-docker-compose.example.yml` to the server (e.g. `/opt/umami/docker-compose.yml`).
+2. Create `/opt/umami/.env` with strong values:
+
+   ```env
+   UMAMI_DB_PASSWORD=<long-random>
+   UMAMI_APP_SECRET=<openssl rand -hex 32>
+   ```
+
+3. `docker compose up -d` in that folder.
+4. Open `https://umami.reikalabs.com` (after nginx + certs), log in with Umami defaults, **change the admin password**, then **Settings → Websites → Add website**:
+   - Name: e.g. `Pricefly`
+   - Domain: `https://pricefly.reikalabs.com`
+5. Copy the **Website ID** and the **tracker script URL** (e.g. `https://umami.reikalabs.com/script.js`).
+
+### Nginx for Umami + Pricefly
+
+- Use `deploy/nginx-host-pricefly.example.conf` as a template.
+- Point `umami` upstream to the port you published (example uses `3001:3000`).
+- Obtain certificates (e.g. Certbot nginx plugin) for `pricefly.reikalabs.com` and `umami.reikalabs.com`.
+
+### Future apps
+
+- Add another **Umami website** entry per app (same Umami instance).
+- Each app’s frontend build gets that site’s **Website ID** and the same `UMAMI_SCRIPT_URL` if the script stays on `umami.reikalabs.com`.
+
+## 3. Pricefly app (this repo)
+
+1. On the server, clone the repo and create `.env` from `.env.example`.
+2. Set at least:
+
+   ```env
+   JWT_SECRET=<strong-random>
+   UMAMI_SCRIPT_URL=https://umami.reikalabs.com/script.js
+   UMAMI_WEBSITE_ID=<id from Umami UI>
+   CORS_ORIGIN=https://pricefly.reikalabs.com
+   ```
+
+3. Set `DATABASE_URL`, PayPal, `RESEND_API_KEY`, `EMAIL_FROM`, etc. as needed.
+4. Rebuild so the Angular bundle includes Umami:
+
+   ```bash
+   docker compose build --no-cache web
+   docker compose up -d
+   ```
+
+5. If the host nginx proxies to the Docker `web` service on `127.0.0.1:8080`, keep the stack’s published ports only on localhost (or firewall the host) so the API is not exposed publicly except through nginx.
+
+## 4. Resend (same account as showbk.com)
+
+1. In [Resend Domains](https://resend.com/domains), add **`reikalabs.com`** (or a subdomain you control) if not already verified.
+2. Add the **DNS records** Resend shows (TXT, MX for bounce if required, etc.) in Cloudflare; wait until the domain shows **Verified**.
+3. In this app’s `.env` / Compose:
+
+   - `RESEND_API_KEY` — same API key as other projects works for **any verified domain** on the account.
+   - `EMAIL_FROM` — must use a **verified sender** on that domain, e.g. `Pricefly <noreply@reikalabs.com>` or `Pricefly <notifications@mail.reikalabs.com>` depending on what you verified.
+
+4. Redeploy the `api` container after changing env.
+
+No code changes are required for Resend beyond correct env vars; the backend already uses `RESEND_API_KEY` and `EMAIL_FROM` / `MAIL_FROM`.
+
+## 5. PayPal (production)
+
+- Use **live** credentials and set `PAYPAL_USE_SANDBOX=false`.
+- In the PayPal Developer / app settings, add `https://pricefly.reikalabs.com` (and return URLs your app uses) to the allowed URLs.
+
+## 6. Cloudflare extras (optional)
+
+- **Always Use HTTPS**, **Automatic HTTPS Rewrites** — usually on.
+- **WebSockets**: if you add them later, set **Network** compatibility as needed.
+- **Rate limiting / WAF** — optional for `/api` and login routes.
+
+## 7. Real client IP (optional)
+
+If you need logs or rate limits per client IP in **host** nginx, configure `set_real_ip_from` for [Cloudflare IP ranges](https://www.cloudflare.com/ips/) and `real_ip_header CF-Connecting-IP`. The container nginx in this repo already forwards `X-Forwarded-Proto` correctly when Cloudflare sends `X-Forwarded-Proto: https`.

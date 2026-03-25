@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './core/auth.service';
 import { PwaInstallService } from './core/pwa-install.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -20,10 +21,10 @@ import { PwaInstallService } from './core/pwa-install.service';
             <a
               routerLink="/"
               class="text-lg font-black italic tracking-tighter text-primary md:text-xl"
-              >Pricefly</a
+              >{{ 'app.brand' | translate }}</a
             >
             <p class="text-xs leading-snug text-on-surface-variant/90 md:text-sm">
-              Track prices. Get notified instantly.
+              {{ 'app.tagline' | translate }}
             </p>
           </div>
           <div class="hidden items-center gap-6 text-sm md:flex">
@@ -50,7 +51,7 @@ import { PwaInstallService } from './core/pwa-install.service';
                 (click)="auth.logout()"
                 class="text-xs text-on-surface-variant transition-colors hover:text-primary md:text-sm"
               >
-                Sign out
+                {{ 'nav.signOut' | translate }}
               </button>
               <div
                 class="h-7 w-7 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest md:h-8 md:w-8"
@@ -87,9 +88,23 @@ export class AppComponent implements OnInit {
   protected pwa = inject(PwaInstallService);
 
   ngOnInit() {
+    this.injectUmami();
     if (this.auth.isLoggedIn()) {
       this.auth.loadProfile().subscribe({ error: () => {} });
     }
+  }
+
+  /** Loads self-hosted Umami when `environment` has script URL + website id (Docker build args). */
+  private injectUmami(): void {
+    const url = environment.umamiScriptUrl?.trim();
+    const id = environment.umamiWebsiteId?.trim();
+    if (!url || !id) return;
+    if (document.querySelector(`script[data-website-id="${CSS.escape(id)}"]`)) return;
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = url;
+    s.setAttribute('data-website-id', id);
+    document.head.appendChild(s);
   }
 
   userInitial(): string {

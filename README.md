@@ -52,7 +52,8 @@ Set `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_SECRET` for sandbox; the web im
 You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core`: **`PAYPAL_CLIENT_ID`**, **`PAYPAL_SECRET`**, **`PAYPAL_SANDBOX_CLIENT_ID`**, **`PAYPAL_SANDBOX_SECRET`**, **`RESEND_API_KEY`**, **`EMAIL_FROM`** (and **`JWT_SECRET`**). Copy values into this project’s `.env` files only on your machine — do not commit secrets.
 
 - **Database host in Docker**: ShowBK uses `db` as the Postgres service name; this stack uses **`postgres`**. Set `DATABASE_URL` with host `postgres` when running via Compose, or use the default in `docker-compose.yml`.
-- Not used here (no code): `B2_CDN_*`, `REDIS_*`, `UMAMI_*`, `AWS_*` / SES, `PRODIGI_*`, `CAPTCHA_*`.
+- **Umami**: optional analytics — set `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in `.env` and rebuild the `web` image (see `deploy/hetzner-reikalabs.md`).
+- Not used here (no code): `B2_CDN_*`, `REDIS_*`, `AWS_*` / SES, `PRODIGI_*`, `CAPTCHA_*`.
 
 ## Stack notes
 

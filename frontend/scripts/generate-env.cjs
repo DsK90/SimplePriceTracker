@@ -9,11 +9,18 @@ const path = require('path');
 const fs = require('fs');
 
 const root = path.resolve(__dirname, '..');
-const envPath = path.join(root, '.env');
+const repoRootEnv = path.join(root, '..', '.env');
+const frontendEnv = path.join(root, '.env');
+const dotenv = require('dotenv');
 
-if (fs.existsSync(envPath)) {
-  require('dotenv').config({ path: envPath });
+// Repo root .env (docker-compose / API) then frontend/.env — same keys as backend for PayPal
+if (fs.existsSync(repoRootEnv)) {
+  dotenv.config({ path: repoRootEnv });
 }
+if (fs.existsSync(frontendEnv)) {
+  dotenv.config({ path: frontendEnv, override: true });
+}
+// Existing process.env (e.g. Docker ENV from ARG) is not overridden by dotenv
 
 const apiUrl =
   process.env.NG_API_URL?.trim() ||

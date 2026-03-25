@@ -1,12 +1,13 @@
+import { envGenerated } from './environment.generated';
+
+/** Production bundle: values come from scripts/generate-env.cjs (local .env) or Docker ENV during `npm run build`. */
 export const environment = {
   production: true,
   apiUrl: '/api',
   serviceWorker: true,
-  /** Replaced at Docker build (empty = analytics off) */
-  umamiScriptUrl: '__UMAMI_SCRIPT_URL__',
-  umamiWebsiteId: '__UMAMI_WEBSITE_ID__',
-  /** Replaced at Docker build via __PAYPAL_CLIENT_ID__ placeholder */
-  paypalClientId: '__PAYPAL_CLIENT_ID__',
+  umamiScriptUrl: envGenerated.umamiScriptUrl,
+  umamiWebsiteId: envGenerated.umamiWebsiteId,
+  paypalClientId: envGenerated.paypalClientId,
   /** Must match backend min recheck when NODE_ENV=production */
   minRecheckIntervalMinutes: 30,
   enableDemoProduct: false,

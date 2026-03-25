@@ -4,16 +4,17 @@ COPY package*.json ./
 # Postinstall runs generate-env.cjs — scripts/ is not copied yet. prebuild runs after COPY.
 RUN npm ci --ignore-scripts
 COPY . .
-ARG PAYPAL_CLIENT_ID
-ARG PAYPAL_SANDBOX_CLIENT_ID
+# Passed through to `node scripts/generate-env.cjs` (prebuild) — same vars as repo .env / compose
+ARG PAYPAL_CLIENT_ID=
+ARG PAYPAL_SANDBOX_CLIENT_ID=
+ARG PAYPAL_USE_SANDBOX=true
 ARG UMAMI_SCRIPT_URL=
 ARG UMAMI_WEBSITE_ID=
-RUN ID="${PAYPAL_CLIENT_ID:-$PAYPAL_SANDBOX_CLIENT_ID}"; \
-    if [ -n "$ID" ]; then \
-      sed -i "s|__PAYPAL_CLIENT_ID__|${ID}|g" src/environments/environment.prod.ts; \
-    fi
-RUN sed -i "s|__UMAMI_SCRIPT_URL__|${UMAMI_SCRIPT_URL}|g" src/environments/environment.prod.ts && \
-    sed -i "s|__UMAMI_WEBSITE_ID__|${UMAMI_WEBSITE_ID}|g" src/environments/environment.prod.ts
+ENV PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+ENV PAYPAL_SANDBOX_CLIENT_ID=${PAYPAL_SANDBOX_CLIENT_ID}
+ENV PAYPAL_USE_SANDBOX=${PAYPAL_USE_SANDBOX}
+ENV UMAMI_SCRIPT_URL=${UMAMI_SCRIPT_URL}
+ENV UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID}
 RUN npm run build -- --configuration production
 
 FROM nginx:1.27-alpine

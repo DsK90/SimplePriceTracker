@@ -1,0 +1,12 @@
+# certbot/certbot is Alpine-based — use apk (same approach as ShowBK Dockerfile.certbot).
+FROM certbot/certbot:latest
+
+USER root
+RUN apk update && apk add --no-cache cronie bash docker-cli openssl
+
+COPY nginx/certbot.sh /usr/local/bin/certbot.sh
+COPY nginx/certbot-check-and-fix.sh /usr/local/bin/certbot-check-and-fix.sh
+RUN sed -i 's/\r$//' /usr/local/bin/certbot.sh /usr/local/bin/certbot-check-and-fix.sh && \
+    chmod +x /usr/local/bin/certbot.sh /usr/local/bin/certbot-check-and-fix.sh
+
+ENTRYPOINT ["/bin/bash", "/usr/local/bin/certbot.sh"]

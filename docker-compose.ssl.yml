@@ -1,0 +1,79 @@
+# Production TLS: Let's Encrypt + edge nginx (pattern aligned with ShowBK).
+# Usage:
+#   1. mkdir -p nginx/certbot_conf nginx/certbot_www
+#   2. Set SSL_PRIMARY_DOMAIN, LETSENCRYPT_EMAIL, SSL_EXTRA_DOMAINS (optional) in .env
+#   3. docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d postgres api web
+#   4. Ensure host port 80 is free, then obtain certs (one-time):
+#        docker compose -f docker-compose.yml -f docker-compose.ssl.yml --profile init run --rm certbot-init
+#   5. docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d edge certbot
+#
+# Local dev without TLS: use only docker-compose.yml (port 8080).
+
+services:
+  postgres:
+    ports: []
+
+  api:
+    ports: []
+
+  web:
+    ports: []
+
+  edge:
+    build:
+      context: .
+      dockerfile: Dockerfile.edge
+    container_name: pricefly_edge
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/certbot_conf:/etc/letsencrypt
+      - ./nginx/certbot_www:/var/lib/letsencrypt
+    environment:
+      SSL_PRIMARY_DOMAIN: ${SSL_PRIMARY_DOMAIN}
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_started
+    networks:
+      - pricefly_net
+    restart: unless-stopped
+
+  certbot:
+    build:
+      context: .
+      dockerfile: Dockerfile.certbot
+    container_name: pricefly_certbot
+    volumes:
+      - ./nginx/certbot_conf:/etc/letsencrypt
+      - ./nginx/certbot_www:/var/lib/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      SSL_PRIMARY_DOMAIN: ${SSL_PRIMARY_DOMAIN}
+      SSL_EXTRA_DOMAINS: ${SSL_EXTRA_DOMAINS:-}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      NGINX_SSL_CONTAINER: pricefly_edge
+    networks:
+      - pricefly_net
+    restart: unless-stopped
+
+  certbot-init:
+    profiles:
+      - init
+    build:
+      context: .
+      dockerfile: Dockerfile.certbot-init
+    container_name: pricefly_certbot_init
+    volumes:
+      - ./nginx/nginx_basic.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certbot_conf:/etc/letsencrypt
+      - ./nginx/certbot_www:/var/lib/letsencrypt
+    environment:
+      SSL_PRIMARY_DOMAIN: ${SSL_PRIMARY_DOMAIN}
+      SSL_EXTRA_DOMAINS: ${SSL_EXTRA_DOMAINS:-}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    ports:
+      - '80:80'
+    restart: 'no'

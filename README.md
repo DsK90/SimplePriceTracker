@@ -45,6 +45,15 @@ docker compose up -d
 - UI: `http://localhost:8080` (nginx serves the SPA and proxies `/api` to the API; map `80:80` in `docker-compose.yml` on Linux servers if you prefer port 80).
 - API directly: `http://localhost:3000/api`.
 
+### HTTPS / Let’s Encrypt (production)
+
+The repo includes **`docker-compose.ssl.yml`** plus **`edge`**, **`certbot`**, and **`certbot-init`** (same overall pattern as ShowBK: webroot ACME, shared volumes, renewal cron, `docker exec` nginx reload). See comments at the top of `docker-compose.ssl.yml` and `deploy/hetzner-reikalabs.md`.
+
+- Set `SSL_PRIMARY_DOMAIN`, `LETSENCRYPT_EMAIL`, and optionally `SSL_EXTRA_DOMAINS` in `.env`.
+- Create cert directories: `mkdir -p nginx/certbot_conf nginx/certbot_www`.
+- Run **`certbot-init`** once while port **80** is free, then start **`edge`** + **`certbot`**.
+- Set `CORS_ORIGIN` to your public `https://` origin.
+
 Set `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_SECRET` for sandbox; the web image substitutes the PayPal client ID at build time (see `frontend/Dockerfile`).
 
 ### Env alignment with ShowBK

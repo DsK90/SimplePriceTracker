@@ -50,17 +50,38 @@ Use this checklist on your Hetzner server together with the repo’s Docker Comp
    UMAMI_SCRIPT_URL=https://umami.reikalabs.com/script.js
    UMAMI_WEBSITE_ID=<id from Umami UI>
    CORS_ORIGIN=https://pricefly.reikalabs.com
+   SSL_PRIMARY_DOMAIN=pricefly.reikalabs.com
+   LETSENCRYPT_EMAIL=your-email@example.com
+   # Optional extra SANs on the same certificate (space-separated):
+   # SSL_EXTRA_DOMAINS=umami.reikalabs.com
    ```
 
 3. Set `DATABASE_URL`, PayPal, `RESEND_API_KEY`, `EMAIL_FROM`, etc. as needed.
-4. Rebuild so the Angular bundle includes Umami:
+
+### Option A — HTTPS in Docker (Let’s Encrypt, same pattern as ShowBK)
+
+1. `mkdir -p nginx/certbot_conf nginx/certbot_www`
+2. Start app stack **without** the edge proxy:  
+   `docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d postgres api web`
+3. **While host port 80 is free** (stop any other nginx/listener), obtain certificates once:  
+   `docker compose -f docker-compose.yml -f docker-compose.ssl.yml --profile init run --rm certbot-init`
+4. Start TLS + renewal:  
+   `docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d edge certbot`
+
+The **`edge`** container listens on **80/443** and proxies to the internal **`web`** container (which still proxies `/api` to the API). Adjust DNS so `SSL_PRIMARY_DOMAIN` points at this server before step 3.
+
+5. Rebuild the **`web`** image when you change Umami build args:
 
    ```bash
-   docker compose build --no-cache web
-   docker compose up -d
+   docker compose -f docker-compose.yml -f docker-compose.ssl.yml build --no-cache web
+   docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d
    ```
 
-5. If the host nginx proxies to the Docker `web` service on `127.0.0.1:8080`, keep the stack’s published ports only on localhost (or firewall the host) so the API is not exposed publicly except through nginx.
+### Option B — Host nginx + Certbot
+
+If you prefer TLS on the host instead of the **`edge`** service, use `deploy/nginx-host-pricefly.example.conf` and obtain certificates with Certbot on the host (see earlier sections). Do **not** run both **Option A** and **Option B** on the same ports.
+
+6. If you use **Option B** and the host nginx proxies to Docker `web` on `127.0.0.1:8080`, bind stack ports to localhost only (or firewall) so the API is not exposed publicly except through nginx.
 
 ## 4. Resend (same account as showbk.com)
 

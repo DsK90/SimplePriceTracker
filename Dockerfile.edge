@@ -1,0 +1,9 @@
+FROM nginx:alpine
+
+RUN apk add --no-cache openssl && openssl dhparam -out /etc/nginx/dhparam.pem 2048
+
+COPY nginx/entrypoint-edge.sh /entrypoint-edge.sh
+COPY nginx/edge.conf.template /etc/nginx/edge.conf.template
+RUN sed -i 's/\r$//' /entrypoint-edge.sh && chmod +x /entrypoint-edge.sh
+
+ENTRYPOINT ["/entrypoint-edge.sh"]

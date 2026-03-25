@@ -1,3 +1,7 @@
 node_modules/
 .env
 *.log
+
+# Let's Encrypt (docker-compose.ssl.yml)
+nginx/certbot_conf/
+nginx/certbot_www/

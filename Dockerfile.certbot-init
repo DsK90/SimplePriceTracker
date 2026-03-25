@@ -1,0 +1,9 @@
+FROM nginx:alpine
+
+RUN apk add --no-cache certbot bash openssl
+
+COPY nginx/nginx_basic.conf /etc/nginx/nginx.conf
+COPY nginx/certbot-init.sh /usr/local/bin/certbot-init.sh
+RUN sed -i 's/\r$//' /usr/local/bin/certbot-init.sh && chmod +x /usr/local/bin/certbot-init.sh
+
+ENTRYPOINT ["/bin/bash", "/usr/local/bin/certbot-init.sh"]

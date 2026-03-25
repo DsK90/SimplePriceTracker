@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { afterNextRender, Component, ElementRef, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CookieConsentComponent } from './components/cookie-consent.component';
@@ -110,6 +110,11 @@ export class AppComponent implements OnInit {
   protected auth = inject(AuthService);
   protected pwa = inject(PwaInstallService);
   private cookieConsent = inject(CookieConsentService);
+  private readonly host = inject(ElementRef<HTMLElement>);
+
+  constructor() {
+    afterNextRender(() => this.host.nativeElement.removeAttribute('ng-version'));
+  }
 
   ngOnInit() {
     this.cookieConsent.loadUmamiIfConsented();

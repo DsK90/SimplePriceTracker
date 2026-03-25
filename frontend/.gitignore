@@ -28,6 +28,12 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
+# Local secrets (use .env.example)
+.env
+
+# Generated from .env by scripts/generate-env.cjs (npm install / npm start)
+src/environments/environment.generated.ts
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

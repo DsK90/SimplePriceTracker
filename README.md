@@ -1,6 +1,6 @@
 # Simple Price Tracker
 
-Angular + NestJS + Prisma + PostgreSQL. Free tier: **5 active** product URL trackings; **Pro** (PayPal subscription) unlocks unlimited.
+Angular + NestJS + Prisma + PostgreSQL. Free tier: **5 active** product URL trackings; **Pro** is **€3.99/month net** plus **19% VAT** (German USt), **billed monthly** via PayPal. Ensure your PayPal billing plan matches **monthly** billing.
 
 ## Local development
 

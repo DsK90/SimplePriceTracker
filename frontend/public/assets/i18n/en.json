@@ -7,8 +7,12 @@
   "common": {
     "imprint": "Imprint",
     "gdpr": "Privacy policy",
-    "rights": "© Pricefly"
+    "terms": "Terms",
+    "rights": "© Pricefly",
+    "backToApp": "Back to app",
+    "upgradeNow": "Upgrade now"
   },
+  "footerTerms": "Terms",
   "cookies": {
     "title": "Cookies & privacy",
     "message": "We use essential local storage and session mechanisms so you can sign in and use Pricefly. If you choose “Accept all”, we also load self-hosted Umami analytics (privacy-friendly, no advertising cookies). You can choose “Essential only” to skip analytics.",
@@ -54,25 +58,77 @@
     "li1": "Respect robots.txt and each store’s terms when adding product URLs.",
     "li2": "Keep your account credentials secure.",
     "li3": "We may update this policy; continued use means you accept the current version.",
-    "p4": "Questions? Contact us using the support channel listed on our site."
+    "p4": "Questions? Contact us using the support channel listed on our site.",
+    "termsLink": "→ Terms of service"
+  },
+  "terms": {
+    "title": "Terms of service",
+    "updated": "Effective: March 2025 — applies to your use of Pricefly.",
+    "back": "Back to pricing",
+    "notLegalAdvice": "This document is not a substitute for legal advice tailored to your situation.",
+    "scope": {
+      "title": "1. Scope and contractual partner",
+      "body": "These Terms of Service govern use of the online service “Pricefly” (price monitoring and notifications), available via our website and related web applications (PWA), where applicable.\n\nThe provider is the entity listed in the Imprint (legal notice). By using the service (including registering, signing in, or actively using features), you agree to these Terms, except where mandatory law provides otherwise."
+    },
+    "service": {
+      "title": "2. Service description",
+      "body": "Pricefly lets you add product URLs and receive information (e.g. product titles, prices, identifiable shop hints) retrieved at intervals or subject to technical constraints from publicly reachable pages, and provides related notifications.\n\nThe service is offered only as technical assistance for informational overview. We do not warrant completeness, timeliness, or uninterrupted availability of individual features."
+    },
+    "priceData": {
+      "title": "3. Price and product information (no warranty)",
+      "intro": "Displayed prices and product data come from third-party websites and are processed automatically or semi-automatically. In particular:",
+      "li1": "Prices may be missed, misread, shown out of date, or differ from the source due to region settings, cookies, paywalls, or JavaScript behavior.",
+      "li2": "Shops may change content or structure or block access, so data may be missing or wrong temporarily or permanently.",
+      "li3": "Notifications (email, push, in-app) may be delayed or fail to deliver for technical reasons.",
+      "li4": "Historical values are indicative only and may not reflect actual checkout prices.",
+      "outro": "You are responsible for verifying prices and conditions with the seller before purchase. Pricefly is not a price guarantee and does not replace your own checks."
+    },
+    "availability": {
+      "title": "4. Availability and technical faults",
+      "body": "We strive for reliable operation but do not guarantee uninterrupted or error-free availability. Maintenance, updates, infrastructure incidents, security measures, or force majeure may cause downtime or limited functionality.\n\nUse is on an “as is” basis, to the extent permitted by law; there is no claim to a specific feature set beyond what we describe for the product."
+    },
+    "account": {
+      "title": "5. User accounts, fair use, and suspension",
+      "body": "Certain features require an account. You must provide accurate information and keep credentials confidential.\n\nAbuse (e.g. bypassing limits, excessive automated load on our systems, unlawful use) is prohibited. We may restrict or terminate accounts at our reasonable discretion. Our fair use policy provides additional detail."
+    },
+    "paid": {
+      "title": "6. Paid plan (Pro) and billing",
+      "body": "Optional paid services (e.g. a Pro subscription) are billed through the payment provider shown at checkout (e.g. PayPal). Their terms also apply to the payment relationship.\n\nRefund and statutory cancellation rights follow applicable law and the payment/subscription provider’s terms, where relevant."
+    },
+    "liability": {
+      "title": "7. Liability",
+      "body": "We have unlimited liability under statutory rules for intent and gross negligence, and for injury to life, body, or health.\n\nFor breach of essential contractual obligations caused by slight negligence, we are liable only for typically foreseeable contract damage; for other slight negligence we are not liable.\n\nThese limitations do not apply where mandatory law provides otherwise.\n\nTo the extent permitted by law, claims for lost profit, indirect damage, or consequential damage from incorrect prices, missed alerts, or downtime are excluded unless we acted intentionally or with gross negligence."
+    },
+    "changes": {
+      "title": "8. Changes to these terms",
+      "body": "We may update these Terms if there is good cause (e.g. legal changes, service development). Where reasonable, we will notify you of material changes (e.g. on the website or by email).\n\nIf you do not object within a stated period and continue to use the service, the new version may be deemed accepted where permitted by law; we will inform you separately about statutory objection rights where required."
+    },
+    "law": {
+      "title": "9. Governing law",
+      "body": "German law applies, excluding the UN Convention on Contracts for the International Sale of Goods (CISG), except where mandatory consumer protection law of your EU/EEA country prevails.\n\nIf you are a merchant, a legal entity under public law, or a special fund under public law, the exclusive place of jurisdiction is the provider’s seat as stated in the Imprint, where permitted. Consumers are governed by statutory jurisdiction rules."
+    }
   },
   "pricing": {
     "title": "Pricing",
-    "lead": "Track up to 5 products for free. Upgrade for unlimited active trackings.",
     "freeTitle": "Free",
+    "freeCaption": "Free forever",
+    "proEyebrow": "Recommended",
     "proTitle": "Pro",
     "perYear": "/ year",
+    "proPerMonth": "per month (net)",
+    "proVatNote": "plus 19% VAT · billed monthly",
     "free1": "5 active price trackings",
     "free2": "Automatic checks every 6 hours",
-    "free3": "Price history (last 30 snapshots per item)",
-    "free4": "Email price alerts on up to 2 products (push & in-app unlimited)",
+    "free4": "Email price alerts on up to 2 products",
     "pro1": "Unlimited active trackings",
-    "pro2": "Same refresh & history features",
+    "pro2": "Same check & refresh features",
     "pro3": "Cancel anytime in PayPal",
-    "pro4": "Email price alerts on up to 10 products (push & in-app unlimited)",
+    "pro4": "Email price alerts on up to 10 products",
+    "pro5": "Push & in-app notifications unlimited",
     "fairUseLink": "Read the fair use policy",
+    "termsLink": "Terms",
     "getStarted": "Get started",
-    "goDashboard": "Dashboard",
+    "goDashboard": "Back to app",
     "afterSignInToSubscribe": " to subscribe with PayPal.",
     "onPro": "You are on Pro.",
     "cancelSub": "Cancel subscription",
@@ -108,7 +164,7 @@
     "showing": "Showing {{count}} result",
     "showingPlural": "Showing {{count}} results",
     "empty": "No trackings yet.",
-    "bottomDash": "Dash",
+    "bottomDash": "Start",
     "bottomPricing": "Pricing",
     "bottomAlerts": "Alerts",
     "addAria": "Add tracking",
@@ -165,7 +221,7 @@
   },
   "imprint": {
     "title": "Imprint",
-    "back": "Back to pricing",
+    "back": "Back to app",
     "tmg": {
       "title": "Information according to § 5 TMG",
       "address": "Webdesign DSK\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nGermany",

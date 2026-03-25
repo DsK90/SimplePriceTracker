@@ -2,19 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { PageTopNavComponent } from '../components/page-top-nav.component';
 
 @Component({
   selector: 'app-fair-use',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, RouterLink, TranslatePipe, PageTopNavComponent],
   template: `
     <div class="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      <a
-        routerLink="/pricing"
-        class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-      >
-        ← {{ 'fairUse.back' | translate }}
-      </a>
+      <app-page-top-nav />
       <h1 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface md:text-3xl">
         {{ 'fairUse.title' | translate }}
       </h1>
@@ -29,6 +25,9 @@ import { TranslatePipe } from '@ngx-translate/core';
           <li>{{ 'fairUse.li3' | translate }}</li>
         </ul>
         <p>{{ 'fairUse.p4' | translate }}</p>
+        <p>
+          <a routerLink="/terms" class="font-medium text-primary hover:underline">{{ 'fairUse.termsLink' | translate }}</a>
+        </p>
       </div>
     </div>
   `,

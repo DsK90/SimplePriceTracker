@@ -7,8 +7,12 @@
   "common": {
     "imprint": "Impressum",
     "gdpr": "Datenschutz",
-    "rights": "© Pricefly"
+    "terms": "AGB",
+    "rights": "© Pricefly",
+    "backToApp": "Zurück zur App",
+    "upgradeNow": "Jetzt upgraden"
   },
+  "footerTerms": "AGB",
   "cookies": {
     "title": "Cookies & Datenschutz",
     "message": "Wir nutzen technisch notwendige lokale Speicherung und Sitzungsfunktionen für Anmeldung und Nutzung von Pricefly. Wenn Sie „Alle akzeptieren“ wählen, laden wir zusätzlich selbst gehostetes Umami (datenschutzfreundlich, keine Werbe-Cookies). Mit „Nur notwendige“ können Sie Analyse ablehnen.",
@@ -54,23 +58,75 @@
     "li1": "Respektieren Sie robots.txt und die jeweiligen Shop-Bedingungen bei Produkt-URLs.",
     "li2": "Halten Sie Ihre Zugangsdaten sicher.",
     "li3": "Wir können diese Richtlinie anpassen; die weitere Nutzung gilt als Zustimmung zur jeweils gültigen Fassung.",
-    "p4": "Fragen? Kontaktieren Sie uns über den auf der Website angegebenen Support."
+    "p4": "Fragen? Kontaktieren Sie uns über den auf der Website angegebenen Support.",
+    "termsLink": "→ Allgemeine Geschäftsbedingungen (AGB)"
+  },
+  "terms": {
+    "title": "Allgemeine Geschäftsbedingungen (AGB)",
+    "updated": "Stand: März 2025 — gilt für die Nutzung von Pricefly.",
+    "back": "Zurück zu den Preisen",
+    "notLegalAdvice": "Hinweis: Die folgenden Bedingungen ersetzen keine individuelle Rechtsberatung.",
+    "scope": {
+      "title": "1. Geltungsbereich und Vertragspartner",
+      "body": "Diese Allgemeinen Geschäftsbedingungen (AGB) regeln die Nutzung des Online-Angebots „Pricefly“ (Preisüberwachung und Benachrichtigungen), erreichbar über die von uns bereitgestellte Website und ggf. zugehörige Web-Anwendungen (PWA).\n\nVertragspartner ist der im Impressum genannte Anbieter. Mit der Nutzung des Dienstes (insbesondere Registrierung, Anmeldung oder aktive Nutzung der Funktionen) erkennen Sie diese AGB an, soweit nicht zwingendes Recht entgegensteht."
+    },
+    "service": {
+      "title": "2. Leistungsbeschreibung",
+      "body": "Pricefly ermöglicht es, Produkt-URLs zu hinterlegen und in vom Anbieter festgelegten Intervallen bzw. nach den technischen Gegebenheiten automatisiert aus öffentlich erreichbaren Seiten Informationen (z. B. Produktbezeichnungen, Preise, erkennbare Shop-Hinweise) zu beziehen und Ihnen Mitteilungen bereitzustellen.\n\nWir erbringen die Leistung nur als technische Unterstützung zur Informationsübersicht. Es wird keine Garantie für die Vollständigkeit, Aktualität oder ständige Verfügbarkeit einzelner Features übernommen."
+    },
+    "priceData": {
+      "title": "3. Preis- und Produktdaten (keine Gewähr)",
+      "intro": "Die angezeigten Preise und Produktdaten stammen von Dritt-Websites und werden automatisiert oder halbautomatisiert verarbeitet. Dabei können insbesondere folgende Einschränkungen auftreten:",
+      "li1": "Preise werden möglicherweise nicht erkannt, falsch ausgelesen, veraltet dargestellt oder durch regionale Einstellungen, Cookies, Paywalls oder JavaScript von der Quelle abweichen.",
+      "li2": "Shops können Inhalte ändern, Strukturen anpassen oder den Zugriff technisch erschweren, sodass vorübergehend oder dauerhaft keine oder nur fehlerhafte Daten geliefert werden.",
+      "li3": "Benachrichtigungen (E-Mail, Push, In-App) können verspätet ausbleiben oder aus technischen Gründen nicht zugestellt werden.",
+      "li4": "Historische Werte und Verläufe sind ebenfalls nur zur Orientierung; sie spiegeln nicht notwendigerweise den tatsächlichen Kaufpreis am POS wider.",
+      "outro": "Sie sind selbst dafür verantwortlich, Preise und Konditionen vor einem Kauf beim jeweiligen Händler zu prüfen. Pricefly ist keine Preisgarantie und kein Ersatz für Ihre eigene Kontrolle."
+    },
+    "availability": {
+      "title": "4. Verfügbarkeit und technische Störungen",
+      "body": "Wir bemühen uns um einen verlässlichen Betrieb, garantieren jedoch keine unterbrechungsfreie oder fehlerfreie Verfügbarkeit des Dienstes. Wartungen, Updates, Infrastrukturprobleme, Sicherheitsmaßnahmen oder höhere Gewalt können zu Ausfällen oder eingeschränkter Funktion führen.\n\nInsoweit ist die Nutzung „wie besehen“; es besteht kein Anspruch auf einen bestimmten Funktionsumfang über die von uns kommunizierten Produktmerkmale hinaus, soweit gesetzlich zulässig."
+    },
+    "account": {
+      "title": "5. Nutzerkonto, Fair Use und Sperre",
+      "body": "Für bestimmte Funktionen ist ein Nutzerkonto erforderlich. Sie sind verpflichtet, wahrheitsgemäße Angaben zu machen und Zugangsdaten geheim zu halten.\n\nMissbrauch (z. B. Umgehung von Limits, übermäßige automatisierte Abfragen belastender Art gegen unsere Systeme, rechtswidrige Nutzung) ist untersagt. Wir können Konten nach billigem Ermessen einschränken oder kündigen; Näheres ergänzt unsere Fair-Use-Richtlinie."
+    },
+    "paid": {
+      "title": "6. Kostenpflichtiger Tarif (Pro) und Zahlung",
+      "body": "Optionale kostenpflichtige Leistungen (z. B. Pro-Abonnement) werden über den angegebenen Zahlungsdienstleister (z. B. PayPal) abgerechnet. Für das Zahlungsverhältnis gelten zusätzlich die Bedingungen des jeweiligen Anbieters.\n\nRückzahlungs- und Widerrufsrechte richten sich nach den gesetzlichen Vorgaben und den Bedingungen des Zahlungs- bzw. Abonnementwegs, soweit anwendbar."
+    },
+    "liability": {
+      "title": "7. Haftung",
+      "body": "Unbeschränkt haften wir nach den gesetzlichen Vorschriften bei Vorsatz und grober Fahrlässigkeit sowie bei Verletzung von Leben, Körper oder Gesundheit.\n\nBei leicht fahrlässiger Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) haften wir nur für den typischerweise vorhersehbaren, vertragstypischen Schaden; im Übrigen haften wir bei leichter Fahrlässigkeit nicht.\n\nDie vorstehenden Haftungsbeschränkungen gelten nicht, soweit gesetzlich zwingend etwas anderes vorgesehen ist.\n\nAnsprüche auf Ersatz entgangenen Gewinns, mittelbarer Schäden oder Folgeschäden aus unrichtigen Preisangaben, verpassten Benachrichtigungen oder Ausfallzeiten sind — soweit gesetzlich zulässig — ausgeschlossen, es sei denn, wir haben vorsätzlich oder grob fahrlässig gehandelt."
+    },
+    "changes": {
+      "title": "8. Änderungen der AGB",
+      "body": "Wir können diese AGB anpassen, wenn sachliche Gründe dies erfordern (z. B. rechtliche Änderungen, Weiterentwicklung des Dienstes). Über wesentliche Änderungen werden wir Sie, soweit zumutbar, in geeigneter Weise hinweisen (z. B. auf der Website oder per E-Mail).\n\nWidersprechen Sie nicht innerhalb einer mitgeteilten Frist und nutzen Sie den Dienst weiterhin, kann die neue Fassung als angenommen gelten, soweit gesetzlich zulässig; auf Ihr Widerspruchsrecht werden wir Sie gesondert hinweisen, wenn es gesetzlich erforderlich ist."
+    },
+    "law": {
+      "title": "9. Anwendbares Recht",
+      "body": "Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts (CISG), soweit nicht zwingendes Verbraucherschutzrecht Ihres Aufenthaltsstaates in der EU/EEA Vorrang hat.\n\nGerichtsstand für Kaufleute, juristische Personen des öffentlichen Rechts oder öffentlich-rechtliche Sondervermögen ist, soweit zulässig, der Sitz des Anbieters im Impressum. Für Verbraucher gelten die gesetzlichen Gerichtsstände."
+    }
   },
   "pricing": {
     "title": "Preise",
-    "lead": "Bis zu 5 Produkte kostenlos verfolgen. Upgrade für unbegrenzte aktive Überwachungen.",
     "freeTitle": "Kostenlos",
+    "freeCaption": "Dauerhaft ohne Kosten",
+    "proEyebrow": "Empfohlen",
     "proTitle": "Pro",
     "perYear": "/ Jahr",
+    "proPerMonth": "pro Monat (netto)",
+    "proVatNote": "zzgl. 19 % USt · monatliche Abbuchung",
     "free1": "5 aktive Preis-Trackings",
     "free2": "Automatische Prüfungen alle 6 Stunden",
-    "free3": "Preisverlauf (letzte 30 Snapshots pro Artikel)",
-    "free4": "E-Mail-Preisalarme für bis zu 2 Produkte (Push & In-App unbegrenzt)",
+    "free4": "E-Mail-Preisalarme für bis zu 2 Produkte",
     "pro1": "Unbegrenzte aktive Trackings",
-    "pro2": "Gleiche Aktualisierungs- und Verlaufsfunktionen",
+    "pro2": "Gleiche Prüf- und Aktualisierungsfunktionen",
     "pro3": "Jederzeit in PayPal kündbar",
-    "pro4": "E-Mail-Preisalarme für bis zu 10 Produkte (Push & In-App unbegrenzt)",
+    "pro4": "E-Mail-Preisalarme für bis zu 10 Produkte",
+    "pro5": "Push-Benachrichtigungen unbegrenzt",
     "fairUseLink": "Fair-Use-Richtlinie lesen",
+    "termsLink": "AGB",
     "getStarted": "Loslegen",
     "goDashboard": "Zurück zur App",
     "afterSignInToSubscribe": ", um mit PayPal zu abonnieren.",
@@ -289,7 +345,7 @@
     },
     "security": {
       "title": "8. Sicherheit",
-      "body": "Wir setzen angemessene technische und organisatorische Maßnahmen zur Schutz Ihrer Daten gegen unbefugten Zugriff, Verlust oder Veränderung ein — im Rahmen des Stands der Technik und der konkreten Umsetzung."
+      "body": "Wir setzen angemessene technische und organisatorische Maßnahmen zum Schutz Ihrer Daten gegen unbefugten Zugriff, Verlust oder Veränderung ein — im Rahmen des Stands der Technik und der konkreten Umsetzung."
     },
     "changes": {
       "title": "9. Änderungen",

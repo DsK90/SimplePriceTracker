@@ -44,12 +44,6 @@ import { PwaInstallService } from './core/pwa-install.service';
               class="text-on-surface-variant transition-colors hover:text-on-surface"
               >{{ 'nav.pricing' | translate }}</a
             >
-            <a
-              routerLink="/fair-use"
-              routerLinkActive="border-b-2 border-primary pb-0.5 text-primary"
-              class="text-on-surface-variant transition-colors hover:text-on-surface"
-              >{{ 'nav.fairUse' | translate }}</a
-            >
           </div>
           <div class="flex items-center gap-3 md:gap-4">
             @if (auth.isLoggedIn()) {
@@ -98,6 +92,8 @@ import { PwaInstallService } from './core/pwa-install.service';
           <a routerLink="/gdpr" class="hover:text-primary hover:underline">{{ 'common.gdpr' | translate }}</a>
           <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
           <a routerLink="/fair-use" class="hover:text-primary hover:underline">{{ 'nav.fairUse' | translate }}</a>
+          <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
+          <a routerLink="/terms" class="hover:text-primary hover:underline">{{ 'footerTerms' | translate }}</a>
           <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
           <span>{{ 'common.rights' | translate }}</span>
         </div>

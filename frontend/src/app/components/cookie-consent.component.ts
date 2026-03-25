@@ -29,6 +29,8 @@ import { CookieConsentService } from '../core/cookie-consent.service';
               <a routerLink="/imprint" class="text-primary hover:underline">{{ 'common.imprint' | translate }}</a>
               <span aria-hidden="true">·</span>
               <a routerLink="/fair-use" class="text-primary hover:underline">{{ 'nav.fairUse' | translate }}</a>
+              <span aria-hidden="true">·</span>
+              <a routerLink="/terms" class="text-primary hover:underline">{{ 'footerTerms' | translate }}</a>
             </p>
           </div>
           <div class="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">

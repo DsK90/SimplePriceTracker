@@ -34,173 +34,286 @@ type Plan = {
   template: `
     <div class="wrap">
       <h1>{{ 'pricing.title' | translate }}</h1>
-      <p class="lead">
-        {{ 'pricing.lead' | translate }}
-      </p>
 
       <div class="grid">
-        <article class="card">
-          <h2>{{ 'pricing.freeTitle' | translate }}</h2>
-          <p class="price">€0</p>
-          <ul>
-            <li>{{ 'pricing.free1' | translate }}</li>
-            <li>{{ 'pricing.free2' | translate }}</li>
-            <li>{{ 'pricing.free3' | translate }}</li>
-            <li>{{ 'pricing.free4' | translate }}</li>
-          </ul>
-          @if (!auth.isLoggedIn()) {
-            <a class="btn secondary" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
-          } @else {
-            <a class="btn secondary" routerLink="/dashboard">{{ 'pricing.goDashboard' | translate }}</a>
-          }
+        <article class="card card-free">
+          <div class="card-shine" aria-hidden="true"></div>
+          <div class="card-inner">
+            <h2 class="card-title">{{ 'pricing.freeTitle' | translate }}</h2>
+            <p class="price-block">
+              <span class="price-currency">€</span><span class="price-amount">0</span>
+            </p>
+            <p class="price-caption">{{ 'pricing.freeCaption' | translate }}</p>
+            <ul class="feature-list">
+              <li>{{ 'pricing.free1' | translate }}</li>
+              <li>{{ 'pricing.free2' | translate }}</li>
+              <li>{{ 'pricing.free4' | translate }}</li>
+            </ul>
+            @if (!auth.isLoggedIn()) {
+              <a class="btn btn-free" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
+            } @else {
+              <a class="btn btn-free" routerLink="/dashboard">{{ 'pricing.goDashboard' | translate }}</a>
+            }
+          </div>
         </article>
 
-        <article class="card featured">
-          <h2>{{ 'pricing.proTitle' | translate }}</h2>
-          @if (proPlan()) {
-            <p class="price">
-              {{ (proPlan()!.priceCents / 100) | number: '1.2-2' }} {{ proPlan()!.currency }}
-              {{ 'pricing.perYear' | translate }}
+        <article class="card card-pro">
+          <div class="card-pro-glow" aria-hidden="true"></div>
+          <div class="card-inner">
+            <div class="pro-eyebrow">{{ 'pricing.proEyebrow' | translate }}</div>
+            <h2 class="card-title">{{ 'pricing.proTitle' | translate }}</h2>
+            <p class="price-block">
+              <span class="price-amount">{{ (proUiMonthlyNetCents / 100) | number: '1.2-2' }}</span>
+              <span class="price-currency-suffix"> EUR</span>
             </p>
-            <p class="muted">{{ proPlan()!.description }}</p>
-          }
-          <ul>
-            <li>{{ 'pricing.pro1' | translate }}</li>
-            <li>{{ 'pricing.pro2' | translate }}</li>
-            <li>{{ 'pricing.pro3' | translate }}</li>
-            <li>{{ 'pricing.pro4' | translate }}</li>
-          </ul>
-          @if (!auth.isLoggedIn()) {
-            <p class="hint">
-              <a routerLink="/login">{{ 'nav.signIn' | translate }}</a
-              >{{ 'pricing.afterSignInToSubscribe' | translate }}
-            </p>
-          } @else if (auth.user()?.planTier === 'PRO') {
-            <p class="ok">{{ 'pricing.onPro' | translate }}</p>
-            <button type="button" class="btn danger" (click)="cancel()" [disabled]="cancelling()">
-              {{ 'pricing.cancelSub' | translate }}
-            </button>
-          } @else {
-            <div #paypalHost class="paypal-host"></div>
-            @if (!paypalReady() && paypalClientConfigured()) {
-              <p class="muted small">{{ 'pricing.loadingPaypal' | translate }}</p>
-            }
-            @if (!paypalClientConfigured()) {
-              <p class="muted small">
-                {{ 'pricing.paypalConfigHint' | translate }}
+            <p class="price-caption">{{ 'pricing.proPerMonth' | translate }}</p>
+            <p class="muted small vat-line">{{ 'pricing.proVatNote' | translate }}</p>
+            <ul class="feature-list">
+              <li>{{ 'pricing.pro1' | translate }}</li>
+              <li>{{ 'pricing.pro2' | translate }}</li>
+              <li>{{ 'pricing.pro3' | translate }}</li>
+              <li>{{ 'pricing.pro4' | translate }}</li>
+              <li>{{ 'pricing.pro5' | translate }}</li>
+            </ul>
+            @if (!auth.isLoggedIn()) {
+              <p class="hint">
+                <a routerLink="/login">{{ 'nav.signIn' | translate }}</a
+                >{{ 'pricing.afterSignInToSubscribe' | translate }}
               </p>
+            } @else if (auth.user()?.planTier === 'PRO') {
+              <p class="ok">{{ 'pricing.onPro' | translate }}</p>
+              <button type="button" class="btn danger" (click)="cancel()" [disabled]="cancelling()">
+                {{ 'pricing.cancelSub' | translate }}
+              </button>
+            } @else {
+              <div #paypalHost class="paypal-host"></div>
+              @if (!paypalReady() && paypalClientConfigured()) {
+                <p class="muted small">{{ 'pricing.loadingPaypal' | translate }}</p>
+              }
+              @if (!paypalClientConfigured()) {
+                <p class="muted small">
+                  {{ 'pricing.paypalConfigHint' | translate }}
+                </p>
+              }
             }
-          }
+          </div>
         </article>
       </div>
-      <p class="fair-use-footer">
-        <a routerLink="/fair-use">{{ 'pricing.fairUseLink' | translate }}</a>
-      </p>
     </div>
   `,
   styles: [
     `
       .wrap {
-        max-width: 900px;
+        max-width: 960px;
         margin: 0 auto;
         padding: 2rem 1rem 4rem;
       }
       h1 {
         font-size: 2rem;
-        margin: 0 0 0.5rem;
-      }
-      .lead {
-        color: var(--muted);
-        margin-bottom: 2rem;
-        line-height: 1.5;
-      }
-      .fair-use-footer {
-        margin-top: 1.5rem;
-        font-size: 0.875rem;
-        color: var(--muted);
-      }
-      .fair-use-footer a {
-        color: var(--primary, #7c9cff);
-        text-decoration: underline;
+        margin: 0 0 1.75rem;
+        letter-spacing: -0.02em;
       }
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
         align-items: stretch;
       }
       .card {
-        background: var(--card);
-        border-radius: 14px;
-        padding: 1.5rem;
-        box-shadow: var(--shadow);
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        min-height: 100%;
+        border: 1px solid rgba(173, 198, 255, 0.12);
+        background: linear-gradient(
+          160deg,
+          rgba(30, 40, 68, 0.95) 0%,
+          rgba(18, 24, 42, 0.98) 45%,
+          rgba(14, 18, 32, 1) 100%
+        );
+        box-shadow:
+          0 4px 24px rgba(0, 0, 0, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
       }
-      .featured {
-        border: 1px solid var(--accent);
+      .card-free .card-shine {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 80% 50% at 10% -20%, rgba(173, 198, 255, 0.14), transparent 55%);
+        pointer-events: none;
       }
-      h2 {
+      .card-free::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, #c8d9ff, #7c9cff 50%, rgba(124, 156, 255, 0.35));
+        border-radius: 20px 0 0 20px;
+      }
+      .card-pro {
+        border-color: rgba(124, 156, 255, 0.35);
+        box-shadow:
+          0 0 0 1px rgba(124, 156, 255, 0.12),
+          0 12px 48px rgba(45, 78, 180, 0.18),
+          0 4px 24px rgba(0, 0, 0, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+      .card-pro-glow {
+        position: absolute;
+        inset: -40%;
+        background: radial-gradient(circle at 50% 0%, rgba(124, 156, 255, 0.22), transparent 55%);
+        pointer-events: none;
+      }
+      .card-inner {
+        position: relative;
+        z-index: 1;
+        padding: 1.6rem 1.5rem 1.5rem 1.65rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        flex: 1;
+      }
+      .card-free .card-inner {
+        padding-left: 1.35rem;
+      }
+      .pro-eyebrow {
+        align-self: flex-start;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #9eb7ff;
+        background: rgba(124, 156, 255, 0.12);
+        border: 1px solid rgba(124, 156, 255, 0.28);
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+      }
+      .card-title {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text, #dae2fd);
       }
-      .price {
-        font-size: 1.75rem;
+      .price-block {
+        margin: 0.15rem 0 0;
+        font-size: 2.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        color: #f0f4ff;
+      }
+      .card-free .price-currency {
+        font-size: 1.5rem;
         font-weight: 700;
+        opacity: 0.85;
+        margin-right: 0.15rem;
+        vertical-align: super;
+      }
+      .card-free .price-amount {
+        font-size: 2.5rem;
+      }
+      .price-caption {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #a8b4d4;
+        font-weight: 500;
+      }
+      .vat-line {
         margin: 0;
       }
       .muted {
-        color: var(--muted);
+        color: #9aa3b8;
         font-size: 0.9rem;
       }
-      ul {
-        margin: 0;
-        padding-left: 1.1rem;
+      .feature-list {
+        margin: 0.5rem 0 0;
+        padding: 0;
+        list-style: none;
         flex: 1;
-        line-height: 1.6;
+        line-height: 1.55;
+        font-size: 0.9rem;
+        color: #c8d0e4;
+      }
+      .feature-list li {
+        position: relative;
+        padding-left: 1.35rem;
+        margin-bottom: 0.5rem;
+      }
+      .feature-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8ab4ff, #adc6ff);
+        box-shadow: 0 0 10px rgba(124, 156, 255, 0.45);
       }
       .btn {
         display: inline-block;
         text-align: center;
-        padding: 0.65rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        font-weight: 700;
         text-decoration: none;
         border: none;
         cursor: pointer;
         width: 100%;
+        margin-top: auto;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          filter 0.15s ease;
       }
-      .btn.secondary {
-        background: var(--accent);
-        color: #fff;
+      .btn-free {
+        margin-top: 1rem;
+        background: linear-gradient(135deg, rgba(124, 156, 255, 0.22), rgba(173, 198, 255, 0.1));
+        color: #e8edff;
+        border: 1px solid rgba(173, 198, 255, 0.35);
+        box-shadow: 0 2px 12px rgba(45, 78, 180, 0.12);
+      }
+      .btn-free:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 4px 20px rgba(124, 156, 255, 0.2);
+        transform: translateY(-1px);
       }
       .btn.danger {
         background: transparent;
         color: #f87171;
         border: 1px solid rgba(248, 113, 113, 0.5);
+        margin-top: 0.5rem;
       }
       .hint {
         font-size: 0.9rem;
         color: var(--muted);
+        margin: 0.25rem 0 0;
       }
       .ok {
         color: #4ade80;
-        margin: 0;
+        margin: 0.25rem 0 0;
+        font-weight: 600;
       }
       .paypal-host {
-        min-height: 48px;
+        min-height: 52px;
+        margin-top: 0.35rem;
       }
       .small {
         font-size: 0.8rem;
-      }
-      code {
-        font-size: 0.75rem;
       }
     `,
   ],
 })
 export class PricingComponent implements AfterViewInit, OnDestroy {
+  /**
+   * Monthly net in cents (3.99 EUR). Keep aligned with backend seed / migration; UI uses this so stale DB rows cannot skew display.
+   */
+  protected readonly proUiMonthlyNetCents = 399;
+
   proPlan = signal<Plan | null>(null);
   paypalReady = signal(false);
   cancelling = signal(false);
@@ -227,7 +340,8 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
 
     this.http.get<Plan[]>(`${environment.apiUrl}/plans`).subscribe({
       next: (plans) => {
-        const pro = plans.find((p) => p.slug === 'pro-yearly') ?? null;
+        const pro =
+          plans.find((p) => p.slug === 'pro-monthly' || p.slug === 'pro-yearly') ?? null;
         this.proPlan.set(pro);
         this.scheduleRender();
       },
@@ -271,7 +385,16 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     try {
       await paypal
         .Buttons({
-          style: { shape: 'rect', color: 'blue', layout: 'vertical', label: 'subscribe' },
+          // PayPal SDK presets only: gold | blue | silver | white | black (no custom hex).
+          // "black" fits dark UIs; "silver" is a softer mid-tone if you want less contrast.
+          style: {
+            color: 'silver',
+            shape: 'rect',
+            layout: 'vertical',
+            label: 'subscribe',
+            borderRadius: 12,
+            tagline: false,
+          },
           createSubscription: (
             _data: unknown,
             actions: { subscription: { create: (o: unknown) => Promise<string> } },

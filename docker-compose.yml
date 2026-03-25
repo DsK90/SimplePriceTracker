@@ -37,7 +37,7 @@ services:
       MAILERSEND_API_KEY: ${MAILERSEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-}
       MAIL_FROM: ${MAIL_FROM:-noreply@example.com}
-      PAYPAL_PRO_PLAN_ID: ${PAYPAL_PRO_PLAN_ID:-}
+      PAYPAL_PRO_PLAN_ID: ${PAYPAL_PRO_PLAN_ID:-P-6TL7122718514241MNHCG5QQ}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200,http://localhost:8080,http://localhost,http://127.0.0.1}
     ports:
       - '3000:3000'

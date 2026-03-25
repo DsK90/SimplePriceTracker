@@ -45,7 +45,7 @@ model Plan {
   name         String
   slug         String  @unique
   description  String?
-  /// Yearly price for display (e.g. cents)
+  /// Price in cents per billing period (e.g. monthly net before VAT; UI adds VAT note)
   priceCents   Int
   currency     String  @default("EUR")
   paypalPlanId String

@@ -54,6 +54,7 @@
         <li>{{ 'gdpr.recipients.li3' | translate }}</li>
         <li>{{ 'gdpr.recipients.li4' | translate }}</li>
         <li>{{ 'gdpr.recipients.li5' | translate }}</li>
+        <li>{{ 'gdpr.recipients.li6' | translate }}</li>
       </ul>
       <p class="mt-3">
         {{ 'gdpr.recipients.paypalNote' | translate }}
@@ -96,6 +97,20 @@
       <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.cookies.title' | translate }}</h2>
       <p class="mt-3">{{ 'gdpr.cookies.usage' | translate }}</p>
       <p class="mt-3">{{ 'gdpr.cookies.analytics' | translate }}</p>
+      <div class="mt-4 rounded-lg border border-outline-variant/10 bg-surface-container-highest/30 p-4">
+        <h3 class="font-semibold text-on-surface">{{ 'gdpr.cookies.cloudflareTitle' | translate }}</h3>
+        <p class="mt-2">{{ 'gdpr.cookies.cloudflareWhat' | translate }}</p>
+        <p class="mt-2">
+          {{ 'gdpr.cookies.cloudflareLinkIntro' | translate }}
+          <a
+            href="https://www.cloudflare.com/legal/privacy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary hover:underline"
+            >cloudflare.com/legal/privacy</a
+          >
+        </p>
+      </div>
       <div class="mt-4 rounded-lg border border-outline-variant/10 bg-surface-container-highest/30 p-4">
         <h3 class="font-semibold text-on-surface">{{ 'gdpr.cookies.umamiTitle' | translate }}</h3>
         <p class="mt-2">{{ 'gdpr.cookies.umamiWhat' | translate }}</p>

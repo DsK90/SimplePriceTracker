@@ -72,7 +72,7 @@
     "pro4": "E-Mail-Preisalarme für bis zu 10 Produkte (Push & In-App unbegrenzt)",
     "fairUseLink": "Fair-Use-Richtlinie lesen",
     "getStarted": "Loslegen",
-    "goDashboard": "Übersicht",
+    "goDashboard": "Zurück zur App",
     "afterSignInToSubscribe": ", um mit PayPal zu abonnieren.",
     "onPro": "Sie nutzen Pro.",
     "cancelSub": "Abonnement kündigen",
@@ -165,7 +165,7 @@
   },
   "imprint": {
     "title": "Impressum",
-    "back": "Zurück zu den Preisen",
+    "back": "Zurück zur App",
     "tmg": {
       "title": "Angaben gemäß § 5 TMG",
       "address": "Webdesign DSK\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nDeutschland",
@@ -208,7 +208,9 @@
     },
     "technical": {
       "title": "Technische Dienstleister (Pricefly)",
-      "intro": "Pricefly setzt externe Anbieter für E-Mail-Versand, optionale Zahlungen, optionale Analyse und Browser-Benachrichtigungen ein:",
+      "intro": "Für bestimmte Funktionen unserer Plattform nutzen wir externe Dienstleister:",
+      "cloudflareTitle": "CDN und Infrastruktur",
+      "cloudflareBody": "Wir nutzen Cloudflare für die Auslieferung unserer Website, DDoS-Schutz und DNS. Cloudflare kann IP-Adressen und Anfragedaten verarbeiten. Datenschutzerklärung:",
       "mailTitle": "E-Mail-Versand",
       "mailBody": "Transaktions-E-Mails (z. B. Registrierung, Preisalarme) werden über MailerSend versendet. Die Datenverarbeitung richtet sich nach:",
       "paypalTitle": "Zahlungsabwicklung",
@@ -253,10 +255,11 @@
       "title": "5. Empfänger",
       "intro": "Je nach Funktion können Daten verarbeitet werden durch:",
       "li1": "Hosting- und Infrastrukturanbieter für App und Datenbank",
-      "li2": "MailerSend (E-Mail-Versand)",
-      "li3": "PayPal (Zahlungsabwicklung bei Abonnements)",
-      "li4": "Selbst gehostetes Umami (nur nach Einwilligung — aggregierte Statistik)",
-      "li5": "Behörden, wenn eine gesetzliche Pflicht besteht",
+      "li2": "Cloudflare (CDN, DDoS-Schutz, DNS) — kann IP-Adressen und Anfragedaten verarbeiten; siehe die Datenschutzerklärung von Cloudflare",
+      "li3": "MailerSend (E-Mail-Versand)",
+      "li4": "PayPal (Zahlungsabwicklung bei Abonnements)",
+      "li5": "Selbst gehostetes Umami (nur nach Einwilligung — aggregierte Statistik)",
+      "li6": "Behörden, wenn eine gesetzliche Pflicht besteht",
       "paypalNote": "PayPal verarbeitet Zahlungsdaten nach eigenen Bedingungen. Details:"
     },
     "rights": {
@@ -274,8 +277,11 @@
     },
     "cookies": {
       "title": "7. Cookies, lokale Speicherung und Analyse",
-      "usage": "Wir nutzen technisch notwendige Mechanismen (z. B. Authentifizierung, lokale Einstellungen), damit Pricefly funktioniert. Das Cookie-Banner speichert Ihre Entscheidung zur optionalen Analyse.",
+      "usage": "Wir nutzen technisch notwendige Mechanismen (z. B. Authentifizierung, lokale Einstellungen), damit Pricefly funktioniert. Wo Cloudflare vor unserer Website eingesetzt wird, können technisch notwendige Cookies gesetzt werden (z. B. Bot-Management). Das Cookie-Banner speichert Ihre Entscheidung zur optionalen Analyse.",
       "analytics": "Umami wird erst nach „Alle akzeptieren“ geladen. Es ist selbst gehostet und auf aggregierte, datenschutzfreundliche Statistik ausgerichtet.",
+      "cloudflareTitle": "Cloudflare (technisch erforderlich, soweit eingesetzt)",
+      "cloudflareWhat": "Wir nutzen Cloudflare für die Auslieferung der Website, DDoS-Schutz und Performance. Cloudflare kann IP-Adressen und Anfragedaten verarbeiten und Cookies setzen (z. B. __cf_bm, cf_clearance). Rechtsgrundlage: berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).",
+      "cloudflareLinkIntro": "Datenschutzerklärung:",
       "umamiTitle": "Umami (nach Einwilligung)",
       "umamiWhat": "Wenn aktiviert, können je nach Umami-Konfiguration anonymisierte oder pseudonymisierte Nutzungsdaten (z. B. Seitenaufrufe, grobe technische Informationen) erhoben werden.",
       "umamiBasis": "Rechtsgrundlage: Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).",

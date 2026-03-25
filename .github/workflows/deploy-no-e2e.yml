@@ -21,6 +21,12 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
+      # Fresh server: deploy path + TLS dirs (gitignored / rsync-excluded; bind mounts need them to exist)
+      - name: Prepare server directories
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
+            "mkdir -p '${{ env.DEPLOY_PATH }}/nginx/certbot_conf' '${{ env.DEPLOY_PATH }}/nginx/certbot_www' && chmod -R u+rwX '${{ env.DEPLOY_PATH }}/nginx/certbot_conf' '${{ env.DEPLOY_PATH }}/nginx/certbot_www'"
+
       - name: Rsync repo to server
         run: |
           rsync -avz --delete \

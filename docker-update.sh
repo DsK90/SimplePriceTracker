@@ -5,6 +5,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
+mkdir -p nginx/certbot_conf nginx/certbot_www
 
 # Non-interactive SSH (e.g. GitHub Actions) often has a minimal PATH; Docker may live outside it.
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:${PATH:-}"

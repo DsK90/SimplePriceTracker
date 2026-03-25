@@ -1,0 +1,42 @@
+# Manual only: deploy without running CI tests (hotfix path).
+name: Deploy (no E2E)
+
+on:
+  workflow_dispatch:
+
+env:
+  DEPLOY_PATH: /usr/src/pricefly
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Rsync repo to server
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            --exclude 'node_modules' \
+            --exclude 'backend/node_modules' \
+            --exclude 'frontend/node_modules' \
+            --exclude 'backend/dist' \
+            --exclude 'frontend/dist' \
+            --exclude 'frontend/.angular' \
+            --exclude 'coverage' \
+            --exclude '.git' \
+            --exclude 'nginx/certbot_conf' \
+            ./ root@${{ secrets.DEPLOY_HOST }}:${{ env.DEPLOY_PATH }}/
+
+      - name: Run docker-update on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ env.DEPLOY_PATH }} && (command -v dos2unix >/dev/null && dos2unix docker-update.sh || true) && chmod +x docker-update.sh && ./docker-update.sh"

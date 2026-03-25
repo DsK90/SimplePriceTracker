@@ -1,0 +1,36 @@
+# Manual: copy nginx/certbot_conf from the server to /root/ssl-cert-backup/<timestamp>.
+name: Backup SSL certs
+
+on:
+  workflow_dispatch:
+
+env:
+  DEPLOY_PATH: /usr/src/pricefly
+
+jobs:
+  backup-ssl:
+    name: Backup SSL certs on server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Backup certbot_conf to folder outside app
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} '
+            SOURCE="${{ env.DEPLOY_PATH }}/nginx/certbot_conf"
+            BACKUP_ROOT="/root/ssl-cert-backup"
+            TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
+            BACKUP_DIR="${BACKUP_ROOT}/${TIMESTAMP}"
+            if [ ! -d "$SOURCE" ]; then
+              echo "ERROR: Source $SOURCE not found (no certs on server?)"
+              exit 1
+            fi
+            mkdir -p "$BACKUP_DIR"
+            cp -a "${SOURCE}/." "$BACKUP_DIR/"
+            echo "Backed up SSL certs to $BACKUP_DIR"
+          '

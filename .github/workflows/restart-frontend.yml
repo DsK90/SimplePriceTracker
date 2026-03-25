@@ -1,0 +1,25 @@
+# Manual: restart only the SPA/nginx container (Compose service: web).
+name: Restart web
+
+on:
+  workflow_dispatch:
+
+env:
+  DEPLOY_PATH: /usr/src/pricefly
+
+jobs:
+  restart-web:
+    name: Restart web on server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Restart web
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ env.DEPLOY_PATH }} && docker compose -f docker-compose.yml -f docker-compose.ssl.yml restart web"

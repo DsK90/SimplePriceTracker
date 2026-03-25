@@ -1,0 +1,34 @@
+# Manual: logs for any Compose service (api, web, postgres, edge, certbot, …).
+name: Get service container logs
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Compose service name (api, web, postgres, edge, certbot, …)'
+        required: true
+        default: 'api'
+      tail:
+        description: 'Number of log lines (default 500)'
+        required: false
+        default: '500'
+
+env:
+  DEPLOY_PATH: /usr/src/pricefly
+
+jobs:
+  get-logs:
+    name: Service container logs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Get service logs
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ env.DEPLOY_PATH }} && docker compose -f docker-compose.yml -f docker-compose.ssl.yml ps && echo '--- Logs: ${{ inputs.service }} ---' && docker compose -f docker-compose.yml -f docker-compose.ssl.yml logs --tail=${{ inputs.tail }} ${{ inputs.service }}"

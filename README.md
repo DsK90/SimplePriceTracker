@@ -70,3 +70,28 @@ You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core`:
 - **Nginx** is included in the `web` image only (reverse proxy + static files). You can put **Cloudflare** in front; no need for Backblaze or Redis for this app’s core flow.
 - **Resend** is optional (`RESEND_API_KEY`); welcome email is skipped if unset.
 - Price checks run on a **6-hour** cron; users can **Refresh** manually from the dashboard.
+
+## GitHub Actions (deploy & ops)
+
+Workflows live in `.github/workflows/` (same ideas as ShowBK: rsync, `docker-update.sh`, SSL backup, logs, restarts).
+
+**Secrets (repository):**
+
+| Name | Purpose |
+|------|---------|
+| `DEPLOY_SSH_KEY` | Private SSH key for `root` (or deploy user) on the server |
+| `DEPLOY_HOST` | Server hostname or IP |
+
+**Deploy path** defaults to `/usr/src/pricefly` (set `DEPLOY_PATH` in each workflow file if your server uses another directory).
+
+| Workflow | Purpose |
+|----------|---------|
+| `deploy-daily.yml` | Scheduled + manual: backend e2e + frontend prod build, then rsync + `./docker-update.sh` |
+| `deploy-no-e2e.yml` | Manual deploy without CI tests |
+| `backup-ssl-certs.yml` | Copy `nginx/certbot_conf` to `/root/ssl-cert-backup/<timestamp>` on the server |
+| `get-backend-logs.yml` | Tail logs for service **`api`** |
+| `get-service-logs.yml` | Tail logs for any Compose service (`api`, `web`, `edge`, …) |
+| `restart-backend.yml` | `docker compose … restart api` |
+| `restart-frontend.yml` | `docker compose … restart web` (SPA container) |
+
+**Server:** install Docker Compose v2, clone or rsync to `DEPLOY_PATH`, place production `.env`, and ensure `docker-update.sh` is executable. The deploy assumes **`docker-compose.yml` + `docker-compose.ssl.yml`** (TLS edge stack).

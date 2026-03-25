@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CookieConsentComponent } from './components/cookie-consent.component';
 import { AuthService } from './core/auth.service';
+import { CookieConsentService } from './core/cookie-consent.service';
 import { PwaInstallService } from './core/pwa-install.service';
-import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CookieConsentComponent],
   template: `
     <div class="min-h-screen flex flex-col bg-background text-on-background">
       <nav
@@ -86,31 +87,35 @@ import { environment } from '../environments/environment';
       <main class="flex-1 pt-[5.75rem] sm:pt-24 md:pt-28">
         <router-outlet />
       </main>
+      <footer
+        class="border-t border-outline-variant/10 bg-surface-container-low/30 py-px"
+      >
+        <div
+          class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-4 text-xs text-on-surface-variant md:px-8"
+        >
+          <a routerLink="/imprint" class="hover:text-primary hover:underline">{{ 'common.imprint' | translate }}</a>
+          <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
+          <a routerLink="/gdpr" class="hover:text-primary hover:underline">{{ 'common.gdpr' | translate }}</a>
+          <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
+          <a routerLink="/fair-use" class="hover:text-primary hover:underline">{{ 'nav.fairUse' | translate }}</a>
+          <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
+          <span>{{ 'common.rights' | translate }}</span>
+        </div>
+      </footer>
+      <app-cookie-consent />
     </div>
   `,
 })
 export class AppComponent implements OnInit {
   protected auth = inject(AuthService);
   protected pwa = inject(PwaInstallService);
+  private cookieConsent = inject(CookieConsentService);
 
   ngOnInit() {
-    this.injectUmami();
+    this.cookieConsent.loadUmamiIfConsented();
     if (this.auth.isLoggedIn()) {
       this.auth.loadProfile().subscribe({ error: () => {} });
     }
-  }
-
-  /** Loads self-hosted Umami when `environment` has script URL + website id (Docker build args). */
-  private injectUmami(): void {
-    const url = environment.umamiScriptUrl?.trim();
-    const id = environment.umamiWebsiteId?.trim();
-    if (!url || !id) return;
-    if (document.querySelector(`script[data-website-id="${CSS.escape(id)}"]`)) return;
-    const s = document.createElement('script');
-    s.defer = true;
-    s.src = url;
-    s.setAttribute('data-website-id', id);
-    document.head.appendChild(s);
   }
 
   userInitial(): string {

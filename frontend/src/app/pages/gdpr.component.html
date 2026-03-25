@@ -1,0 +1,118 @@
+<div class="mx-auto max-w-3xl px-4 py-10 md:py-14">
+  <a
+    routerLink="/pricing"
+    class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+  >
+    ← {{ 'gdpr.back' | translate }}
+  </a>
+  <h1 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface md:text-3xl">
+    {{ 'gdpr.title' | translate }}
+  </h1>
+
+  <div class="mt-8 space-y-6 text-sm leading-relaxed text-on-surface/90">
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.controller.title' | translate }}</h2>
+      <p class="mt-3 whitespace-pre-line">{{ 'gdpr.controller.body' | translate }}</p>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.collection.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.collection.intro' | translate }}</p>
+      <ul class="mt-3 list-disc space-y-2 pl-5">
+        <li>{{ 'gdpr.collection.li1' | translate }}</li>
+        <li>{{ 'gdpr.collection.li2' | translate }}</li>
+        <li>{{ 'gdpr.collection.li3' | translate }}</li>
+        <li>{{ 'gdpr.collection.li4' | translate }}</li>
+        <li>{{ 'gdpr.collection.li5' | translate }}</li>
+        <li>{{ 'gdpr.collection.li6' | translate }}</li>
+        <li>{{ 'gdpr.collection.li7' | translate }}</li>
+      </ul>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.legalBasis.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.legalBasis.intro' | translate }}</p>
+      <ul class="mt-3 list-disc space-y-2 pl-5">
+        <li>{{ 'gdpr.legalBasis.li1' | translate }}</li>
+        <li>{{ 'gdpr.legalBasis.li2' | translate }}</li>
+        <li>{{ 'gdpr.legalBasis.li3' | translate }}</li>
+        <li>{{ 'gdpr.legalBasis.li4' | translate }}</li>
+      </ul>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.storage.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.storage.body' | translate }}</p>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.recipients.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.recipients.intro' | translate }}</p>
+      <ul class="mt-3 list-disc space-y-2 pl-5">
+        <li>{{ 'gdpr.recipients.li1' | translate }}</li>
+        <li>{{ 'gdpr.recipients.li2' | translate }}</li>
+        <li>{{ 'gdpr.recipients.li3' | translate }}</li>
+        <li>{{ 'gdpr.recipients.li4' | translate }}</li>
+        <li>{{ 'gdpr.recipients.li5' | translate }}</li>
+      </ul>
+      <p class="mt-3">
+        {{ 'gdpr.recipients.paypalNote' | translate }}
+        <a
+          href="https://www.paypal.com/de/webapps/mpp/ua/privacy-full"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary hover:underline"
+          >PayPal</a
+        >.
+      </p>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.rights.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.rights.intro' | translate }}</p>
+      <ul class="mt-3 list-disc space-y-2 pl-5">
+        <li>{{ 'gdpr.rights.li1' | translate }}</li>
+        <li>{{ 'gdpr.rights.li2' | translate }}</li>
+        <li>{{ 'gdpr.rights.li3' | translate }}</li>
+        <li>{{ 'gdpr.rights.li4' | translate }}</li>
+        <li>{{ 'gdpr.rights.li5' | translate }}</li>
+        <li>{{ 'gdpr.rights.li6' | translate }}</li>
+        <li>{{ 'gdpr.rights.li7' | translate }}</li>
+        <li>{{ 'gdpr.rights.li8' | translate }}</li>
+      </ul>
+      <p class="mt-3">{{ 'gdpr.rights.authority' | translate }}</p>
+      <p class="mt-2">
+        <a
+          href="https://www.baden-wuerttemberg.datenschutz.de/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary hover:underline"
+          >baden-wuerttemberg.datenschutz.de</a
+        >
+      </p>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.cookies.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.cookies.usage' | translate }}</p>
+      <p class="mt-3">{{ 'gdpr.cookies.analytics' | translate }}</p>
+      <div class="mt-4 rounded-lg border border-outline-variant/10 bg-surface-container-highest/30 p-4">
+        <h3 class="font-semibold text-on-surface">{{ 'gdpr.cookies.umamiTitle' | translate }}</h3>
+        <p class="mt-2">{{ 'gdpr.cookies.umamiWhat' | translate }}</p>
+        <p class="mt-2"><strong>{{ 'gdpr.cookies.umamiBasis' | translate }}</strong></p>
+        <p class="mt-2">{{ 'gdpr.cookies.umamiOptOut' | translate }}</p>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.security.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.security.body' | translate }}</p>
+    </section>
+
+    <section class="rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-6">
+      <h2 class="text-lg font-bold text-on-surface">{{ 'gdpr.changes.title' | translate }}</h2>
+      <p class="mt-3">{{ 'gdpr.changes.body' | translate }}</p>
+      <p class="mt-3 text-on-surface-variant">{{ 'gdpr.changes.updated' | translate }}</p>
+    </section>
+  </div>
+</div>

@@ -4,6 +4,17 @@
     "brand": "Pricefly",
     "tagline": "Track prices. Get notified instantly."
   },
+  "common": {
+    "imprint": "Imprint",
+    "gdpr": "Privacy policy",
+    "rights": "© Pricefly"
+  },
+  "cookies": {
+    "title": "Cookies & privacy",
+    "message": "We use essential local storage and session mechanisms so you can sign in and use Pricefly. If you choose “Accept all”, we also load self-hosted Umami analytics (privacy-friendly, no advertising cookies). You can choose “Essential only” to skip analytics.",
+    "essential": "Essential only",
+    "acceptAll": "Accept all"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "pricing": "Pricing",
@@ -150,6 +161,134 @@
       "m1440": "Daily",
       "m10080": "Weekly",
       "unknown": "{{minutes}} min"
+    }
+  },
+  "imprint": {
+    "title": "Imprint",
+    "back": "Back to pricing",
+    "tmg": {
+      "title": "Information according to § 5 TMG",
+      "address": "Webdesign DSK\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nGermany",
+      "contactTitle": "Contact",
+      "contactBody": "Phone: +49 176 66897000\nE-mail: mail@webdesign-dsk.de",
+      "website": "Service: Pricefly (price tracking and notifications)."
+    },
+    "representatives": {
+      "title": "Authorized representatives",
+      "person": "Daniel Oeldenberger\nManaging director",
+      "registerTitle": "Commercial register entry",
+      "registerBody": "Entry in the commercial register.\nRegister court: (see current excerpt)\nRegister number: (see current excerpt)",
+      "vatTitle": "VAT ID",
+      "vatBody": "VAT identification number according to § 27 a German VAT Act: DE298030617"
+    },
+    "contentResponsibility": {
+      "title": "Responsible for content according to § 55 para. 2 RStV",
+      "body": "Daniel Oeldenberger\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nGermany"
+    },
+    "dispute": {
+      "title": "Dispute resolution",
+      "platform": "The European Commission provides a platform for online dispute resolution (ODR):",
+      "email": "You can find our e-mail address above in this imprint.",
+      "participation": "We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board."
+    },
+    "contentLiability": {
+      "title": "Liability for content",
+      "p1": "As a service provider, we are responsible for our own content on these pages in accordance with general laws pursuant to § 7 para. 1 TMG. However, according to §§ 8 to 10 TMG, we are not obliged as a service provider to monitor transmitted or stored third-party information or to investigate circumstances indicating illegal activity.",
+      "p2": "Obligations to remove or block the use of information in accordance with general laws remain unaffected. Liability in this respect is, however, only possible from the time of knowledge of a specific legal infringement. If we become aware of any such legal infringements, we will remove this content immediately."
+    },
+    "linkLiability": {
+      "title": "Liability for links",
+      "p1": "Our offer may contain links to external third-party websites over whose content we have no influence. Therefore, we cannot accept any liability for this external content. The respective provider or operator of the pages is always responsible for the content of the linked pages.",
+      "p2": "The linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognizable at the time of linking. Permanent monitoring of the content of the linked pages is not reasonable without concrete evidence of a legal infringement. If we become aware of any legal infringements, we will remove such links immediately."
+    },
+    "copyright": {
+      "title": "Copyright",
+      "p1": "The content and works created by the site operators on these pages are subject to German copyright law. Duplication, processing, distribution and any kind of exploitation outside the limits of copyright law require the written consent of the respective author or creator.",
+      "p2": "Insofar as the content on this site was not created by the operator, the copyrights of third parties are respected. Should you nevertheless become aware of a copyright infringement, please inform us accordingly. If we become aware of any legal infringements, we will remove such content immediately."
+    },
+    "technical": {
+      "title": "Technical service providers (Pricefly)",
+      "intro": "Pricefly uses external providers for e-mail delivery, optional payments, optional analytics and browser notifications:",
+      "mailTitle": "E-mail delivery",
+      "mailBody": "Transactional e-mails (e.g. registration, price alerts) are sent via MailerSend. Data processing is governed by:",
+      "paypalTitle": "Payment processing",
+      "paypalBody": "Subscriptions are processed via PayPal. Payment data is handled by PayPal. Further information:",
+      "umamiTitle": "Analytics (optional)",
+      "umamiBody": "If you consent in the cookie banner, we load self-hosted Umami on our infrastructure. Umami is designed to be privacy-friendly and does not use advertising cookies.",
+      "pushTitle": "Browser notifications (Web Push)",
+      "pushBody": "If you enable push notifications, your browser and the push services of the manufacturer (e.g. Google, Mozilla, Apple) may process technical data required for delivery. You can disable notifications in your browser at any time."
+    }
+  },
+  "gdpr": {
+    "title": "Privacy policy (GDPR)",
+    "back": "Back to pricing",
+    "controller": {
+      "title": "1. Controller",
+      "body": "Webdesign DSK\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nGermany\n\nPhone: +49 176 66897000\nE-mail: mail@webdesign-dsk.de\n\nService: Pricefly — account, price tracking, notifications."
+    },
+    "collection": {
+      "title": "2. Categories of personal data",
+      "intro": "We process personal data only where necessary to provide Pricefly. This includes in particular:",
+      "li1": "Account data: e-mail address, password hash, plan status, PayPal subscription reference where applicable",
+      "li2": "Product data you add: URLs you track, scraped product names/prices, your labels and alert settings",
+      "li3": "Communication data: e-mails sent via our provider (e.g. welcome mail, price alerts) and technical logs",
+      "li4": "Payment-related data processed by PayPal when you subscribe (we do not receive your full payment credentials)",
+      "li5": "Web Push: push subscription endpoints and keys stored for delivering browser notifications if you opt in",
+      "li6": "Usage data: IP address, timestamps, browser type where technically required (e.g. security, abuse prevention)",
+      "li7": "Optional analytics: if you consent, aggregated visit statistics via self-hosted Umami (see cookie section)"
+    },
+    "legalBasis": {
+      "title": "3. Legal basis",
+      "intro": "Processing is based on:",
+      "li1": "Performance of a contract or pre-contractual steps (Art. 6 para. 1 lit. b GDPR) — operating your account and the service you request",
+      "li2": "Compliance with legal obligations (Art. 6 para. 1 lit. c GDPR) where applicable",
+      "li3": "Legitimate interests (Art. 6 para. 1 lit. f GDPR) — e.g. securing the service, preventing abuse, improving stability",
+      "li4": "Consent (Art. 6 para. 1 lit. a GDPR) — e.g. optional analytics after you choose “Accept all” in the cookie banner"
+    },
+    "storage": {
+      "title": "4. Storage duration",
+      "body": "We store data only as long as necessary for the respective purpose or as required by statutory retention periods. Account and tracking data are kept until you delete content or your account, subject to legal retention rules."
+    },
+    "recipients": {
+      "title": "5. Recipients",
+      "intro": "Depending on the function, data may be processed by:",
+      "li1": "Hosting and infrastructure providers operating the servers for the app and database",
+      "li2": "MailerSend (e-mail delivery)",
+      "li3": "PayPal (payment processing for subscriptions)",
+      "li4": "Self-hosted Umami (only after consent — aggregated statistics)",
+      "li5": "Authorities if legally required",
+      "paypalNote": "PayPal processes payment data on their own terms. Details:"
+    },
+    "rights": {
+      "title": "6. Your rights",
+      "intro": "Under the GDPR you have the right to:",
+      "li1": "Access (Art. 15 GDPR)",
+      "li2": "Rectification (Art. 16 GDPR)",
+      "li3": "Erasure (Art. 17 GDPR)",
+      "li4": "Restriction of processing (Art. 18 GDPR)",
+      "li5": "Data portability (Art. 20 GDPR)",
+      "li6": "Object to processing (Art. 21 GDPR) where applicable",
+      "li7": "Withdraw consent (Art. 7 para. 3 GDPR) where processing is based on consent",
+      "li8": "Lodge a complaint with a supervisory authority (Art. 77 GDPR)",
+      "authority": "Supervisory authority for Baden-Württemberg (example): State Commissioner for Data Protection and Freedom of Information (LfDI Baden-Württemberg), Königstraße 10a, 70173 Stuttgart —"
+    },
+    "cookies": {
+      "title": "7. Cookies, local storage and analytics",
+      "usage": "We use technically necessary mechanisms (e.g. authentication tokens, local preferences) so Pricefly works. The cookie banner records your choice regarding optional analytics.",
+      "analytics": "Umami is only loaded after you choose “Accept all”. It is self-hosted and oriented toward aggregated, privacy-friendly statistics.",
+      "umamiTitle": "Umami (after consent)",
+      "umamiWhat": "If enabled, we collect anonymized or pseudonymous usage data such as page views and coarse technical information, depending on your Umami configuration.",
+      "umamiBasis": "Legal basis: your consent (Art. 6 para. 1 lit. a GDPR).",
+      "umamiOptOut": "To opt out later, choose “Essential only” in the banner (clear site data / revisit in a private window if needed) or delete stored consent in your browser."
+    },
+    "security": {
+      "title": "8. Security",
+      "body": "We implement appropriate technical and organizational measures to protect your data against unauthorized access, loss or alteration, subject to the state of the art and implementation context."
+    },
+    "changes": {
+      "title": "9. Changes",
+      "body": "We may update this privacy policy when the service or legal requirements change. The version published here applies.",
+      "updated": "Last updated: 25 March 2025"
     }
   }
 }

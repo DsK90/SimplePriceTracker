@@ -4,6 +4,17 @@
     "brand": "Pricefly",
     "tagline": "Preise verfolgen. Sofort benachrichtigt werden."
   },
+  "common": {
+    "imprint": "Impressum",
+    "gdpr": "Datenschutz",
+    "rights": "© Pricefly"
+  },
+  "cookies": {
+    "title": "Cookies & Datenschutz",
+    "message": "Wir nutzen technisch notwendige lokale Speicherung und Sitzungsfunktionen für Anmeldung und Nutzung von Pricefly. Wenn Sie „Alle akzeptieren“ wählen, laden wir zusätzlich selbst gehostetes Umami (datenschutzfreundlich, keine Werbe-Cookies). Mit „Nur notwendige“ können Sie Analyse ablehnen.",
+    "essential": "Nur notwendige",
+    "acceptAll": "Alle akzeptieren"
+  },
   "nav": {
     "dashboard": "Übersicht",
     "pricing": "Preise",
@@ -150,6 +161,134 @@
       "m1440": "Täglich",
       "m10080": "Wöchentlich",
       "unknown": "{{minutes}} Min."
+    }
+  },
+  "imprint": {
+    "title": "Impressum",
+    "back": "Zurück zu den Preisen",
+    "tmg": {
+      "title": "Angaben gemäß § 5 TMG",
+      "address": "Webdesign DSK\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nDeutschland",
+      "contactTitle": "Kontakt",
+      "contactBody": "Telefon: +49 176 66897000\nE-Mail: mail@webdesign-dsk.de",
+      "website": "Angebot: Pricefly (Preisüberwachung und Benachrichtigungen)."
+    },
+    "representatives": {
+      "title": "Vertretungsberechtigte",
+      "person": "Daniel Oeldenberger\nGeschäftsführer",
+      "registerTitle": "Handelsregister",
+      "registerBody": "Eintragung im Handelsregister.\nRegistergericht: (aktuellen Auszug beachten)\nRegisternummer: (aktuellen Auszug beachten)",
+      "vatTitle": "Umsatzsteuer-ID",
+      "vatBody": "Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz: DE298030617"
+    },
+    "contentResponsibility": {
+      "title": "Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV",
+      "body": "Daniel Oeldenberger\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nDeutschland"
+    },
+    "dispute": {
+      "title": "Streitschlichtung",
+      "platform": "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:",
+      "email": "Unsere E-Mail-Adresse finden Sie oben im Impressum.",
+      "participation": "Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+    },
+    "contentLiability": {
+      "title": "Haftung für Inhalte",
+      "p1": "Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.",
+      "p2": "Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden entsprechender Rechtsverletzungen werden wir diese Inhalte umgehend entfernen."
+    },
+    "linkLiability": {
+      "title": "Haftung für Links",
+      "p1": "Unser Angebot kann Links zu externen Websites Dritter enthalten, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber verantwortlich.",
+      "p2": "Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen."
+    },
+    "copyright": {
+      "title": "Urheberrecht",
+      "p1": "Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.",
+      "p2": "Soweit die Inhalte auf dieser Seite nicht vom Betreiber erstellt wurden, werden die Urheberrechte Dritter beachtet. Sollten Sie trotzdem auf eine Urheberrechtsverletzung aufmerksam werden, bitten wir um einen entsprechenden Hinweis. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Inhalte umgehend entfernen."
+    },
+    "technical": {
+      "title": "Technische Dienstleister (Pricefly)",
+      "intro": "Pricefly setzt externe Anbieter für E-Mail-Versand, optionale Zahlungen, optionale Analyse und Browser-Benachrichtigungen ein:",
+      "mailTitle": "E-Mail-Versand",
+      "mailBody": "Transaktions-E-Mails (z. B. Registrierung, Preisalarme) werden über MailerSend versendet. Die Datenverarbeitung richtet sich nach:",
+      "paypalTitle": "Zahlungsabwicklung",
+      "paypalBody": "Abonnements werden über PayPal abgewickelt. Zahlungsdaten werden von PayPal verarbeitet. Weitere Informationen:",
+      "umamiTitle": "Analyse (optional)",
+      "umamiBody": "Wenn Sie im Cookie-Banner zustimmen, laden wir selbst gehostetes Umami auf unserer Infrastruktur. Umami ist auf datenschutzfreundliche Statistik ausgerichtet und setzt keine Werbe-Cookies.",
+      "pushTitle": "Browser-Benachrichtigungen (Web Push)",
+      "pushBody": "Wenn Sie Push-Benachrichtigungen aktivieren, können Ihr Browser und die Push-Dienste des Herstellers (z. B. Google, Mozilla, Apple) technische Daten zur Zustellung verarbeiten. Sie können Benachrichtigungen jederzeit im Browser deaktivieren."
+    }
+  },
+  "gdpr": {
+    "title": "Datenschutzerklärung (DSGVO)",
+    "back": "Zurück zu den Preisen",
+    "controller": {
+      "title": "1. Verantwortlicher",
+      "body": "Webdesign DSK\nWiesenstrasse 3\n79777 Ühlingen-Birkendorf\nDeutschland\n\nTelefon: +49 176 66897000\nE-Mail: mail@webdesign-dsk.de\n\nAngebot: Pricefly — Konto, Preisüberwachung, Benachrichtigungen."
+    },
+    "collection": {
+      "title": "2. Kategorien personenbezogener Daten",
+      "intro": "Wir verarbeiten personenbezogene Daten nur, soweit dies zur Bereitstellung von Pricefly erforderlich ist. Dazu gehören insbesondere:",
+      "li1": "Kontodaten: E-Mail-Adresse, Passwort-Hash, Tarifstatus, ggf. PayPal-Abonnement-Referenz",
+      "li2": "Produktdaten, die Sie eintragen: URLs, ausgelesene Produktnamen/Preise, Ihre Bezeichnungen und Alarmeinstellungen",
+      "li3": "Kommunikationsdaten: E-Mails über unseren Anbieter (z. B. Willkommensmail, Preisalarme) und technische Protokolle",
+      "li4": "Zahlungsbezogene Daten, die PayPal bei einem Abonnement verarbeitet (wir erhalten keine vollständigen Zahlungsdaten)",
+      "li5": "Web Push: gespeicherte Push-Endpunkte und Schlüssel für Browser-Benachrichtigungen bei Opt-in",
+      "li6": "Nutzungsdaten: IP-Adresse, Zeitstempel, Browsertyp soweit technisch erforderlich (z. B. Sicherheit, Missbrauchsprävention)",
+      "li7": "Optionale Analyse: nach Einwilligung aggregierte Besuchsstatistik über selbst gehostetes Umami (siehe Cookie-Abschnitt)"
+    },
+    "legalBasis": {
+      "title": "3. Rechtsgrundlagen",
+      "intro": "Die Verarbeitung erfolgt auf Grundlage von:",
+      "li1": "Vertragserfüllung bzw. vorvertragliche Maßnahmen (Art. 6 Abs. 1 lit. b DSGVO) — Betrieb Ihres Kontos und der gewünschten Leistung",
+      "li2": "Rechtspflichten (Art. 6 Abs. 1 lit. c DSGVO), soweit einschlägig",
+      "li3": "Berechtigte Interessen (Art. 6 Abs. 1 lit. f DSGVO) — z. B. Absicherung des Dienstes, Missbrauchsprävention, Stabilität",
+      "li4": "Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) — z. B. optionale Analyse nach „Alle akzeptieren“ im Cookie-Banner"
+    },
+    "storage": {
+      "title": "4. Speicherdauer",
+      "body": "Wir speichern Daten nur so lange, wie es für den jeweiligen Zweck erforderlich ist oder gesetzliche Aufbewahrungsfristen dies verlangen. Konten- und Trackingdaten bleiben bestehen, bis Sie Inhalte oder Ihr Konto löschen, vorbehaltlich gesetzlicher Aufbewahrung."
+    },
+    "recipients": {
+      "title": "5. Empfänger",
+      "intro": "Je nach Funktion können Daten verarbeitet werden durch:",
+      "li1": "Hosting- und Infrastrukturanbieter für App und Datenbank",
+      "li2": "MailerSend (E-Mail-Versand)",
+      "li3": "PayPal (Zahlungsabwicklung bei Abonnements)",
+      "li4": "Selbst gehostetes Umami (nur nach Einwilligung — aggregierte Statistik)",
+      "li5": "Behörden, wenn eine gesetzliche Pflicht besteht",
+      "paypalNote": "PayPal verarbeitet Zahlungsdaten nach eigenen Bedingungen. Details:"
+    },
+    "rights": {
+      "title": "6. Ihre Rechte",
+      "intro": "Nach der DSGVO stehen Ihnen unter anderem zu:",
+      "li1": "Auskunft (Art. 15 DSGVO)",
+      "li2": "Berichtigung (Art. 16 DSGVO)",
+      "li3": "Löschung (Art. 17 DSGVO)",
+      "li4": "Einschränkung der Verarbeitung (Art. 18 DSGVO)",
+      "li5": "Datenübertragbarkeit (Art. 20 DSGVO)",
+      "li6": "Widerspruch gegen die Verarbeitung (Art. 21 DSGVO), soweit anwendbar",
+      "li7": "Widerruf der Einwilligung (Art. 7 Abs. 3 DSGVO), wenn die Verarbeitung auf Einwilligung beruht",
+      "li8": "Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO)",
+      "authority": "Zuständige Aufsichtsbehörde für Baden-Württemberg (Beispiel): Landesbeauftragter für Datenschutz und Informationsfreiheit (LfDI Baden-Württemberg), Königstraße 10a, 70173 Stuttgart —"
+    },
+    "cookies": {
+      "title": "7. Cookies, lokale Speicherung und Analyse",
+      "usage": "Wir nutzen technisch notwendige Mechanismen (z. B. Authentifizierung, lokale Einstellungen), damit Pricefly funktioniert. Das Cookie-Banner speichert Ihre Entscheidung zur optionalen Analyse.",
+      "analytics": "Umami wird erst nach „Alle akzeptieren“ geladen. Es ist selbst gehostet und auf aggregierte, datenschutzfreundliche Statistik ausgerichtet.",
+      "umamiTitle": "Umami (nach Einwilligung)",
+      "umamiWhat": "Wenn aktiviert, können je nach Umami-Konfiguration anonymisierte oder pseudonymisierte Nutzungsdaten (z. B. Seitenaufrufe, grobe technische Informationen) erhoben werden.",
+      "umamiBasis": "Rechtsgrundlage: Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).",
+      "umamiOptOut": "Widerspruch später: „Nur notwendige“ im Banner wählen oder gespeicherte Zustimmung im Browser löschen."
+    },
+    "security": {
+      "title": "8. Sicherheit",
+      "body": "Wir setzen angemessene technische und organisatorische Maßnahmen zur Schutz Ihrer Daten gegen unbefugten Zugriff, Verlust oder Veränderung ein — im Rahmen des Stands der Technik und der konkreten Umsetzung."
+    },
+    "changes": {
+      "title": "9. Änderungen",
+      "body": "Wir können diese Datenschutzerklärung anpassen, wenn sich der Dienst oder Rechtslage ändern. Maßgeblich ist die hier veröffentlichte Fassung.",
+      "updated": "Stand: 25. März 2025"
     }
   }
 }

@@ -15,6 +15,9 @@ jobs:
   backend-e2e:
     name: Backend E2E (Jest)
     runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts requires DATABASE_URL even for `prisma generate` (no DB connection needed)
+      DATABASE_URL: postgresql://pricetracker:pricetracker@localhost:5432/pricetracker?schema=public
     services:
       postgres:
         image: postgres:16-alpine
@@ -50,14 +53,10 @@ jobs:
       - name: Run database migrations
         working-directory: backend
         run: npm run prisma:migrate
-        env:
-          DATABASE_URL: postgresql://pricetracker:pricetracker@localhost:5432/pricetracker?schema=public
 
       - name: Run backend E2E
         working-directory: backend
         run: npm run test:e2e
-        env:
-          DATABASE_URL: postgresql://pricetracker:pricetracker@localhost:5432/pricetracker?schema=public
 
   frontend-build:
     name: Frontend (production build)

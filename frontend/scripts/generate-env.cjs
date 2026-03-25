@@ -29,12 +29,15 @@ if (!umamiScriptUrl && umamiHost) {
 const umamiWebsiteId =
   process.env.UMAMI_WEBSITE_ID?.trim() || '14cabb5c-7310-487f-96a6-05ce09f6005e';
 
-const useSandbox = String(process.env.PAYPAL_USE_SANDBOX ?? 'true').toLowerCase() === 'true';
-const paypalClientId = (
-  useSandbox
-    ? process.env.PAYPAL_SANDBOX_CLIENT_ID || ''
-    : process.env.PAYPAL_CLIENT_ID || ''
-).trim();
+const rawSandbox = process.env.PAYPAL_USE_SANDBOX;
+const useSandbox =
+  rawSandbox === undefined || String(rawSandbox).trim() === ''
+    ? true
+    : String(rawSandbox).toLowerCase().trim() === 'true';
+const liveId = (process.env.PAYPAL_CLIENT_ID || '').trim();
+const sandboxId = (process.env.PAYPAL_SANDBOX_CLIENT_ID || '').trim();
+/** Prefer the id matching PAYPAL_USE_SANDBOX, fall back to the other so .env typos still load a client id */
+const paypalClientId = useSandbox ? sandboxId || liveId : liveId || sandboxId;
 
 const outPath = path.join(root, 'src', 'environments', 'environment.generated.ts');
 const content = `/* eslint-disable */

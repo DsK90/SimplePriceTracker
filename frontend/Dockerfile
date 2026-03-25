@@ -1,7 +1,8 @@
 FROM node:20-bookworm-slim AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+# Postinstall runs generate-env.cjs — scripts/ is not copied yet. prebuild runs after COPY.
+RUN npm ci --ignore-scripts
 COPY . .
 ARG PAYPAL_CLIENT_ID
 ARG PAYPAL_SANDBOX_CLIENT_ID

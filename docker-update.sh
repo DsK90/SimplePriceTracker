@@ -5,6 +5,16 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
+
+# Non-interactive SSH (e.g. GitHub Actions) often has a minimal PATH; Docker may live outside it.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:${PATH:-}"
+if ! command -v docker >/dev/null 2>&1; then
+  echo "docker: command not found. Install Docker Engine on the server, e.g. Debian/Ubuntu:"
+  echo "  sudo apt-get update && sudo apt-get install -y docker.io docker-compose-plugin"
+  echo "See https://docs.docker.com/engine/install/"
+  exit 127
+fi
+
 COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.ssl.yml)
 
 echo "Stopping stack (volumes preserved)..."

@@ -111,4 +111,4 @@ jobs:
       - name: Run docker-update on server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
-            "cd ${{ env.DEPLOY_PATH }} && (command -v dos2unix >/dev/null && dos2unix docker-update.sh || true) && chmod +x docker-update.sh && ./docker-update.sh"
+            "bash -lc 'cd ${{ env.DEPLOY_PATH }} && (command -v dos2unix >/dev/null && dos2unix docker-update.sh || true) && chmod +x docker-update.sh && ./docker-update.sh'"

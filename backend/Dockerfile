@@ -15,7 +15,7 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --omit=dev && npm install prisma@6.19.0 --no-save && npm cache clean --force
+RUN npm ci --omit=dev && npm install prisma@7.5.0 --no-save && npm cache clean --force
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma

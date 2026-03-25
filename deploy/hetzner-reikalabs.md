@@ -1,4 +1,4 @@
-# Deploying `pricefly.reikalabs.com` + Umami + Cloudflare + Resend
+# Deploying `pricefly.reikalabs.com` + Umami + Cloudflare + MailerSend
 
 Use this checklist on your Hetzner server together with the repo’s Docker Compose stack.
 
@@ -56,7 +56,7 @@ Use this checklist on your Hetzner server together with the repo’s Docker Comp
    # SSL_EXTRA_DOMAINS=umami.reikalabs.com
    ```
 
-3. Set `DATABASE_URL`, PayPal, `RESEND_API_KEY`, `EMAIL_FROM`, etc. as needed.
+3. Set `DATABASE_URL`, PayPal, `MAILERSEND_API_KEY`, `EMAIL_FROM`, etc. as needed.
 
 ### Option A — HTTPS in Docker (Let’s Encrypt, same pattern as ShowBK)
 
@@ -83,18 +83,19 @@ If you prefer TLS on the host instead of the **`edge`** service, use `deploy/ngi
 
 6. If you use **Option B** and the host nginx proxies to Docker `web` on `127.0.0.1:8080`, bind stack ports to localhost only (or firewall) so the API is not exposed publicly except through nginx.
 
-## 4. Resend (same account as showbk.com)
+## 4. MailerSend (transactional email)
 
-1. In [Resend Domains](https://resend.com/domains), add **`reikalabs.com`** (or a subdomain you control) if not already verified.
-2. Add the **DNS records** Resend shows (TXT, MX for bounce if required, etc.) in Cloudflare; wait until the domain shows **Verified**.
-3. In this app’s `.env` / Compose:
+1. In [MailerSend](https://www.mailersend.com/) → **Sending** → **Domains**: add your domain (e.g. **`reikalabs.com`**) and add the **DNS records** they show (SPF, DKIM, etc.) in Cloudflare until the domain is **Verified**.
+2. **Sending** → **Sender identities** (or use the domain’s default): ensure the **From** address you will use is allowed (e.g. `noreply@reikalabs.com`).
+3. **Integrations** → **API tokens** (or **Settings** → **API tokens**): create a token with **Email** permission and copy it once.
+4. In this app’s `.env` / Compose:
 
-   - `RESEND_API_KEY` — same API key as other projects works for **any verified domain** on the account.
-   - `EMAIL_FROM` — must use a **verified sender** on that domain, e.g. `Pricefly <noreply@reikalabs.com>` or `Pricefly <notifications@mail.reikalabs.com>` depending on what you verified.
+   - `MAILERSEND_API_KEY` — the API token from step 3.
+   - `EMAIL_FROM` — must match a verified sender/domain in MailerSend, e.g. `Pricefly <noreply@reikalabs.com>`.
 
-4. Redeploy the `api` container after changing env.
+5. Redeploy the `api` container after changing env.
 
-No code changes are required for Resend beyond correct env vars; the backend already uses `RESEND_API_KEY` and `EMAIL_FROM` / `MAIL_FROM`.
+The backend uses the official **`mailersend`** npm package and `EMAIL_FROM` / `MAIL_FROM` (same meaning as before; only the provider and env key name changed from Resend).
 
 ## 5. PayPal (production)
 

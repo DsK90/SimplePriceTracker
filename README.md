@@ -58,7 +58,7 @@ Set `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_SECRET` for sandbox; the web im
 
 ### Env alignment with ShowBK
 
-You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core`: **`PAYPAL_CLIENT_ID`**, **`PAYPAL_SECRET`**, **`PAYPAL_SANDBOX_CLIENT_ID`**, **`PAYPAL_SANDBOX_SECRET`**, **`RESEND_API_KEY`**, **`EMAIL_FROM`** (and **`JWT_SECRET`**). Copy values into this project’s `.env` files only on your machine — do not commit secrets.
+You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core` for **PayPal** and **`JWT_SECRET`**. For **email**, this app uses **MailerSend** (`MAILERSEND_API_KEY` + **`EMAIL_FROM`** / **`MAIL_FROM`**), not Resend. Copy values into this project’s `.env` files only on your machine — do not commit secrets.
 
 - **Database host in Docker**: ShowBK uses `db` as the Postgres service name; this stack uses **`postgres`**. Set `DATABASE_URL` with host `postgres` when running via Compose, or use the default in `docker-compose.yml`.
 - **Umami**: optional analytics — set `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in `.env` and rebuild the `web` image (see `deploy/hetzner-reikalabs.md`).
@@ -68,7 +68,7 @@ You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core`:
 ## Stack notes
 
 - **Nginx** is included in the `web` image only (reverse proxy + static files). You can put **Cloudflare** in front; no need for Backblaze or Redis for this app’s core flow.
-- **Resend** is optional (`RESEND_API_KEY`); welcome email is skipped if unset.
+- **MailerSend** is optional (`MAILERSEND_API_KEY`); welcome and price-alert emails are skipped if unset.
 - Price checks run on a **6-hour** cron; users can **Refresh** manually from the dashboard.
 
 ## GitHub Actions (deploy & ops)

@@ -5,12 +5,14 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, RequestUser } from '../auth/decorators/current-user.decorator';
 import { ActivateSubscriptionDto } from './dto/activate-subscription.dto';
 import { PaypalService } from './paypal.service';
+import { TrackingsService } from '../trackings/trackings.service';
 
 @Controller('paypal')
 export class PaypalController {
   constructor(
     private paypal: PaypalService,
     private prisma: PrismaService,
+    private trackings: TrackingsService,
   ) {}
 
   @Get('status/:subscriptionId')
@@ -55,6 +57,7 @@ export class PaypalController {
         paypalSubscriptionId: null,
       },
     });
+    await this.trackings.applyPlanEmailLimits(user.userId, PlanTier.FREE);
     return { ok: true };
   }
 }

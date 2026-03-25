@@ -7,6 +7,7 @@
   "nav": {
     "dashboard": "Panel",
     "pricing": "Precios",
+    "fairUse": "Uso justo",
     "signOut": "Cerrar sesión",
     "signIn": "Iniciar sesión",
     "register": "Registrarse",
@@ -32,6 +33,18 @@
     "hasAccount": "¿Ya tienes cuenta?",
     "failed": "Error en el registro"
   },
+  "fairUse": {
+    "title": "Política de uso justo",
+    "updated": "Se aplica a todos los usuarios de Pricefly.",
+    "back": "Volver a precios",
+    "p1": "Pricefly es para uso personal y no abusivo. Podemos limitar o suspender cuentas que generen tráfico automatizado excesivo, saturen nuestra infraestructura o perjudiquen a otros usuarios.",
+    "p2": "Las notificaciones por correo son opcionales y tienen límites por plan: hasta 2 productos en gratis y hasta 10 en Pro. Las notificaciones en la app y push web no tienen estos límites por correo.",
+    "p3": "No debes abusar del servicio: no eludir límites, no scrapear la API sin autorización ni usar Pricefly para acosar.",
+    "li1": "Respeta robots.txt y los términos de cada tienda al añadir URLs.",
+    "li2": "Protege tus credenciales.",
+    "li3": "Podemos actualizar esta política; el uso continuado implica aceptación.",
+    "p4": "¿Preguntas? Contacta al soporte indicado en el sitio."
+  },
   "pricing": {
     "title": "Precios",
     "lead": "Hasta 5 productos gratis. Mejora para seguimientos activos ilimitados.",
@@ -41,9 +54,12 @@
     "free1": "5 seguimientos de precio activos",
     "free2": "Comprobaciones automáticas cada 6 horas",
     "free3": "Historial de precios (últimas 30 instantáneas por artículo)",
+    "free4": "Alertas por correo por hasta 2 productos (push y en app ilimitados)",
     "pro1": "Seguimientos activos ilimitados",
     "pro2": "Mismas funciones de actualización e historial",
     "pro3": "Cancela cuando quieras en PayPal",
+    "pro4": "Alertas por correo por hasta 10 productos (push y en app ilimitados)",
+    "fairUseLink": "Leer la política de uso justo",
     "getStarted": "Empezar",
     "goDashboard": "Panel",
     "afterSignInToSubscribe": " para suscribirte con PayPal.",
@@ -118,6 +134,9 @@
       "alertAbove": "Alerta si el precio ≥",
       "placeholderPrice": "p. ej. {{n}}",
       "hint": "Deja vacíos los campos de alerta y guarda para quitar umbrales. Las alertas saltan al cruzar tu objetivo.",
+      "emailAlerts": "Enviarme alertas por correo para este producto",
+      "emailAlertsHint": "{{used}} de {{max}} ranuras de correo usadas en tu plan. Push y en app ilimitados.",
+      "fairUseLink": "Política de uso justo",
       "save": "Guardar",
       "cancel": "Cancelar"
     },

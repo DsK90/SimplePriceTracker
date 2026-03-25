@@ -59,4 +59,8 @@ export class UpdateTrackingDto {
   @IsNumber()
   @Min(0)
   alertAbovePrice?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  emailAlertsEnabled?: boolean;
 }

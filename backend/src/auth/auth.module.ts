@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { MailModule } from '../mail/mail.module';
 import { PaypalModule } from '../paypal/paypal.module';
+import { TrackingsModule } from '../trackings/trackings.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
@@ -23,6 +24,7 @@ import { JwtStrategy } from './jwt.strategy';
     }),
     MailModule,
     PaypalModule,
+    TrackingsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

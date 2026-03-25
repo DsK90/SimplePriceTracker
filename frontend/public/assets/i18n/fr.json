@@ -7,6 +7,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "pricing": "Tarifs",
+    "fairUse": "Usage équitable",
     "signOut": "Déconnexion",
     "signIn": "Connexion",
     "register": "Inscription",
@@ -32,6 +33,18 @@
     "hasAccount": "Vous avez déjà un compte ?",
     "failed": "Échec de l’inscription"
   },
+  "fairUse": {
+    "title": "Politique d’usage équitable",
+    "updated": "S’applique à tous les utilisateurs de Pricefly.",
+    "back": "Retour aux tarifs",
+    "p1": "Pricefly est destiné à un usage personnel et non abusif. Nous pouvons limiter, ralentir ou suspendre les comptes qui génèrent un trafic automatisé excessif, surchargent notre infrastructure ou nuisent à d’autres utilisateurs.",
+    "p2": "Les notifications par e-mail sont facultatives et plafonnées selon l’offre : jusqu’à 2 produits en gratuit et 10 en Pro. Les notifications in-app et push web ne sont pas soumises à ces plafonds e-mail par produit.",
+    "p3": "Vous vous engagez à ne pas abuser du service : pas de contournement des limites, pas de scraping non autorisé de l’API, pas d’utilisation de Pricefly pour harceler autrui.",
+    "li1": "Respectez robots.txt et les conditions de chaque boutique pour les URL produits.",
+    "li2": "Protégez vos identifiants.",
+    "li3": "Nous pouvons modifier cette politique ; l’utilisation continue vaut acceptation de la version en vigueur.",
+    "p4": "Questions ? Contactez le support indiqué sur le site."
+  },
   "pricing": {
     "title": "Tarifs",
     "lead": "Suivez jusqu’à 5 produits gratuitement. Passez à une offre supérieure pour un suivi illimité.",
@@ -41,9 +54,12 @@
     "free1": "5 suivis de prix actifs",
     "free2": "Vérifications automatiques toutes les 6 heures",
     "free3": "Historique des prix (30 derniers instantanés par article)",
+    "free4": "Alertes e-mail pour jusqu’à 2 produits (push et in-app illimités)",
     "pro1": "Suivis actifs illimités",
     "pro2": "Mêmes fonctions d’actualisation et d’historique",
     "pro3": "Annulation à tout moment dans PayPal",
+    "pro4": "Alertes e-mail pour jusqu’à 10 produits (push et in-app illimités)",
+    "fairUseLink": "Lire la politique d’usage équitable",
     "getStarted": "Commencer",
     "goDashboard": "Tableau de bord",
     "afterSignInToSubscribe": " pour vous abonner avec PayPal.",
@@ -118,6 +134,9 @@
       "alertAbove": "Alerte si prix ≥",
       "placeholderPrice": "ex. {{n}}",
       "hint": "Videz les champs d’alerte et enregistrez pour supprimer les seuils. Alertes lorsque le prix croise votre objectif.",
+      "emailAlerts": "M’envoyer des alertes e-mail pour ce produit",
+      "emailAlertsHint": "{{used}} / {{max}} emplacements e-mail utilisés sur votre offre. Push et in-app illimités.",
+      "fairUseLink": "Politique d’usage équitable",
       "save": "Enregistrer",
       "cancel": "Annuler"
     },

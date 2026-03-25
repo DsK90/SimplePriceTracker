@@ -41,4 +41,8 @@ export class CreateTrackingDto {
   @IsNumber()
   @Min(0)
   alertAbovePrice?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  emailAlertsEnabled?: boolean;
 }

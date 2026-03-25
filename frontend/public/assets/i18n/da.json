@@ -7,6 +7,7 @@
   "nav": {
     "dashboard": "Oversigt",
     "pricing": "Priser",
+    "fairUse": "Fair use",
     "signOut": "Log ud",
     "signIn": "Log ind",
     "register": "Opret konto",
@@ -32,6 +33,18 @@
     "hasAccount": "Har du allerede en konto?",
     "failed": "Registrering mislykkedes"
   },
+  "fairUse": {
+    "title": "Fair use-politik",
+    "updated": "Gælder for alle Pricefly-brugere.",
+    "back": "Tilbage til priser",
+    "p1": "Pricefly er til personlige, ikke-misbrugende formål. Vi kan begrænse eller suspendere konti med overdreven automatiseret trafik, der belaster vores infrastruktur eller skader andre brugere.",
+    "p2": "E-mail med prisalarmer er valgfrit og begrænset pr. plan: op til 2 produkter på gratis og op til 10 på Pro. In-app og web push er ikke underlagt de samme e-mail-grænser pr. produkt.",
+    "p3": "Du må ikke misbruge tjenesten: ingen omgåelse af grænser, uautoriseret API-scraping eller brug af Pricefly til chikane.",
+    "li1": "Respekter robots.txt og butikkernes vilkår for produkt-URL'er.",
+    "li2": "Hold dine loginoplysninger sikre.",
+    "li3": "Vi kan opdatere denne politik; fortsat brug betyder accept.",
+    "p4": "Spørgsmål? Kontakt support på websitet."
+  },
   "pricing": {
     "title": "Priser",
     "lead": "Spor op til 5 produkter gratis. Opgrader for ubegrænset aktive overvågninger.",
@@ -41,9 +54,12 @@
     "free1": "5 aktive prisovervågninger",
     "free2": "Automatiske tjek hver 6. time",
     "free3": "Prishistorik (seneste 30 øjebliksbilleder pr. vare)",
+    "free4": "E-mail-prisalarmer for op til 2 produkter (push og in-app ubegrænset)",
     "pro1": "Ubegrænset aktive overvågninger",
     "pro2": "Samme opdaterings- og historikfunktioner",
     "pro3": "Opsig når som helst i PayPal",
+    "pro4": "E-mail-prisalarmer for op til 10 produkter (push og in-app ubegrænset)",
+    "fairUseLink": "Læs fair use-politikken",
     "getStarted": "Kom i gang",
     "goDashboard": "Oversigt",
     "afterSignInToSubscribe": " for at abonnere med PayPal.",
@@ -118,6 +134,9 @@
       "alertAbove": "Alarm når pris ≥",
       "placeholderPrice": "f.eks. {{n}}",
       "hint": "Ryd alarmfelter og gem for at fjerne grænser. Alarmer når prisen krydser dit mål.",
+      "emailAlerts": "Send mig e-mail med prisalarmer for dette produkt",
+      "emailAlertsHint": "{{used}} af {{max}} e-mail-pladser brugt på din plan. Push og in-app er ubegrænset.",
+      "fairUseLink": "Fair use-politik",
       "save": "Gem",
       "cancel": "Annuller"
     },

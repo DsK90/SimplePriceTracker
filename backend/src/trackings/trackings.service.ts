@@ -8,7 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { PlanTier, Prisma, PriceTracking } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { FREE_TRACKING_LIMIT, minRecheckIntervalMinutes } from '../common/constants';
+import {
+  emailAlertSlotsForPlan,
+  FREE_TRACKING_LIMIT,
+  minRecheckIntervalMinutes,
+} from '../common/constants';
 import { CreateTrackingDto } from './dto/create-tracking.dto';
 import { UpdateTrackingDto } from './dto/update-tracking.dto';
 import { parsePriceFromText } from './price-parse';
@@ -97,6 +101,7 @@ export class TrackingsService {
             after.id,
             `Price at or below ${th.toString()} ${after.currency}`,
             `${label} is now ${lp.toString()} ${after.currency} (target: ≤ ${th.toString()} ${after.currency}).`,
+            { sendEmail: after.emailAlertsEnabled },
           );
         }
       }
@@ -113,6 +118,7 @@ export class TrackingsService {
             after.id,
             `Price at or above ${th.toString()} ${after.currency}`,
             `${label} is now ${lp.toString()} ${after.currency} (target: ≥ ${th.toString()} ${after.currency}).`,
+            { sendEmail: after.emailAlertsEnabled },
           );
         }
       }
@@ -140,6 +146,9 @@ export class TrackingsService {
   async create(userId: string, dto: CreateTrackingDto) {
     const active = dto.active !== false;
     if (active) await this.assertCanAddActive(userId);
+    if (dto.emailAlertsEnabled === true) {
+      await this.assertEmailAlertSlotsAvailable(userId);
+    }
     const currency = dto.currency ?? 'EUR';
     const interval = dto.recheckIntervalMinutes
       ? this.clampIntervalMinutes(dto.recheckIntervalMinutes)
@@ -169,6 +178,7 @@ export class TrackingsService {
         recheckIntervalMinutes: interval,
         alertBelowPrice: alertBelow,
         alertAbovePrice: alertAbove,
+        emailAlertsEnabled: dto.emailAlertsEnabled === true,
       });
     }
 
@@ -196,6 +206,7 @@ export class TrackingsService {
       recheckIntervalMinutes: interval,
       alertBelowPrice: alertBelow,
       alertAbovePrice: alertAbove,
+      emailAlertsEnabled: dto.emailAlertsEnabled === true,
     });
   }
 
@@ -211,6 +222,7 @@ export class TrackingsService {
       recheckIntervalMinutes: number;
       alertBelowPrice: Prisma.Decimal | null;
       alertAbovePrice: Prisma.Decimal | null;
+      emailAlertsEnabled?: boolean;
     },
   ) {
     const dec = new Prisma.Decimal(args.price);
@@ -223,6 +235,7 @@ export class TrackingsService {
         recheckIntervalMinutes: args.recheckIntervalMinutes,
         alertBelowPrice: args.alertBelowPrice,
         alertAbovePrice: args.alertAbovePrice,
+        emailAlertsEnabled: args.emailAlertsEnabled ?? false,
         lastPrice: dec,
         currency: args.currency,
         lastCheckedAt: new Date(),
@@ -266,9 +279,14 @@ export class TrackingsService {
       return this.toPublicTracking(row);
     }
 
+    if (dto.emailAlertsEnabled === true && !existing.emailAlertsEnabled) {
+      await this.assertEmailAlertSlotsAvailable(userId, id);
+    }
+
     const data: Prisma.PriceTrackingUpdateInput = {};
     if (dto.currency !== undefined) data.currency = dto.currency;
     if (dto.active !== undefined) data.active = dto.active;
+    if (dto.emailAlertsEnabled !== undefined) data.emailAlertsEnabled = dto.emailAlertsEnabled;
     if (dto.recheckIntervalMinutes !== undefined) {
       data.recheckIntervalMinutes = this.clampIntervalMinutes(dto.recheckIntervalMinutes);
     }
@@ -518,6 +536,7 @@ export class TrackingsService {
       alertAbovePrice: Prisma.Decimal | null;
       productName: string;
       productNameOverride: string | null;
+      emailAlertsEnabled: boolean;
     },
     userEmail: string,
     newPrice: number,
@@ -538,6 +557,7 @@ export class TrackingsService {
           before.id,
           `Price at or below ${th.toString()} ${currency}`,
           `${label} is now ${np.toString()} ${currency} (target: ≤ ${th.toString()} ${currency}).`,
+          { sendEmail: before.emailAlertsEnabled },
         );
       }
     }
@@ -553,6 +573,7 @@ export class TrackingsService {
           before.id,
           `Price at or above ${th.toString()} ${currency}`,
           `${label} is now ${np.toString()} ${currency} (target: ≥ ${th.toString()} ${currency}).`,
+          { sendEmail: before.emailAlertsEnabled },
         );
       }
     }
@@ -594,6 +615,7 @@ export class TrackingsService {
         alertAbovePrice: before.alertAbovePrice,
         productName: before.productName,
         productNameOverride: before.productNameOverride,
+        emailAlertsEnabled: before.emailAlertsEnabled,
       },
       before.user.email,
       num,
@@ -631,5 +653,40 @@ export class TrackingsService {
         `Free plan allows up to ${FREE_TRACKING_LIMIT} active trackings. Upgrade for more.`,
       );
     }
+  }
+
+  /** Enforce max products with email alerts per plan (2 free, 10 Pro). */
+  private async assertEmailAlertSlotsAvailable(userId: string, excludeTrackingId?: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException();
+    const limit = emailAlertSlotsForPlan(user.planTier);
+    const count = await this.prisma.priceTracking.count({
+      where: {
+        userId,
+        emailAlertsEnabled: true,
+        ...(excludeTrackingId ? { id: { not: excludeTrackingId } } : {}),
+      },
+    });
+    if (count >= limit) {
+      throw new ForbiddenException(
+        `Email price alerts are limited to ${limit} products on your plan. Turn off email on another product or upgrade to Pro.`,
+      );
+    }
+  }
+
+  /** After downgrade to Free, disable email on oldest excess trackings (keep first N by createdAt). */
+  async applyPlanEmailLimits(userId: string, planTier: PlanTier): Promise<void> {
+    const limit = emailAlertSlotsForPlan(planTier);
+    const rows = await this.prisma.priceTracking.findMany({
+      where: { userId, emailAlertsEnabled: true },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    const overflow = rows.slice(limit);
+    if (overflow.length === 0) return;
+    await this.prisma.priceTracking.updateMany({
+      where: { id: { in: overflow.map((r) => r.id) } },
+      data: { emailAlertsEnabled: false },
+    });
   }
 }

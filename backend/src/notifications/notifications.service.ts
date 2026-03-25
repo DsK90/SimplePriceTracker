@@ -38,17 +38,23 @@ export class NotificationsService {
     return { ok: true as const };
   }
 
+  /**
+   * In-app + push always (when push configured). Email only if `sendEmail` (plan-limited per product).
+   */
   async notifyPriceAlert(
     userId: string,
     userEmail: string,
     trackingId: string,
     title: string,
     body: string,
+    opts?: { sendEmail?: boolean },
   ) {
     await this.prisma.notification.create({
       data: { userId, trackingId, kind: 'PRICE_ALERT', title, body },
     });
-    await this.mail.sendPriceAlert(userEmail, title, body);
+    if (opts?.sendEmail) {
+      await this.mail.sendPriceAlert(userEmail, title, body);
+    }
     await this.webPush.sendToUser(userId, title, body);
   }
 

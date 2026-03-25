@@ -29,6 +29,7 @@ type Tracking = {
   recheckIntervalMinutes: number;
   alertBelowPrice: string | null;
   alertAbovePrice: string | null;
+  emailAlertsEnabled: boolean;
   lastPrice: string | null;
   currency: string;
   lastCheckedAt: string | null;
@@ -83,6 +84,7 @@ export class DashboardComponent implements OnInit {
     recheckIntervalMinutes: [360],
     alertBelowPrice: [''],
     alertAbovePrice: [''],
+    emailAlertsEnabled: [false],
   });
 
   items = signal<Tracking[]>([]);
@@ -171,6 +173,20 @@ export class DashboardComponent implements OnInit {
   thumbChar(t: Tracking): string {
     const s = t.displayProductName?.trim() || '?';
     return s.charAt(0).toUpperCase();
+  }
+
+  /** Max products with email alerts: 2 free, 10 Pro (push unlimited). */
+  protected emailAlertMax(): number {
+    return this.profile()?.planTier === 'PRO' ? 10 : 2;
+  }
+
+  protected emailAlertsUsedExcluding(trackingId: string): number {
+    return this.items().filter((x) => x.emailAlertsEnabled && x.id !== trackingId).length;
+  }
+
+  protected canEnableEmailAlerts(t: Tracking): boolean {
+    if (t.emailAlertsEnabled) return true;
+    return this.emailAlertsUsedExcluding(t.id) < this.emailAlertMax();
   }
 
   intervalShort(minutes: number): string {
@@ -352,6 +368,7 @@ export class DashboardComponent implements OnInit {
       ),
       alertBelowPrice: t.alertBelowPrice != null ? String(t.alertBelowPrice) : '',
       alertAbovePrice: t.alertAbovePrice != null ? String(t.alertAbovePrice) : '',
+      emailAlertsEnabled: t.emailAlertsEnabled ?? false,
     });
   }
 
@@ -389,6 +406,7 @@ export class DashboardComponent implements OnInit {
       companyNameOverride: v.companyNameOverride.trim() === '' ? null : v.companyNameOverride.trim(),
       alertBelowPrice,
       alertAbovePrice,
+      emailAlertsEnabled: v.emailAlertsEnabled,
     };
     this.http.patch<Tracking>(`${environment.apiUrl}/trackings/${id}`, body).subscribe({
       next: () => {

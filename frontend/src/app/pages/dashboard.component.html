@@ -69,7 +69,7 @@
             #addUrlInput
             formControlName="url"
             type="url"
-            placeholder="Paste product URL..."
+            [attr.placeholder]="'dashboard.placeholderUrl' | translate"
             class="w-full rounded-md border-none bg-surface-container-highest py-1.5 pl-3 pr-3 text-xs text-on-surface placeholder:text-outline/60 focus:outline-none focus:ring-1 focus:ring-primary/50 md:bg-transparent md:py-1.5 md:pl-9 md:text-sm md:placeholder:text-outline/50 md:focus:ring-primary/40"
           />
         </div>
@@ -204,9 +204,11 @@
       <section class="space-y-2 md:hidden">
         <div class="flex items-center justify-between px-0.5">
           <h2 class="font-headline text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Active watchlist
+            {{ 'dashboard.watchlist' | translate }}
           </h2>
-          <span class="text-[9px] font-bold uppercase tracking-widest text-primary/70">Recent</span>
+          <span class="text-[9px] font-bold uppercase tracking-widest text-primary/70">{{
+            'dashboard.recent' | translate
+          }}</span>
         </div>
         <div class="space-y-1.5">
           @for (t of items(); track t.id) {
@@ -580,6 +582,26 @@
           class="w-full rounded border border-outline-variant/30 bg-surface-container-highest px-3 py-2 text-sm text-on-surface focus:border-primary/50 focus:outline-none"
         />
       </div>
+    </div>
+    <div class="rounded border border-outline-variant/15 bg-surface-container/30 px-3 py-2.5">
+      <label class="flex cursor-pointer items-start gap-3">
+        <input
+          type="checkbox"
+          formControlName="emailAlertsEnabled"
+          class="mt-1 h-4 w-4 shrink-0 rounded border-outline-variant text-primary focus:ring-primary/40"
+          [disabled]="!canEnableEmailAlerts(t) && !editForm.get('emailAlertsEnabled')?.value"
+        />
+        <span>
+          <span class="block text-xs font-semibold text-on-surface">{{ 'dashboard.edit.emailAlerts' | translate }}</span>
+          <span class="mt-0.5 block text-[10px] text-on-surface-variant/90">{{
+            'dashboard.edit.emailAlertsHint'
+              | translate: { max: emailAlertMax(), used: emailAlertsUsedExcluding(t.id) }
+          }}</span>
+          <a routerLink="/fair-use" class="mt-1 inline-block text-[10px] font-medium text-primary hover:underline">{{
+            'dashboard.edit.fairUseLink' | translate
+          }}</a>
+        </span>
+      </label>
     </div>
     <p class="text-[10px] text-on-surface-variant">
       {{ 'dashboard.edit.hint' | translate }}

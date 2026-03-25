@@ -7,6 +7,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "pricing": "Pricing",
+    "fairUse": "Fair use",
     "signOut": "Sign out",
     "signIn": "Sign in",
     "register": "Register",
@@ -32,6 +33,18 @@
     "hasAccount": "Already have an account?",
     "failed": "Registration failed"
   },
+  "fairUse": {
+    "title": "Fair use policy",
+    "updated": "This policy applies to everyone using Pricefly.",
+    "back": "Back to pricing",
+    "p1": "Pricefly is provided for personal, non-abusive use. We may rate-limit, throttle, or suspend accounts that generate excessive automated traffic, strain our infrastructure, or harm other users.",
+    "p2": "Email notifications are optional and capped per plan so we can keep delivery reliable: up to 2 tracked products on Free and up to 10 on Pro. In-app notifications and web push alerts are not subject to these per-product email caps.",
+    "p3": "You agree not to misuse the service, including attempting to circumvent limits, scrape our API without authorization, or use Pricefly to harass others.",
+    "li1": "Respect robots.txt and each store’s terms when adding product URLs.",
+    "li2": "Keep your account credentials secure.",
+    "li3": "We may update this policy; continued use means you accept the current version.",
+    "p4": "Questions? Contact us using the support channel listed on our site."
+  },
   "pricing": {
     "title": "Pricing",
     "lead": "Track up to 5 products for free. Upgrade for unlimited active trackings.",
@@ -41,9 +54,12 @@
     "free1": "5 active price trackings",
     "free2": "Automatic checks every 6 hours",
     "free3": "Price history (last 30 snapshots per item)",
+    "free4": "Email price alerts on up to 2 products (push & in-app unlimited)",
     "pro1": "Unlimited active trackings",
     "pro2": "Same refresh & history features",
     "pro3": "Cancel anytime in PayPal",
+    "pro4": "Email price alerts on up to 10 products (push & in-app unlimited)",
+    "fairUseLink": "Read the fair use policy",
     "getStarted": "Get started",
     "goDashboard": "Dashboard",
     "afterSignInToSubscribe": " to subscribe with PayPal.",
@@ -118,6 +134,9 @@
       "alertAbove": "Alert when price ≥",
       "placeholderPrice": "e.g. {{n}}",
       "hint": "Clear alert fields and save to remove thresholds. Alerts fire when the price crosses your target.",
+      "emailAlerts": "Email me price alerts for this product",
+      "emailAlertsHint": "{{used}} of {{max}} email slots used on your plan. Push and in-app notifications are unlimited.",
+      "fairUseLink": "Fair use policy",
       "save": "Save",
       "cancel": "Cancel"
     },

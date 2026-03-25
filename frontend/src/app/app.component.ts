@@ -43,6 +43,12 @@ import { environment } from '../environments/environment';
               class="text-on-surface-variant transition-colors hover:text-on-surface"
               >{{ 'nav.pricing' | translate }}</a
             >
+            <a
+              routerLink="/fair-use"
+              routerLinkActive="border-b-2 border-primary pb-0.5 text-primary"
+              class="text-on-surface-variant transition-colors hover:text-on-surface"
+              >{{ 'nav.fairUse' | translate }}</a
+            >
           </div>
           <div class="flex items-center gap-3 md:gap-4">
             @if (auth.isLoggedIn()) {

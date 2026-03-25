@@ -7,6 +7,7 @@
   "nav": {
     "dashboard": "控制台",
     "pricing": "定价",
+    "fairUse": "公平使用",
     "signOut": "退出",
     "signIn": "登录",
     "register": "注册",
@@ -32,6 +33,18 @@
     "hasAccount": "已有账户？",
     "failed": "注册失败"
   },
+  "fairUse": {
+    "title": "公平使用政策",
+    "updated": "适用于所有 Pricefly 用户。",
+    "back": "返回定价",
+    "p1": "Pricefly 仅供个人、非滥用用途。若产生过量自动化流量、损害基础设施或影响其他用户，我们可能会限流、节流或暂停账户。",
+    "p2": "邮件通知为可选且按套餐限制，以保证送达：免费版最多 2 个商品，专业版最多 10 个。应用内通知与 Web 推送不受上述邮件名额限制。",
+    "p3": "您不得滥用本服务，包括试图绕过限制、未经授权抓取 API，或利用 Pricefly 骚扰他人。",
+    "li1": "添加商品链接时请遵守 robots.txt 与各商店条款。",
+    "li2": "请妥善保管账户凭据。",
+    "li3": "我们可能更新本政策；继续使用即表示您接受当前版本。",
+    "p4": "如有疑问，请通过网站上的支持渠道联系我们。"
+  },
   "pricing": {
     "title": "定价",
     "lead": "最多免费追踪 5 个商品。升级可无限追踪。",
@@ -41,9 +54,12 @@
     "free1": "5 个活跃价格追踪",
     "free2": "每 6 小时自动检查",
     "free3": "价格历史（每项最近 30 条快照）",
+    "free4": "邮件价格提醒最多 2 个商品（推送与应用内不限）",
     "pro1": "无限活跃追踪",
     "pro2": "相同的刷新与历史功能",
     "pro3": "可随时在 PayPal 中取消",
+    "pro4": "邮件价格提醒最多 10 个商品（推送与应用内不限）",
+    "fairUseLink": "阅读公平使用政策",
     "getStarted": "开始使用",
     "goDashboard": "控制台",
     "afterSignInToSubscribe": "以使用 PayPal 订阅。",
@@ -60,6 +76,10 @@
     "upgrade": "升级",
     "activeAlerts": "{{count}} 个活跃价格提醒",
     "activeAlertsPlural": "{{count}} 个活跃价格提醒",
+    "placeholderUrl": "粘贴商品链接…",
+    "add": "添加",
+    "notifications": "通知",
+    "markAllRead": "全部标为已读",
     "loading": "加载中…",
     "noNotifications": "暂无通知。价格提醒将显示在这里。",
     "watchlist": "活跃关注列表",
@@ -98,10 +118,6 @@
       "unsupported": "当前环境不支持浏览器通知。",
       "serverOff": "服务器未配置 Web Push（请在 API 环境中设置 VAPID 密钥）。"
     },
-    "placeholderUrl": "粘贴商品链接…",
-    "add": "添加",
-    "notifications": "通知",
-    "markAllRead": "全部标为已读",
     "errors": {
       "addFailed": "无法添加追踪",
       "saveFailed": "无法保存",
@@ -118,6 +134,9 @@
       "alertAbove": "价格 ≥ 时提醒",
       "placeholderPrice": "例如 {{n}}",
       "hint": "清空提醒字段并保存可移除阈值。价格达到目标时会提醒。",
+      "emailAlerts": "通过邮件接收此商品的价格提醒",
+      "emailAlertsHint": "您的套餐已用 {{used}} / {{max}} 个邮件名额。推送与应用内通知不限。",
+      "fairUseLink": "公平使用政策",
       "save": "保存",
       "cancel": "取消"
     },

@@ -7,6 +7,7 @@ import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { PaypalService } from '../paypal/paypal.service';
+import { TrackingsService } from '../trackings/trackings.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     private jwt: JwtService,
     private mail: MailService,
     private paypal: PaypalService,
+    private trackings: TrackingsService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -64,6 +66,7 @@ export class AuthService {
           where: { id: userId },
           data: { planTier: PlanTier.FREE, paypalSubscriptionId: null },
         });
+        await this.trackings.applyPlanEmailLimits(userId, PlanTier.FREE);
         return {
           ...user,
           planTier: PlanTier.FREE,

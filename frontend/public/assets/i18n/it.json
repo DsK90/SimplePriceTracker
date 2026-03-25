@@ -7,6 +7,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "pricing": "Prezzi",
+    "fairUse": "Uso corretto",
     "signOut": "Esci",
     "signIn": "Accedi",
     "register": "Registrati",
@@ -32,6 +33,18 @@
     "hasAccount": "Hai già un account?",
     "failed": "Registrazione non riuscita"
   },
+  "fairUse": {
+    "title": "Politica di uso corretto",
+    "updated": "Si applica a tutti gli utenti di Pricefly.",
+    "back": "Torna ai prezzi",
+    "p1": "Pricefly è per uso personale e non abusivo. Possiamo limitare o sospendere account che generano traffico automatizzato eccessivo, sovraccaricano l’infrastruttura o danneggiano altri utenti.",
+    "p2": "Le e-mail di avviso sono facoltative e limitate per piano: fino a 2 prodotti in gratuito e 10 in Pro. Notifiche in-app e push web non hanno questi limiti e-mail per prodotto.",
+    "p3": "Non devi abusare del servizio: niente aggiramento dei limiti, scraping non autorizzato dell’API o uso di Pricefly per molestare.",
+    "li1": "Rispetta robots.txt e i termini di ogni negozio per gli URL.",
+    "li2": "Proteggi le tue credenziali.",
+    "li3": "Possiamo aggiornare questa policy; l’uso continuato implica accettazione.",
+    "p4": "Domande? Contatta il supporto sul sito."
+  },
   "pricing": {
     "title": "Prezzi",
     "lead": "Traccia fino a 5 prodotti gratis. Passa a Pro per monitoraggi illimitati.",
@@ -41,9 +54,12 @@
     "free1": "5 monitoraggi prezzi attivi",
     "free2": "Controlli automatici ogni 6 ore",
     "free3": "Storico prezzi (ultimi 30 snapshot per articolo)",
+    "free4": "Avvisi e-mail per fino a 2 prodotti (push e in-app illimitati)",
     "pro1": "Monitoraggi attivi illimitati",
     "pro2": "Stesse funzioni di aggiornamento e cronologia",
     "pro3": "Annulla quando vuoi in PayPal",
+    "pro4": "Avvisi e-mail per fino a 10 prodotti (push e in-app illimitati)",
+    "fairUseLink": "Leggi la politica di uso corretto",
     "getStarted": "Inizia",
     "goDashboard": "Dashboard",
     "afterSignInToSubscribe": " per abbonarti con PayPal.",
@@ -118,6 +134,9 @@
       "alertAbove": "Avviso se prezzo ≥",
       "placeholderPrice": "es. {{n}}",
       "hint": "Svuota i campi avviso e salva per rimuovere le soglie. Gli avvisi scattano al superamento dell'obiettivo.",
+      "emailAlerts": "Inviami avvisi e-mail per questo prodotto",
+      "emailAlertsHint": "{{used}} di {{max}} slot e-mail usati sul tuo piano. Push e in-app illimitati.",
+      "fairUseLink": "Politica di uso corretto",
       "save": "Salva",
       "cancel": "Annulla"
     },

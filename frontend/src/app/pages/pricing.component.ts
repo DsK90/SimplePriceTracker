@@ -46,6 +46,7 @@ type Plan = {
             <li>{{ 'pricing.free1' | translate }}</li>
             <li>{{ 'pricing.free2' | translate }}</li>
             <li>{{ 'pricing.free3' | translate }}</li>
+            <li>{{ 'pricing.free4' | translate }}</li>
           </ul>
           @if (!auth.isLoggedIn()) {
             <a class="btn secondary" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
@@ -67,6 +68,7 @@ type Plan = {
             <li>{{ 'pricing.pro1' | translate }}</li>
             <li>{{ 'pricing.pro2' | translate }}</li>
             <li>{{ 'pricing.pro3' | translate }}</li>
+            <li>{{ 'pricing.pro4' | translate }}</li>
           </ul>
           @if (!auth.isLoggedIn()) {
             <p class="hint">
@@ -91,6 +93,9 @@ type Plan = {
           }
         </article>
       </div>
+      <p class="fair-use-footer">
+        <a routerLink="/fair-use">{{ 'pricing.fairUseLink' | translate }}</a>
+      </p>
     </div>
   `,
   styles: [
@@ -108,6 +113,15 @@ type Plan = {
         color: var(--muted);
         margin-bottom: 2rem;
         line-height: 1.5;
+      }
+      .fair-use-footer {
+        margin-top: 1.5rem;
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+      .fair-use-footer a {
+        color: var(--primary, #7c9cff);
+        text-decoration: underline;
       }
       .grid {
         display: grid;

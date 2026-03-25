@@ -24,8 +24,11 @@ export class MailService {
       await this.resend.emails.send({
         from,
         to,
-        subject: 'Welcome to Simple Price Tracker',
-        text: 'Thanks for signing up. You can track up to 5 products at once on the free plan.',
+        subject: 'Welcome to Pricefly',
+        text:
+          'Thanks for signing up. On the free plan you can track up to 5 active products. ' +
+          'Email price alerts are optional and limited to 2 products (10 on Pro); push and in-app alerts are unlimited. ' +
+          'See our Fair Use Policy on the website.',
       });
     } catch (e) {
       this.log.warn(`Welcome email failed: ${(e as Error).message}`);

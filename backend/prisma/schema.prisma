@@ -73,6 +73,8 @@ model PriceTracking {
   alertBelowPrice Decimal? @db.Decimal(12, 4)
   /// Notify once when price crosses up to this level or above (optional)
   alertAbovePrice Decimal? @db.Decimal(12, 4)
+  /// Email for price alerts on this product (plan-limited: 2 free, 10 Pro). Push + in-app stay unlimited.
+  emailAlertsEnabled Boolean @default(false)
   lastPrice     Decimal? @db.Decimal(12, 4)
   currency      String   @default("EUR")
   lastCheckedAt DateTime?

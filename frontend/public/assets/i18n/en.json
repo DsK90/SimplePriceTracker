@@ -125,6 +125,7 @@
     "pro3": "Cancel anytime in PayPal",
     "pro4": "Email price alerts on up to 10 products",
     "pro5": "Push & in-app notifications unlimited",
+    "pro6": "Price history in the app (up to 30 entries per product)",
     "fairUseLink": "Read the fair use policy",
     "termsLink": "Terms",
     "getStarted": "Get started",
@@ -189,7 +190,16 @@
       "addFailed": "Could not add tracking",
       "saveFailed": "Could not save",
       "refreshFailed": "Refresh failed",
-      "invalidDecimal": "Enter a valid price (e.g. 25.99 or 25,99)."
+      "invalidDecimal": "Enter a valid price (e.g. 25.99 or 25,99).",
+      "freeTrackingLimit": "The free plan allows up to {{max}} active trackings. Upgrade for more."
+    },
+    "history": {
+      "title": "Price history",
+      "openAria": "Open price history",
+      "close": "Close",
+      "empty": "No recorded price checks yet.",
+      "colDate": "Recorded",
+      "colPrice": "Price"
     },
     "edit": {
       "productOptional": "Product name (optional)",

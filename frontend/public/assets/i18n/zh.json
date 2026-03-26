@@ -72,6 +72,7 @@
     "pro3": "可随时在 PayPal 中取消",
     "pro4": "邮件价格提醒最多 10 个商品",
     "pro5": "推送与应用内通知不限量",
+    "pro6": "应用内价格历史（每个商品最多 30 条）",
     "fairUseLink": "阅读公平使用政策",
     "termsLink": "条款",
     "getStarted": "开始使用",
@@ -136,7 +137,16 @@
       "addFailed": "无法添加追踪",
       "saveFailed": "无法保存",
       "refreshFailed": "刷新失败",
-      "invalidDecimal": "请输入有效价格（例如 25.99 或 25,99）。"
+      "invalidDecimal": "请输入有效价格（例如 25.99 或 25,99）。",
+      "freeTrackingLimit": "免费版最多 {{max}} 个活跃追踪。升级即可添加更多。"
+    },
+    "history": {
+      "title": "价格历史",
+      "openAria": "打开价格历史",
+      "close": "关闭",
+      "empty": "尚无已记录的价格检查。",
+      "colDate": "记录时间",
+      "colPrice": "价格"
     },
     "edit": {
       "productOptional": "商品名称（可选）",

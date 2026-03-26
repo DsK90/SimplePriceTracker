@@ -72,6 +72,7 @@
     "pro3": "Annulla quando vuoi in PayPal",
     "pro4": "Avvisi e-mail per fino a 10 prodotti",
     "pro5": "Push e notifiche in-app illimitate",
+    "pro6": "Storico prezzi nell’app (fino a 30 voci per prodotto)",
     "fairUseLink": "Leggi la politica di uso corretto",
     "termsLink": "Termini",
     "getStarted": "Inizia",
@@ -136,7 +137,16 @@
       "addFailed": "Impossibile aggiungere il monitoraggio",
       "saveFailed": "Impossibile salvare",
       "refreshFailed": "Aggiornamento non riuscito",
-      "invalidDecimal": "Inserisci un prezzo valido (es. 25,99 o 25.99)."
+      "invalidDecimal": "Inserisci un prezzo valido (es. 25,99 o 25.99).",
+      "freeTrackingLimit": "Il piano gratuito consente fino a {{max}} monitoraggi attivi. Passa a un piano superiore per averne di più."
+    },
+    "history": {
+      "title": "Storico prezzi",
+      "openAria": "Apri storico prezzi",
+      "close": "Chiudi",
+      "empty": "Nessun controllo prezzo registrato ancora.",
+      "colDate": "Registrato",
+      "colPrice": "Prezzo"
     },
     "edit": {
       "productOptional": "Nome prodotto (opzionale)",

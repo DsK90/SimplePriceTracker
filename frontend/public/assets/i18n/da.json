@@ -72,6 +72,7 @@
     "pro3": "Opsig når som helst i PayPal",
     "pro4": "E-mail-prisalarmer for op til 10 produkter",
     "pro5": "Ubegrænset push og in-app",
+    "pro6": "Prishistorik i appen (op til 30 poster pr. produkt)",
     "fairUseLink": "Læs fair use-politikken",
     "termsLink": "Vilkår",
     "getStarted": "Kom i gang",
@@ -136,7 +137,16 @@
       "addFailed": "Kunne ikke tilføje overvågning",
       "saveFailed": "Kunne ikke gemme",
       "refreshFailed": "Opdatering mislykkedes",
-      "invalidDecimal": "Angiv en gyldig pris (f.eks. 25,99 eller 25.99)."
+      "invalidDecimal": "Angiv en gyldig pris (f.eks. 25,99 eller 25.99).",
+      "freeTrackingLimit": "Gratis-planen tillader op til {{max}} aktive overvågninger. Opgrader for flere."
+    },
+    "history": {
+      "title": "Prishistorik",
+      "openAria": "Åbn prishistorik",
+      "close": "Luk",
+      "empty": "Ingen registrerede pristjek endnu.",
+      "colDate": "Tidspunkt",
+      "colPrice": "Pris"
     },
     "edit": {
       "productOptional": "Produktnavn (valgfrit)",

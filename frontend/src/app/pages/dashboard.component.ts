@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import {
   Component,
   ElementRef,
+  HostListener,
   OnInit,
   ViewChild,
   inject,
@@ -35,7 +36,7 @@ type Tracking = {
   lastCheckedAt: string | null;
   active: boolean;
   createdAt: string;
-  snapshots?: { price: string; recordedAt: string }[];
+  snapshots?: { price: string; recordedAt: string; currency?: string }[];
 };
 
 type AppNotification = {
@@ -48,6 +49,12 @@ type AppNotification = {
 };
 
 const INTERVAL_MINUTES = [1, 15, 30, 60, 360, 720, 1440, 10080] as const;
+
+type ApiErrorBody = {
+  code?: string;
+  limit?: number;
+  message?: string | string[];
+};
 
 function intervalOptionsForMin(minMinutes: number) {
   return INTERVAL_MINUTES.filter((m) => m >= minMinutes);
@@ -105,12 +112,33 @@ export class DashboardComponent implements OnInit {
 
   demoAdding = signal(false);
 
+  /** Pro-only: overlay with price snapshots for one tracking. */
+  historyTracking = signal<Tracking | null>(null);
+
   pushLoading = signal(true);
   pushUnsupported = signal(false);
   pushServerOn = signal(false);
   pushSubscribed = signal(false);
   pushDenied = signal(false);
   pushBusy = signal(false);
+
+  @HostListener('document:keydown.escape')
+  onHistoryEscape(): void {
+    if (this.historyTracking()) this.closePriceHistory();
+  }
+
+  private messageFromApiError(err: { error?: ApiErrorBody }, fallbackKey: string): string {
+    const body = err.error;
+    if (body?.code === 'FREE_TRACKING_LIMIT') {
+      return this.translate.instant('dashboard.errors.freeTrackingLimit', {
+        max: body.limit ?? 5,
+      });
+    }
+    const m = body?.message;
+    if (Array.isArray(m)) return m[0] ?? this.translate.instant(fallbackKey);
+    if (typeof m === 'string' && m.length > 0) return m;
+    return this.translate.instant(fallbackKey);
+  }
 
   ngOnInit() {
     this.auth.loadProfile().subscribe({
@@ -203,6 +231,27 @@ export class DashboardComponent implements OnInit {
     return this.translate.instant('dashboard.interval.unknown', { minutes });
   }
 
+  protected isPro(): boolean {
+    return this.profile()?.planTier === 'PRO';
+  }
+
+  openPriceHistory(t: Tracking): void {
+    if (!this.isPro()) return;
+    this.historyTracking.set(t);
+  }
+
+  closePriceHistory(): void {
+    this.historyTracking.set(null);
+  }
+
+  closePriceHistoryBackdrop(e: MouseEvent): void {
+    if (e.target === e.currentTarget) this.closePriceHistory();
+  }
+
+  snapshotCurrency(s: { currency?: string }, t: Tracking): string {
+    return s.currency ?? t.currency;
+  }
+
   priceDelta(t: Tracking): { pct: number; label: string } | null {
     const s = t.snapshots;
     if (!s || s.length < 2) return null;
@@ -250,10 +299,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (e) => {
         this.demoAdding.set(false);
-        const m = e.error?.message;
-        this.formError.set(
-          Array.isArray(m) ? m[0] : m || this.translate.instant('dashboard.errors.addFailed'),
-        );
+        this.formError.set(this.messageFromApiError(e, 'dashboard.errors.addFailed'));
       },
     });
   }
@@ -342,10 +388,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (e) => {
         this.saving.set(false);
-        const m = e.error?.message;
-        this.formError.set(
-          Array.isArray(m) ? m[0] : m || this.translate.instant('dashboard.errors.addFailed'),
-        );
+        this.formError.set(this.messageFromApiError(e, 'dashboard.errors.addFailed'));
       },
     });
   }
@@ -416,10 +459,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (e) => {
         this.savingEdit.set(false);
-        const m = e.error?.message;
-        this.patchError.set(
-          Array.isArray(m) ? m[0] : m || this.translate.instant('dashboard.errors.saveFailed'),
-        );
+        this.patchError.set(this.messageFromApiError(e, 'dashboard.errors.saveFailed'));
       },
     });
   }
@@ -434,10 +474,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (e) => {
         this.refreshingId.set(null);
-        const m = e.error?.message;
-        this.refreshError.set(
-          Array.isArray(m) ? m[0] : m || this.translate.instant('dashboard.errors.refreshFailed'),
-        );
+        this.refreshError.set(this.messageFromApiError(e, 'dashboard.errors.refreshFailed'));
       },
     });
   }

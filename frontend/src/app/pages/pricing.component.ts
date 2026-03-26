@@ -74,6 +74,7 @@ type Plan = {
               <li>{{ 'pricing.pro3' | translate }}</li>
               <li>{{ 'pricing.pro4' | translate }}</li>
               <li>{{ 'pricing.pro5' | translate }}</li>
+              <li>{{ 'pricing.pro6' | translate }}</li>
             </ul>
             @if (!auth.isLoggedIn()) {
               <p class="hint">

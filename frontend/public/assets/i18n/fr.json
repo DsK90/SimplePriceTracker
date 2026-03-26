@@ -72,6 +72,7 @@
     "pro3": "Annulation à tout moment dans PayPal",
     "pro4": "Alertes e-mail pour jusqu’à 10 produits",
     "pro5": "Notifications push et in-app illimitées",
+    "pro6": "Historique des prix dans l’app (jusqu’à 30 entrées par produit)",
     "fairUseLink": "Lire la politique d’usage équitable",
     "termsLink": "CGU",
     "getStarted": "Commencer",
@@ -136,7 +137,16 @@
       "addFailed": "Impossible d’ajouter le suivi",
       "saveFailed": "Impossible d’enregistrer",
       "refreshFailed": "Échec de l’actualisation",
-      "invalidDecimal": "Saisissez un prix valide (p. ex. 25,99 ou 25.99)."
+      "invalidDecimal": "Saisissez un prix valide (p. ex. 25,99 ou 25.99).",
+      "freeTrackingLimit": "L’offre gratuite autorise jusqu’à {{max}} suivis actifs. Passez à une offre supérieure pour en avoir plus."
+    },
+    "history": {
+      "title": "Historique des prix",
+      "openAria": "Ouvrir l’historique des prix",
+      "close": "Fermer",
+      "empty": "Aucun relevé de prix enregistré pour l’instant.",
+      "colDate": "Enregistré",
+      "colPrice": "Prix"
     },
     "edit": {
       "productOptional": "Nom du produit (facultatif)",

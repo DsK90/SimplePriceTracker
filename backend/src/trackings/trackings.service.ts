@@ -133,14 +133,27 @@ export class TrackingsService {
     };
   }
 
-  list(userId: string) {
-    return this.prisma.priceTracking
-      .findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        ...TRACKING_LIST,
-      })
-      .then((rows) => rows.map((t) => this.toPublicTracking(t)));
+  /**
+   * Pro: up to 30 snapshots (history dialog). Free: only last 2 in the JSON response (enough for % delta).
+   * Always use fixed `take: 30` in the query — Prisma 7 + pg can fail with a variable nested `take`
+   * (“column (not available) does not exist”); trimming in memory avoids that.
+   */
+  async list(userId: string): Promise<PublicTracking[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { planTier: true },
+    });
+    const rows = await this.prisma.priceTracking.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      ...TRACKING_LIST,
+    });
+    const mapped = rows.map((t) => this.toPublicTracking(t));
+    if (user?.planTier === PlanTier.PRO) return mapped;
+    return mapped.map((t) => ({
+      ...t,
+      snapshots: (t.snapshots ?? []).slice(0, 2),
+    }));
   }
 
   async create(userId: string, dto: CreateTrackingDto) {
@@ -649,9 +662,10 @@ export class TrackingsService {
       where: { userId, active: true },
     });
     if (count >= FREE_TRACKING_LIMIT) {
-      throw new ForbiddenException(
-        `Free plan allows up to ${FREE_TRACKING_LIMIT} active trackings. Upgrade for more.`,
-      );
+      throw new ForbiddenException({
+        code: 'FREE_TRACKING_LIMIT',
+        limit: FREE_TRACKING_LIMIT,
+      });
     }
   }
 

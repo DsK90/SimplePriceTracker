@@ -125,6 +125,7 @@
     "pro3": "Jederzeit in PayPal kündbar",
     "pro4": "E-Mail-Preisalarme für bis zu 10 Produkte",
     "pro5": "Push-Benachrichtigungen unbegrenzt",
+    "pro6": "Preishistorie in der App (bis zu 30 Einträge pro Produkt)",
     "fairUseLink": "Fair-Use-Richtlinie lesen",
     "termsLink": "AGB",
     "getStarted": "Loslegen",
@@ -189,7 +190,16 @@
       "addFailed": "Tracking konnte nicht hinzugefügt werden",
       "saveFailed": "Speichern fehlgeschlagen",
       "refreshFailed": "Aktualisierung fehlgeschlagen",
-      "invalidDecimal": "Bitte einen gültigen Preis eingeben (z. B. 25,99 oder 25.99)."
+      "invalidDecimal": "Bitte einen gültigen Preis eingeben (z. B. 25,99 oder 25.99).",
+      "freeTrackingLimit": "Im Free-Tarif sind bis zu {{max}} aktive Trackings möglich. Upgrade für mehr."
+    },
+    "history": {
+      "title": "Preisverlauf",
+      "openAria": "Preisverlauf anzeigen",
+      "close": "Schließen",
+      "empty": "Noch keine gespeicherten Preisstände.",
+      "colDate": "Zeitpunkt",
+      "colPrice": "Preis"
     },
     "edit": {
       "productOptional": "Produktname (optional)",

@@ -98,7 +98,7 @@
       }
 
       @if (!pushLoading()) {
-        <div class="mt-3 rounded-lg border border-outline-variant/15 bg-surface-container-low/60 px-3 py-2.5">
+        <div class="mt-3 hidden rounded-lg border border-outline-variant/15 bg-surface-container-low/60 px-3 py-2.5 md:block">
           @if (pushUnsupported()) {
             <p class="text-[11px] text-on-surface-variant/85">{{ 'dashboard.push.unsupported' | translate }}</p>
           } @else if (!pushServerOn()) {
@@ -166,9 +166,9 @@
         </div>
         <div class="max-h-80 overflow-y-auto px-2">
           @if (notifLoading()) {
-            <p class="p-4 text-sm text-on-surface-variant">Loading…</p>
+            <p class="p-4 text-sm text-on-surface-variant">{{ 'dashboard.loading' | translate }}</p>
           } @else if (!notifications().length) {
-            <p class="p-4 text-sm text-on-surface-variant">No notifications yet. Price alerts appear here.</p>
+            <p class="p-4 text-sm text-on-surface-variant">{{ 'dashboard.noNotifications' | translate }}</p>
           } @else {
             <ul class="divide-y divide-outline-variant/10">
               @for (n of notifications(); track n.id) {
@@ -248,6 +248,9 @@
                       } @else {
                         <span class="rounded bg-primary/20 px-1 py-0 text-[9px] font-bold text-primary">{{ d.label }}</span>
                       }
+                    }
+                    @if (t.lastCheckedAt) {
+                      <span class="text-[9px] text-outline">{{ t.lastCheckedAt | date: 'dd.MM.yy, HH:mm' }}</span>
                     }
                   </div>
                   @if (demoPriceEnabled && isDemoTracking(t)) {
@@ -374,7 +377,7 @@
                           >
                           @if (priceDelta(t); as d) {
                             @if (d.pct === 0) {
-                              <span class="text-[10px] font-bold text-outline">STABLE</span>
+                              <span class="text-[10px] font-bold text-outline">{{ 'dashboard.stableUpper' | translate }}</span>
                             } @else if (d.pct < 0) {
                               <span class="flex items-center gap-0.5 text-[10px] font-bold text-tertiary">
                                 <span class="material-symbols-outlined text-[12px]">trending_down</span>
@@ -580,6 +583,34 @@
       <span class="text-[8px] font-bold uppercase tracking-widest">{{ 'nav.installApp' | translate }}</span>
     </button>
   </nav>
+
+  @if (
+    !pushLoading() &&
+    !pushUnsupported() &&
+    pushServerOn() &&
+    !pushSubscribed() &&
+    !pushDenied() &&
+    !pushBannerDismissed()
+  ) {
+    <div class="fixed bottom-[6.5rem] right-4 z-40 flex items-center gap-1.5 md:hidden">
+      <button
+        type="button"
+        (click)="pushBannerDismissed.set(true)"
+        class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container-highest/80 text-on-surface-variant shadow transition active:scale-90"
+        aria-label="Dismiss"
+      >
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+      <button
+        type="button"
+        (click)="enablePush()"
+        [disabled]="pushBusy()"
+        class="flex h-10 w-10 items-center justify-center rounded-full bg-tertiary text-on-tertiary shadow-lg transition active:scale-90 disabled:opacity-50"
+      >
+        <span class="material-symbols-outlined text-xl">notifications_active</span>
+      </button>
+    </div>
+  }
 
   <button
     type="button"

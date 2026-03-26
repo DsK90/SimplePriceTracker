@@ -121,6 +121,7 @@ export class DashboardComponent implements OnInit {
   pushSubscribed = signal(false);
   pushDenied = signal(false);
   pushBusy = signal(false);
+  pushBannerDismissed = signal(false);
 
   @HostListener('document:keydown.escape')
   onHistoryEscape(): void {

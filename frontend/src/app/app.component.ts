@@ -82,7 +82,7 @@ import { PwaInstallService } from './core/pwa-install.service';
         <router-outlet />
       </main>
       <footer
-        class="border-t border-outline-variant/10 bg-surface-container-low/30 py-px"
+        class="border-t border-outline-variant/10 bg-surface-container-low/30 pt-px pb-16 md:pb-px"
       >
         <div
           class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-4 text-xs text-on-surface-variant md:px-8"

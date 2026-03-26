@@ -112,6 +112,7 @@ jobs:
             --exclude 'frontend/.angular' \
             --exclude 'coverage' \
             --exclude '.git' \
+            --exclude '.env' \
             --exclude 'nginx/certbot_conf' \
             ./ root@${{ secrets.DEPLOY_HOST }}:${{ env.DEPLOY_PATH }}/
 

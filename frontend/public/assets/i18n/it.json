@@ -82,6 +82,7 @@
     "cancelSub": "Annulla abbonamento",
     "loadingPaypal": "Caricamento PayPal…",
     "paypalConfigHint": "Imposta il client ID PayPal in build e PAYPAL_PRO_PLAN_ID per il seed API.",
+    "paypalLoadError": "Impossibile caricare PayPal. Riprova più tardi o contatta l'assistenza.",
     "cancelConfirm": "Annullare l'abbonamento Pro?"
   },
   "dashboard": {

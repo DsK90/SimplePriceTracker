@@ -135,6 +135,7 @@
     "cancelSub": "Abonnement kündigen",
     "loadingPaypal": "PayPal wird geladen…",
     "paypalConfigHint": "PayPal-Client-ID beim Build setzen und PAYPAL_PRO_PLAN_ID für den API-Seed.",
+    "paypalLoadError": "PayPal konnte nicht geladen werden. Bitte versuche es später erneut oder kontaktiere den Support.",
     "cancelConfirm": "Pro-Abonnement kündigen?"
   },
   "dashboard": {

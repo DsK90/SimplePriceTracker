@@ -1,9 +1,16 @@
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
 
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const prisma = new PrismaClient();
+const connectionString =
+  process.env.DATABASE_URL ||
+  'postgresql://pricetracker:pricetracker@localhost:5460/pricetracker?schema=public';
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString }),
+});
 
 const PAYPAL_PRO_PLAN_ID =
   process.env.PAYPAL_PRO_PLAN_ID || 'P-6TL7122718514241MNHCG5QQ';

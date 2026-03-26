@@ -82,6 +82,7 @@
     "cancelSub": "取消订阅",
     "loadingPaypal": "正在加载 PayPal…",
     "paypalConfigHint": "构建时设置 PayPal 客户端 ID，并为 API 种子配置 PAYPAL_PRO_PLAN_ID。",
+    "paypalLoadError": "无法加载 PayPal。请稍后重试或联系客服。",
     "cancelConfirm": "要取消专业版订阅吗？"
   },
   "dashboard": {

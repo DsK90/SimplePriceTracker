@@ -82,6 +82,7 @@
     "cancelSub": "Отменить подписку",
     "loadingPaypal": "Загрузка PayPal…",
     "paypalConfigHint": "Укажите PayPal client ID при сборке и PAYPAL_PRO_PLAN_ID для API.",
+    "paypalLoadError": "PayPal не удалось загрузить. Попробуйте позже или обратитесь в поддержку.",
     "cancelConfirm": "Отменить подписку Pro?"
   },
   "dashboard": {

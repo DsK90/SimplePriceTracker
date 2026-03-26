@@ -82,6 +82,7 @@
     "cancelSub": "Cancelar suscripción",
     "loadingPaypal": "Cargando PayPal…",
     "paypalConfigHint": "Configura el ID de cliente de PayPal al compilar y PAYPAL_PRO_PLAN_ID para la semilla de la API.",
+    "paypalLoadError": "No se pudo cargar PayPal. Inténtalo de nuevo más tarde o contacta con soporte.",
     "cancelConfirm": "¿Cancelar tu suscripción Pro?"
   },
   "dashboard": {

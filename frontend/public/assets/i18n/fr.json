@@ -82,6 +82,7 @@
     "cancelSub": "Annuler l’abonnement",
     "loadingPaypal": "Chargement de PayPal…",
     "paypalConfigHint": "Définissez l’ID client PayPal au build et PAYPAL_PRO_PLAN_ID pour l’amorçage API.",
+    "paypalLoadError": "PayPal n'a pas pu être chargé. Veuillez réessayer plus tard ou contacter l'assistance.",
     "cancelConfirm": "Annuler votre abonnement Pro ?"
   },
   "dashboard": {

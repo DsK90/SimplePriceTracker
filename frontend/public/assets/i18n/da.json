@@ -82,6 +82,7 @@
     "cancelSub": "Opsig abonnement",
     "loadingPaypal": "Indlæser PayPal…",
     "paypalConfigHint": "Angiv PayPal-klient-ID ved build og PAYPAL_PRO_PLAN_ID til API-seed.",
+    "paypalLoadError": "PayPal kunne ikke indlæses. Prøv igen senere, eller kontakt support.",
     "cancelConfirm": "Opsige dit Pro-abonnement?"
   },
   "dashboard": {

@@ -135,6 +135,7 @@
     "cancelSub": "Cancel subscription",
     "loadingPaypal": "Loading PayPal…",
     "paypalConfigHint": "Set PayPal client ID at build time and PAYPAL_PRO_PLAN_ID for the API seed.",
+    "paypalLoadError": "PayPal could not be loaded. Please try again later or contact support.",
     "cancelConfirm": "Cancel your Pro subscription?"
   },
   "dashboard": {

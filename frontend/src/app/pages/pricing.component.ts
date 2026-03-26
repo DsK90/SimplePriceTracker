@@ -88,13 +88,13 @@ type Plan = {
               </button>
             } @else {
               <div #paypalHost class="paypal-host"></div>
-              @if (!paypalReady() && paypalClientConfigured()) {
-                <p class="muted small">{{ 'pricing.loadingPaypal' | translate }}</p>
-              }
-              @if (!paypalClientConfigured()) {
-                <p class="muted small">
-                  {{ 'pricing.paypalConfigHint' | translate }}
-                </p>
+              @if (paypalError()) {
+                <p class="paypal-error">{{ 'pricing.paypalLoadError' | translate }}</p>
+              } @else if (!paypalReady()) {
+                <div class="paypal-skeleton">
+                  <div class="skeleton-btn shimmer"></div>
+                  <div class="skeleton-btn skeleton-btn-short shimmer"></div>
+                </div>
               }
             }
           </div>
@@ -303,6 +303,52 @@ type Plan = {
         min-height: 52px;
         margin-top: 0.35rem;
       }
+      .paypal-skeleton {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.35rem;
+      }
+      .skeleton-btn {
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(124, 156, 255, 0.08);
+        border: 1px solid rgba(173, 198, 255, 0.1);
+      }
+      .skeleton-btn-short {
+        height: 40px;
+      }
+      .shimmer {
+        position: relative;
+        overflow: hidden;
+      }
+      .shimmer::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(173, 198, 255, 0.06) 40%,
+          rgba(173, 198, 255, 0.1) 50%,
+          rgba(173, 198, 255, 0.06) 60%,
+          transparent 100%
+        );
+        animation: shimmer 1.8s ease-in-out infinite;
+      }
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      .paypal-error {
+        color: #f87171;
+        font-size: 0.85rem;
+        margin: 0.35rem 0 0;
+        padding: 0.6rem 0.8rem;
+        background: rgba(248, 113, 113, 0.08);
+        border: 1px solid rgba(248, 113, 113, 0.2);
+        border-radius: 10px;
+      }
       .small {
         font-size: 0.8rem;
       }
@@ -315,10 +361,14 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
    */
   protected readonly proUiMonthlyNetCents = 399;
 
+  private static readonly PAYPAL_TIMEOUT_MS = 15_000;
+
   proPlan = signal<Plan | null>(null);
   paypalReady = signal(false);
+  paypalError = signal('');
   cancelling = signal(false);
   private paypalClientId = signal('');
+  private loadTimer: ReturnType<typeof setTimeout> | null = null;
 
   paypalHost = viewChild<ElementRef<HTMLDivElement>>('paypalHost');
 
@@ -330,14 +380,13 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
 
   constructor(protected auth: AuthService) {}
 
-  paypalClientConfigured(): boolean {
-    const id = this.paypalClientId();
-    return !!id && !id.startsWith('__');
-  }
-
   ngAfterViewInit() {
     if (this.auth.isLoggedIn()) {
       this.auth.loadProfile().subscribe({ error: () => {} });
+    }
+
+    if (this.auth.isLoggedIn() && this.auth.user()?.planTier !== 'PRO') {
+      this.startLoadTimeout();
     }
 
     this.http.get<Plan[]>(`${environment.apiUrl}/plans`).subscribe({
@@ -347,23 +396,52 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         this.proPlan.set(pro);
         this.scheduleRender();
       },
+      error: () => this.handleLoadFailure('Plans API unreachable'),
     });
 
     this.http.get<{ clientId: string }>(`${environment.apiUrl}/paypal/config`).subscribe({
       next: ({ clientId }) => {
-        if (!clientId) return;
+        if (!clientId) {
+          this.handleLoadFailure('PayPal client ID is empty');
+          return;
+        }
         this.paypalClientId.set(clientId);
-        void loadScript({ clientId, vault: true, intent: 'subscription' }).then((sdk) => {
-          this.paypalSdk = sdk as typeof this.paypalSdk;
-          this.scheduleRender();
-        });
+        void loadScript({ clientId, vault: true, intent: 'subscription' })
+          .then((sdk) => {
+            this.paypalSdk = sdk as typeof this.paypalSdk;
+            this.scheduleRender();
+          })
+          .catch((err) => this.handleLoadFailure(`PayPal SDK failed: ${err}`));
       },
+      error: () => this.handleLoadFailure('PayPal config API unreachable'),
     });
   }
 
   ngOnDestroy() {
+    this.clearLoadTimeout();
     const host = this.paypalHost()?.nativeElement;
     if (host) host.innerHTML = '';
+  }
+
+  private startLoadTimeout() {
+    this.loadTimer = setTimeout(() => {
+      if (!this.paypalReady() && !this.paypalError()) {
+        this.handleLoadFailure('Timeout — PayPal buttons did not load');
+      }
+    }, PricingComponent.PAYPAL_TIMEOUT_MS);
+  }
+
+  private clearLoadTimeout() {
+    if (this.loadTimer) {
+      clearTimeout(this.loadTimer);
+      this.loadTimer = null;
+    }
+  }
+
+  private handleLoadFailure(reason: string) {
+    console.error('[Pricing]', reason);
+    this.paypalError.set(reason);
+    this.clearLoadTimeout();
   }
 
   private scheduleRender() {
@@ -386,8 +464,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     try {
       await paypal
         .Buttons({
-          // PayPal SDK presets only: gold | blue | silver | white | black (no custom hex).
-          // "black" fits dark UIs; "silver" is a softer mid-tone if you want less contrast.
           style: {
             color: 'silver',
             shape: 'rect',
@@ -421,8 +497,9 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         })
         .render(`#${hostId}`);
       this.paypalReady.set(true);
-    } catch {
-      this.paypalReady.set(false);
+      this.clearLoadTimeout();
+    } catch (err) {
+      this.handleLoadFailure(`PayPal render failed: ${err}`);
     }
   }
 
@@ -432,7 +509,16 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     this.http.post(`${environment.apiUrl}/paypal/cancel`, {}).subscribe({
       next: () => {
         this.cancelling.set(false);
-        this.auth.loadProfile().subscribe({ error: () => {} });
+        this.auth.loadProfile().subscribe({
+          next: () => {
+            this.paypalReady.set(false);
+            this.paypalError.set('');
+            this.startLoadTimeout();
+            // Small delay so Angular renders the #paypalHost div first
+            setTimeout(() => this.scheduleRender(), 50);
+          },
+          error: () => {},
+        });
       },
       error: () => this.cancelling.set(false),
     });

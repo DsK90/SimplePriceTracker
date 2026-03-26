@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, RequestUser } from '../auth/decorators/current-user.decorator';
 import { DemoPriceDto } from './dto/demo-price.dto';
 import { CreateTrackingDto } from './dto/create-tracking.dto';
+import { ReorderTrackingsDto } from './dto/reorder-trackings.dto';
 import { UpdateTrackingDto } from './dto/update-tracking.dto';
 import { TrackingsService } from './trackings.service';
 
@@ -24,6 +25,11 @@ export class TrackingsController {
   @Post('demo')
   createDemo(@CurrentUser() user: RequestUser) {
     return this.trackings.createDemo(user.userId);
+  }
+
+  @Patch('reorder')
+  reorder(@CurrentUser() user: RequestUser, @Body() dto: ReorderTrackingsDto) {
+    return this.trackings.reorder(user.userId, dto.ids);
   }
 
   @Patch(':id')

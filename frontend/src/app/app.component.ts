@@ -3,13 +3,22 @@ import { afterNextRender, Component, ElementRef, inject, OnInit } from '@angular
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CookieConsentComponent } from './components/cookie-consent.component';
+import { MobileBottomNavComponent } from './components/mobile-bottom-nav.component';
 import { AuthService } from './core/auth.service';
 import { CookieConsentService } from './core/cookie-consent.service';
 import { PwaInstallService } from './core/pwa-install.service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CookieConsentComponent],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TranslatePipe,
+    CookieConsentComponent,
+    MobileBottomNavComponent,
+  ],
   template: `
     <div class="min-h-screen flex flex-col bg-background text-on-background">
       <nav
@@ -82,7 +91,7 @@ import { PwaInstallService } from './core/pwa-install.service';
         <router-outlet />
       </main>
       <footer
-        class="border-t border-outline-variant/10 bg-surface-container-low/30 pt-px pb-16 md:pb-px"
+        class="border-t border-outline-variant/10 bg-surface-container-low/30 pt-px pb-12 md:pb-px"
       >
         <div
           class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-4 text-xs text-on-surface-variant md:px-8"
@@ -94,10 +103,9 @@ import { PwaInstallService } from './core/pwa-install.service';
           <a routerLink="/fair-use" class="hover:text-primary hover:underline">{{ 'nav.fairUse' | translate }}</a>
           <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
           <a routerLink="/terms" class="hover:text-primary hover:underline">{{ 'footerTerms' | translate }}</a>
-          <span aria-hidden="true" class="text-on-surface-variant/50">·</span>
-          <span>{{ 'common.rights' | translate }}</span>
         </div>
       </footer>
+      <app-mobile-bottom-nav />
       <app-cookie-consent />
     </div>
   `,

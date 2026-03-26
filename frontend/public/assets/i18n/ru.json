@@ -14,7 +14,7 @@
   },
   "footerTerms": "Условия",
   "nav": {
-    "dashboard": "Обзор",
+    "dashboard": "Отслеживание",
     "pricing": "Тарифы",
     "fairUse": "Правила использования",
     "signOut": "Выйти",
@@ -24,7 +24,16 @@
     "installAppShort": "Приложение"
   },
   "pwa": {
-    "iosHint": "Как установить Pricefly на iPhone или iPad:\n\n1. Нажмите «Поделиться» \n2. Прокрутите и выберите «На экран «Домой»»\n3. Нажмите «Добавить»"
+    "iosHint": "Как установить Pricefly на iPhone или iPad:\n\n1. Нажмите «Поделиться» \n2. Прокрутите и выберите «На экран «Домой»»\n3. Нажмите «Добавить»",
+    "browserHint": "Чтобы установить приложение, откройте меню браузера (⋮ или ⋯) и выберите «Установить приложение» или «Добавить на главный экран». На телефоне обычно это предлагают Chrome или Edge; на iPhone/iPad: Поделиться → На экран «Домой»."
+  },
+  "notifications": {
+    "priceAlert": {
+      "belowTitle": "Цена не выше {{threshold}} {{currency}}",
+      "aboveTitle": "Цена не ниже {{threshold}} {{currency}}",
+      "belowBody": "{{productLabel}} сейчас {{price}} {{currency}} (цель: ≤ {{threshold}} {{currency}}).",
+      "aboveBody": "{{productLabel}} сейчас {{price}} {{currency}} (цель: ≥ {{threshold}} {{currency}})."
+    }
   },
   "login": {
     "title": "Вход",
@@ -110,10 +119,11 @@
     "colUpdated": "Последнее обновление",
     "colFrequency": "Интервал",
     "colActions": "Действия",
+    "reorderHandle": "Перетащите, чтобы изменить порядок",
     "showing": "Показано {{count}} результат",
     "showingPlural": "Показано {{count}} результатов",
     "empty": "Пока нет отслеживаний.",
-    "bottomDash": "Старт",
+    "bottomDash": "Трекинг",
     "bottomPricing": "Тарифы",
     "bottomAlerts": "Оповещения",
     "addAria": "Добавить отслеживание",

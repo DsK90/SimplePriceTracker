@@ -58,25 +58,24 @@
       <form
         [formGroup]="form"
         (ngSubmit)="create()"
-        class="flex w-full max-w-full flex-col gap-2 rounded-lg border border-outline-variant/10 bg-surface-container-low p-2 md:max-w-md md:flex-row md:items-center md:border-outline-variant/20 md:p-1.5"
+        class="flex w-full max-w-full flex-col gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-low/90 p-2 shadow-md shadow-black/20 ring-1 ring-outline-variant/15 md:max-w-md md:flex-row md:items-center md:p-1.5"
       >
         <div class="relative min-w-0 flex-1">
           <span
-            class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 hidden -translate-y-1/2 text-lg text-outline md:block"
+            class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 hidden -translate-y-1/2 text-lg text-on-surface-variant/80 md:block"
             >link</span
           >
           <input
-            #addUrlInput
             formControlName="url"
             type="url"
             [attr.placeholder]="'dashboard.placeholderUrl' | translate"
-            class="w-full rounded-md border-none bg-surface-container-highest py-1.5 pl-3 pr-3 text-xs text-on-surface placeholder:text-outline/60 focus:outline-none focus:ring-1 focus:ring-primary/50 md:bg-transparent md:py-1.5 md:pl-9 md:text-sm md:placeholder:text-outline/50 md:focus:ring-primary/40"
+            class="w-full rounded-lg border border-outline-variant/45 bg-surface-container-highest py-2 pl-3 pr-3 text-xs text-on-surface shadow-inner shadow-black/10 placeholder:text-on-surface-variant/65 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/35 md:py-2 md:pl-9 md:text-sm md:placeholder:text-on-surface-variant/55"
           />
         </div>
         <button
           type="submit"
           [disabled]="form.invalid || saving()"
-          class="shrink-0 rounded-md bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-primary shadow-sm active:scale-95 disabled:opacity-50 md:rounded md:px-4 md:text-sm md:normal-case md:tracking-normal md:hover:brightness-110"
+          class="shrink-0 rounded-lg border border-white/25 bg-primary px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-on-primary-container shadow-lg shadow-primary-container/45 ring-1 ring-white/20 transition active:scale-95 hover:brightness-110 disabled:opacity-70 md:rounded-lg md:px-4 md:text-sm md:normal-case md:tracking-normal"
         >
           {{ 'dashboard.add' | translate }}
         </button>
@@ -177,8 +176,13 @@
                   [ngClass]="{ 'bg-primary/5': !n.read }"
                   class="cursor-pointer rounded-lg px-3 py-3 transition hover:bg-surface-container/40"
                 >
-                  <div class="text-sm font-semibold text-on-surface">{{ n.title }}</div>
-                  <div class="mt-0.5 text-xs text-on-surface-variant">{{ n.body }}</div>
+                  @if (notificationI18n(n); as tr) {
+                    <div class="text-sm font-semibold text-on-surface">{{ tr.titleKey | translate: tr.params }}</div>
+                    <div class="mt-0.5 text-xs text-on-surface-variant">{{ tr.bodyKey | translate: tr.params }}</div>
+                  } @else {
+                    <div class="text-sm font-semibold text-on-surface">{{ n.title }}</div>
+                    <div class="mt-0.5 text-xs text-on-surface-variant">{{ n.body }}</div>
+                  }
                   <div class="mt-1 text-[10px] text-outline">{{ n.createdAt | date: 'short' }}</div>
                 </li>
               }
@@ -200,8 +204,8 @@
     } @else if (!items().length) {
       <p class="text-on-surface-variant">{{ 'dashboard.empty' | translate }}</p>
     } @else {
-      <!-- Mobile cards -->
-      <section class="space-y-2 md:hidden">
+      @if (isMobileLayout()) {
+      <section class="space-y-2">
         <div class="flex items-center justify-between px-0.5">
           <h2 class="font-headline text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
             {{ 'dashboard.watchlist' | translate }}
@@ -210,14 +214,22 @@
             'dashboard.recent' | translate
           }}</span>
         </div>
-        <div class="space-y-1.5">
+        <div
+          cdkDropList
+          (cdkDropListDropped)="onDrop($event)"
+          [cdkDropListDisabled]="editingId() !== null"
+          class="space-y-1.5"
+        >
           @for (t of items(); track t.id) {
             <div
-              class="rounded-lg border border-outline-variant/5 bg-surface-container/40 p-2 transition-colors hover:bg-surface-container/60"
+              cdkDrag
+              [cdkDragDisabled]="editingId() !== null"
+              [attr.aria-label]="'dashboard.reorderHandle' | translate"
+              class="touch-manipulation cursor-grab rounded-lg border border-outline-variant/5 bg-surface-container/40 p-2 transition-colors hover:bg-surface-container/60 active:cursor-grabbing"
             >
               <div class="flex items-center gap-2.5">
                 <div
-                  class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-secondary-container/50 to-surface-container-highest font-headline text-sm font-bold text-primary"
+                  class="flex h-11 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-secondary-container/50 to-surface-container-highest font-headline text-sm font-bold text-primary"
                 >
                   {{ thumbChar(t) }}
                 </div>
@@ -232,25 +244,32 @@
                       <a [href]="t.url" target="_blank" rel="noopener" class="hover:text-primary">{{ t.displayProductName }}</a>
                     }
                   </h3>
-                  <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
-                    @if (t.lastPrice !== null) {
-                      <span class="text-sm font-bold text-primary"
-                        >{{ t.lastPrice | number: '1.2-2' }} {{ t.currency }}</span
-                      >
-                    }
-                    @if (priceDelta(t); as d) {
-                      @if (d.pct === 0) {
-                        <span class="text-[9px] font-bold italic uppercase tracking-tighter text-on-surface-variant/60">{{
-                          'dashboard.stable' | translate
-                        }}</span>
-                      } @else if (d.pct < 0) {
-                        <span class="rounded bg-tertiary/20 px-1 py-0 text-[9px] font-bold text-tertiary">{{ d.label }}</span>
-                      } @else {
-                        <span class="rounded bg-primary/20 px-1 py-0 text-[9px] font-bold text-primary">{{ d.label }}</span>
+                  <div class="mt-0.5 flex w-full min-w-0 items-center justify-between gap-2">
+                    <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+                      @if (t.lastPrice !== null) {
+                        <span class="text-sm font-bold text-primary"
+                          >{{ t.lastPrice | number: '1.2-2' }} {{ t.currency }}</span
+                        >
                       }
-                    }
+                      @if (priceDelta(t); as d) {
+                        @if (d.pct === 0) {
+                          <span
+                            class="flex items-center gap-0.5 rounded bg-outline-variant/15 px-1 py-0 text-[9px] font-bold text-on-surface-variant"
+                          >
+                            <span class="material-symbols-outlined text-[12px] leading-none">trending_flat</span>
+                            0%
+                          </span>
+                        } @else if (d.pct < 0) {
+                          <span class="rounded bg-tertiary/20 px-1 py-0 text-[9px] font-bold text-tertiary">{{ d.label }}</span>
+                        } @else {
+                          <span class="rounded bg-primary/20 px-1 py-0 text-[9px] font-bold text-primary">{{ d.label }}</span>
+                        }
+                      }
+                    </div>
                     @if (t.lastCheckedAt) {
-                      <span class="text-[9px] text-outline">{{ t.lastCheckedAt | date: 'dd.MM.yy, HH:mm' }}</span>
+                      <span class="shrink-0 text-right text-[9px] tabular-nums text-outline">{{
+                        t.lastCheckedAt | date: 'dd.MM.yy, HH:mm'
+                      }}</span>
                     }
                   </div>
                   @if (demoPriceEnabled && isDemoTracking(t)) {
@@ -315,9 +334,9 @@
           }
         </div>
       </section>
-
+      } @else {
       <!-- Desktop table -->
-      <section class="hidden md:block">
+      <section>
         <div class="overflow-hidden rounded-lg border border-outline-variant/10 bg-surface-container-low shadow-sm">
           <div class="no-scrollbar overflow-x-auto">
             <table class="w-full border-collapse text-left">
@@ -333,13 +352,23 @@
                   <th class="px-6 py-3 text-right">{{ 'dashboard.colActions' | translate }}</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-outline-variant/5">
+              <tbody
+                cdkDropList
+                (cdkDropListDropped)="onDrop($event)"
+                [cdkDropListDisabled]="editingId() !== null"
+                class="divide-y divide-outline-variant/5"
+              >
                 @for (t of items(); track t.id) {
-                  <tr class="group transition-colors hover:bg-surface-bright/20">
+                  <tr
+                    cdkDrag
+                    [cdkDragDisabled]="editingId() !== null"
+                    [attr.aria-label]="'dashboard.reorderHandle' | translate"
+                    class="group cursor-grab touch-manipulation transition-colors hover:bg-surface-bright/20 active:cursor-grabbing"
+                  >
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div
-                          class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded border border-outline-variant/10 bg-gradient-to-br from-secondary-container/40 to-surface-container-highest font-headline text-xs font-bold text-primary"
+                          class="flex h-10 w-8 shrink-0 items-center justify-center overflow-hidden rounded border border-outline-variant/10 bg-gradient-to-br from-secondary-container/40 to-surface-container-highest font-headline text-xs font-bold text-primary"
                         >
                           {{ thumbChar(t) }}
                         </div>
@@ -377,7 +406,10 @@
                           >
                           @if (priceDelta(t); as d) {
                             @if (d.pct === 0) {
-                              <span class="text-[10px] font-bold text-outline">{{ 'dashboard.stableUpper' | translate }}</span>
+                              <span class="flex items-center gap-0.5 text-[10px] font-bold text-outline">
+                                <span class="material-symbols-outlined text-[12px]">trending_flat</span>
+                                0%
+                              </span>
                             } @else if (d.pct < 0) {
                               <span class="flex items-center gap-0.5 text-[10px] font-bold text-tertiary">
                                 <span class="material-symbols-outlined text-[12px]">trending_down</span>
@@ -492,6 +524,7 @@
           </div>
         </div>
       </section>
+      }
     }
   </div>
 
@@ -554,36 +587,6 @@
     </div>
   }
 
-  <!-- Mobile bottom nav -->
-  <nav
-    class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between border-t border-outline-variant/10 bg-background/95 px-6 py-1.5 backdrop-blur-xl md:hidden"
-  >
-    <div class="flex flex-col items-center gap-0.5 text-primary">
-      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1">dashboard</span>
-      <span class="text-[8px] font-bold uppercase tracking-widest">{{ 'dashboard.bottomDash' | translate }}</span>
-    </div>
-    <a routerLink="/pricing" class="flex flex-col items-center gap-0.5 text-on-surface-variant/50">
-      <span class="material-symbols-outlined text-[20px]">payments</span>
-      <span class="text-[8px] font-bold uppercase tracking-widest">{{ 'dashboard.bottomPricing' | translate }}</span>
-    </a>
-    <button
-      type="button"
-      (click)="toggleNotifs()"
-      class="flex flex-col items-center gap-0.5 text-on-surface-variant/50"
-    >
-      <span class="material-symbols-outlined text-[20px]">notifications_active</span>
-      <span class="text-[8px] font-bold uppercase tracking-widest">{{ 'dashboard.bottomAlerts' | translate }}</span>
-    </button>
-    <button
-      type="button"
-      (click)="onBottomInstallTap()"
-      class="flex flex-col items-center gap-0.5 text-on-surface-variant/50"
-    >
-      <span class="material-symbols-outlined text-[20px]">install_mobile</span>
-      <span class="text-[8px] font-bold uppercase tracking-widest">{{ 'nav.installApp' | translate }}</span>
-    </button>
-  </nav>
-
   @if (
     !pushLoading() &&
     !pushUnsupported() &&
@@ -612,14 +615,6 @@
     </div>
   }
 
-  <button
-    type="button"
-    (click)="focusAddUrl()"
-    class="fixed bottom-14 right-4 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg transition active:scale-90 md:hidden"
-    [attr.aria-label]="'dashboard.addAria' | translate"
-  >
-    <span class="material-symbols-outlined text-lg">add</span>
-  </button>
 </div>
 
 <ng-template #editFormTpl let-t>

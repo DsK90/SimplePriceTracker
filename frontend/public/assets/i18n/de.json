@@ -20,7 +20,7 @@
     "acceptAll": "Alle akzeptieren"
   },
   "nav": {
-    "dashboard": "Übersicht",
+    "dashboard": "Tracking",
     "pricing": "Preise",
     "fairUse": "Fair Use",
     "signOut": "Abmelden",
@@ -30,7 +30,16 @@
     "installAppShort": "App"
   },
   "pwa": {
-    "iosHint": "So installieren Sie Pricefly auf iPhone oder iPad:\n\n1. Tippen Sie auf Teilen \n2. Nach unten scrollen und „Zum Home-Bildschirm“ wählen\n3. Auf Hinzufügen tippen"
+    "iosHint": "So installieren Sie Pricefly auf iPhone oder iPad:\n\n1. Tippen Sie auf Teilen \n2. Nach unten scrollen und „Zum Home-Bildschirm“ wählen\n3. Auf Hinzufügen tippen",
+    "browserHint": "Zum Installieren der App das Browser-Menü öffnen (⋮ oder ⋯) und „App installieren“ oder „Zum Home-Bildschirm“ wählen. Auf dem Smartphone bieten meist Chrome oder Edge die Installation; auf iPhone/iPad: Teilen → Zum Home-Bildschirm."
+  },
+  "notifications": {
+    "priceAlert": {
+      "belowTitle": "Preis bei oder unter {{threshold}} {{currency}}",
+      "aboveTitle": "Preis bei oder über {{threshold}} {{currency}}",
+      "belowBody": "{{productLabel}} ist jetzt {{price}} {{currency}} (Ziel: ≤ {{threshold}} {{currency}}).",
+      "aboveBody": "{{productLabel}} ist jetzt {{price}} {{currency}} (Ziel: ≥ {{threshold}} {{currency}})."
+    }
   },
   "login": {
     "title": "Anmelden",
@@ -163,10 +172,11 @@
     "colUpdated": "Letzte Aktualisierung",
     "colFrequency": "Intervall",
     "colActions": "Aktionen",
+    "reorderHandle": "Zum Sortieren ziehen",
     "showing": "{{count}} Ergebnis",
     "showingPlural": "{{count}} Ergebnisse",
     "empty": "Noch keine Trackings.",
-    "bottomDash": "Start",
+    "bottomDash": "Tracking",
     "bottomPricing": "Preise",
     "bottomAlerts": "Alarme",
     "addAria": "Tracking hinzufügen",

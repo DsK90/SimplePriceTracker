@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { WebPushService } from './web-push.service';
@@ -47,10 +48,17 @@ export class NotificationsService {
     trackingId: string,
     title: string,
     body: string,
-    opts?: { sendEmail?: boolean },
+    opts?: { sendEmail?: boolean; payload?: Prisma.InputJsonValue },
   ) {
     await this.prisma.notification.create({
-      data: { userId, trackingId, kind: 'PRICE_ALERT', title, body },
+      data: {
+        userId,
+        trackingId,
+        kind: 'PRICE_ALERT',
+        title,
+        body,
+        ...(opts?.payload !== undefined ? { payload: opts.payload } : {}),
+      },
     });
     if (opts?.sendEmail) {
       await this.mail.sendPriceAlert(userEmail, title, body);

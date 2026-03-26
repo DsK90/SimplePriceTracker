@@ -1,22 +1,18 @@
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import {
-  Component,
-  ElementRef,
-  HostListener,
-  OnInit,
-  ViewChild,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService, UserProfile } from '../core/auth.service';
+import { DashboardUiService } from '../core/dashboard-ui.service';
 import { parseDecimalInput } from '../core/parse-decimal-input';
-import { PwaInstallService } from '../core/pwa-install.service';
 import { PushNotificationService } from '../core/push-notification.service';
 import { environment } from '../../environments/environment';
+import { map } from 'rxjs';
 
 type Tracking = {
   id: string;
@@ -36,7 +32,16 @@ type Tracking = {
   lastCheckedAt: string | null;
   active: boolean;
   createdAt: string;
+  sortOrder?: number;
   snapshots?: { price: string; recordedAt: string; currency?: string }[];
+};
+
+type PriceAlertI18nPayload = {
+  i18n: {
+    titleKey: string;
+    bodyKey: string;
+    params: Record<string, string>;
+  };
 };
 
 type AppNotification = {
@@ -46,6 +51,7 @@ type AppNotification = {
   read: boolean;
   createdAt: string;
   trackingId: string | null;
+  payload?: PriceAlertI18nPayload | null;
 };
 
 const INTERVAL_MINUTES = [1, 15, 30, 60, 360, 720, 1440, 10080] as const;
@@ -63,7 +69,7 @@ function intervalOptionsForMin(minMinutes: number) {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgTemplateOutlet, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgTemplateOutlet, TranslatePipe, DragDropModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -71,15 +77,22 @@ export class DashboardComponent implements OnInit {
   /** Only true in non-production Angular environment (see `environment.prod.ts`). */
   protected readonly demoPriceEnabled = environment.enableDemoProduct;
 
-  @ViewChild('addUrlInput') private addUrlInput?: ElementRef<HTMLInputElement>;
-
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
-  private router = inject(Router);
   private translate = inject(TranslateService);
-  protected pwa = inject(PwaInstallService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+  private dashboardUi = inject(DashboardUiService);
+  private breakpointObserver = inject(BreakpointObserver);
   protected push = inject(PushNotificationService);
+
+  /** Only one of mobile vs desktop lists is rendered — avoids duplicate CDK drop lists. */
+  readonly isMobileLayout = toSignal(
+    this.breakpointObserver.observe('(max-width: 767px)').pipe(map((r) => r.matches)),
+    { initialValue: false },
+  );
 
   form = this.fb.nonNullable.group({
     url: ['', [Validators.required]],
@@ -142,6 +155,18 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.dashboardUi.toggleNotifications.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.toggleNotifs());
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((q: Params) => {
+      if (q['notifs'] === '1') {
+        this.notifOpen.set(true);
+        this.loadNotifications();
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          replaceUrl: true,
+          queryParams: {},
+        });
+      }
+    });
     this.auth.loadProfile().subscribe({
       next: (p) => {
         this.profile.set(p);
@@ -265,22 +290,6 @@ export class DashboardComponent implements OnInit {
     return { pct, label: pct > 0 ? `+${pct}%` : `${pct}%` };
   }
 
-  focusAddUrl(): void {
-    const el = this.addUrlInput?.nativeElement;
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.focus();
-    }
-  }
-
-  async onBottomInstallTap(): Promise<void> {
-    if (this.pwa.showInstallEntry()) {
-      await this.pwa.promptInstall();
-      return;
-    }
-    void this.router.navigate(['/pricing']);
-  }
-
   isDemoTracking(t: Tracking): boolean {
     return t.url?.startsWith('demo://') ?? false;
   }
@@ -315,6 +324,19 @@ export class DashboardComponent implements OnInit {
         this.loadNotifCount();
       },
       error: () => this.refreshingId.set(null),
+    });
+  }
+
+  onDrop(event: CdkDragDrop<Tracking[]>) {
+    if (event.previousIndex === event.currentIndex) return;
+    this.items.update((list) => {
+      const next = [...list];
+      moveItemInArray(next, event.previousIndex, event.currentIndex);
+      return next;
+    });
+    const ids = this.items().map((t) => t.id);
+    this.http.patch<{ ok: boolean }>(`${environment.apiUrl}/trackings/reorder`, { ids }).subscribe({
+      error: () => this.load(),
     });
   }
 
@@ -353,6 +375,13 @@ export class DashboardComponent implements OnInit {
     if (next) {
       this.loadNotifications();
     }
+  }
+
+  /** For template: use with `translate` pipe so language switches refresh copy. */
+  notificationI18n(n: AppNotification): { titleKey: string; bodyKey: string; params: Record<string, string> } | null {
+    const p = n.payload?.i18n;
+    if (p?.titleKey && p?.bodyKey && p.params) return p;
+    return null;
   }
 
   markOneRead(n: AppNotification) {

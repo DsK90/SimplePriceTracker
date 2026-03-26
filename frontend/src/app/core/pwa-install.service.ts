@@ -60,7 +60,10 @@ export class PwaInstallService {
       return;
     }
 
-    if (!this.deferredPrompt) return;
+    if (!this.deferredPrompt) {
+      window.alert(this.translate.instant('pwa.browserHint'));
+      return;
+    }
 
     await this.deferredPrompt.prompt();
     await this.deferredPrompt.userChoice;

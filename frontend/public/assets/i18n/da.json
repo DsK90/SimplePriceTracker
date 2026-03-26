@@ -14,7 +14,7 @@
   },
   "footerTerms": "Vilkår",
   "nav": {
-    "dashboard": "Oversigt",
+    "dashboard": "Tracking",
     "pricing": "Priser",
     "fairUse": "Fair use",
     "signOut": "Log ud",
@@ -24,7 +24,16 @@
     "installAppShort": "App"
   },
   "pwa": {
-    "iosHint": "Sådan installerer du Pricefly på iPhone eller iPad:\n\n1. Tryk på Del \n2. Scroll ned og tryk på \"Tilføj til hjemmeskærm\"\n3. Tryk Tilføj"
+    "iosHint": "Sådan installerer du Pricefly på iPhone eller iPad:\n\n1. Tryk på Del \n2. Scroll ned og tryk på \"Tilføj til hjemmeskærm\"\n3. Tryk Tilføj",
+    "browserHint": "For at installere appen: Åbn browsermenuen (⋮ eller ⋯) og vælg «Installer app» eller «Tilføj til hjemmeskærm». På mobil tilbyder Chrome eller Edge ofte installation; på iPhone/iPad: Del → Tilføj til hjemmeskærm."
+  },
+  "notifications": {
+    "priceAlert": {
+      "belowTitle": "Pris på eller under {{threshold}} {{currency}}",
+      "aboveTitle": "Pris på eller over {{threshold}} {{currency}}",
+      "belowBody": "{{productLabel}} er nu {{price}} {{currency}} (mål: ≤ {{threshold}} {{currency}}).",
+      "aboveBody": "{{productLabel}} er nu {{price}} {{currency}} (mål: ≥ {{threshold}} {{currency}})."
+    }
   },
   "login": {
     "title": "Log ind",
@@ -110,10 +119,11 @@
     "colUpdated": "Seneste opdatering",
     "colFrequency": "Frekvens",
     "colActions": "Handlinger",
+    "reorderHandle": "Træk for at omarrangere",
     "showing": "Viser {{count}} resultat",
     "showingPlural": "Viser {{count}} resultater",
     "empty": "Ingen overvågninger endnu.",
-    "bottomDash": "Start",
+    "bottomDash": "Tracking",
     "bottomPricing": "Priser",
     "bottomAlerts": "Alarmer",
     "addAria": "Tilføj overvågning",

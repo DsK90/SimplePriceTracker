@@ -79,12 +79,15 @@ model PriceTracking {
   currency      String   @default("EUR")
   lastCheckedAt DateTime?
   active        Boolean  @default(true)
+  /// User-defined display order (lower = first). New items are prepended (min − 1).
+  sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   snapshots     PriceSnapshot[]
   notifications Notification[]
 
   @@index([userId])
+  @@index([userId, sortOrder])
 }
 
 model Notification {
@@ -96,6 +99,8 @@ model Notification {
   kind        String         @default("PRICE_ALERT")
   title       String
   body        String
+  /// Structured i18n for in-app UI (`title`/`body` stay English for email + web push).
+  payload     Json?
   read        Boolean        @default(false)
   createdAt   DateTime       @default(now())
 

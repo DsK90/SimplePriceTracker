@@ -14,7 +14,7 @@
   },
   "footerTerms": "服务条款",
   "nav": {
-    "dashboard": "控制台",
+    "dashboard": "追踪",
     "pricing": "定价",
     "fairUse": "公平使用",
     "signOut": "退出",
@@ -24,7 +24,16 @@
     "installAppShort": "应用"
   },
   "pwa": {
-    "iosHint": "在 iPhone 或 iPad 上安装 Pricefly：\n\n1. 点按“共享” \n2. 向下滚动并点按“添加到主屏幕”\n3. 点按“添加”"
+    "iosHint": "在 iPhone 或 iPad 上安装 Pricefly：\n\n1. 点按“共享” \n2. 向下滚动并点按“添加到主屏幕”\n3. 点按“添加”",
+    "browserHint": "要安装应用，请打开浏览器菜单（⋮ 或 ⋯），选择“安装应用”或“添加到主屏幕”。在手机上通常使用 Chrome 或 Edge；在 iPhone 或 iPad 上：共享 → 添加到主屏幕。"
+  },
+  "notifications": {
+    "priceAlert": {
+      "belowTitle": "价格不高于 {{threshold}} {{currency}}",
+      "aboveTitle": "价格不低于 {{threshold}} {{currency}}",
+      "belowBody": "{{productLabel}} 现为 {{price}} {{currency}}（目标：≤ {{threshold}} {{currency}}）。",
+      "aboveBody": "{{productLabel}} 现为 {{price}} {{currency}}（目标：≥ {{threshold}} {{currency}}）。"
+    }
   },
   "login": {
     "title": "登录",
@@ -110,10 +119,11 @@
     "colUpdated": "上次更新",
     "colFrequency": "频率",
     "colActions": "操作",
+    "reorderHandle": "拖动以排序",
     "showing": "显示 {{count}} 条结果",
     "showingPlural": "显示 {{count}} 条结果",
     "empty": "暂无追踪。",
-    "bottomDash": "开始",
+    "bottomDash": "追踪",
     "bottomPricing": "定价",
     "bottomAlerts": "提醒",
     "addAria": "添加追踪",

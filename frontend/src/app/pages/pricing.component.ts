@@ -32,7 +32,7 @@ type Plan = {
   standalone: true,
   imports: [CommonModule, RouterLink, TranslatePipe],
   template: `
-    <div class="wrap">
+    <div class="wrap" [class.wrap--nav-pad]="auth.isLoggedIn()">
       <h1>{{ 'pricing.title' | translate }}</h1>
 
       <div class="grid">
@@ -51,8 +51,6 @@ type Plan = {
             </ul>
             @if (!auth.isLoggedIn()) {
               <a class="btn btn-free" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
-            } @else {
-              <a class="btn btn-free" routerLink="/dashboard">{{ 'pricing.goDashboard' | translate }}</a>
             }
           </div>
         </article>
@@ -88,14 +86,6 @@ type Plan = {
               </button>
             } @else {
               <div #paypalHost class="paypal-host"></div>
-              @if (paypalError()) {
-                <p class="paypal-error">{{ 'pricing.paypalLoadError' | translate }}</p>
-              } @else if (!paypalReady()) {
-                <div class="paypal-skeleton">
-                  <div class="skeleton-btn shimmer"></div>
-                  <div class="skeleton-btn skeleton-btn-short shimmer"></div>
-                </div>
-              }
             }
           </div>
         </article>
@@ -108,6 +98,11 @@ type Plan = {
         max-width: 960px;
         margin: 0 auto;
         padding: 2rem 1rem 4rem;
+      }
+      @media (max-width: 767px) {
+        .wrap.wrap--nav-pad {
+          padding-bottom: 6rem;
+        }
       }
       h1 {
         font-size: 2rem;

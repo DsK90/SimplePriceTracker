@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PlanTier, Prisma, PriceTracking } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { buildPriceAlertMessages } from '../notifications/price-alert-messages';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   emailAlertSlotsForPlan,
@@ -95,14 +96,17 @@ export class TrackingsService {
       if (changed && after.alertBelowPrice != null) {
         const th = after.alertBelowPrice;
         if (lp.lte(th)) {
-          await this.notifications.notifyPriceAlert(
-            after.userId,
-            email,
-            after.id,
-            `Price at or below ${th.toString()} ${after.currency}`,
-            `${label} is now ${lp.toString()} ${after.currency} (target: ≤ ${th.toString()} ${after.currency}).`,
-            { sendEmail: after.emailAlertsEnabled },
+          const { titleEn, bodyEn, payload } = buildPriceAlertMessages(
+            'below',
+            th,
+            after.currency,
+            label,
+            lp,
           );
+          await this.notifications.notifyPriceAlert(after.userId, email, after.id, titleEn, bodyEn, {
+            sendEmail: after.emailAlertsEnabled,
+            payload,
+          });
         }
       }
     }
@@ -112,14 +116,17 @@ export class TrackingsService {
       if (changed && after.alertAbovePrice != null) {
         const th = after.alertAbovePrice;
         if (lp.gte(th)) {
-          await this.notifications.notifyPriceAlert(
-            after.userId,
-            email,
-            after.id,
-            `Price at or above ${th.toString()} ${after.currency}`,
-            `${label} is now ${lp.toString()} ${after.currency} (target: ≥ ${th.toString()} ${after.currency}).`,
-            { sendEmail: after.emailAlertsEnabled },
+          const { titleEn, bodyEn, payload } = buildPriceAlertMessages(
+            'above',
+            th,
+            after.currency,
+            label,
+            lp,
           );
+          await this.notifications.notifyPriceAlert(after.userId, email, after.id, titleEn, bodyEn, {
+            sendEmail: after.emailAlertsEnabled,
+            payload,
+          });
         }
       }
     }
@@ -145,7 +152,7 @@ export class TrackingsService {
     });
     const rows = await this.prisma.priceTracking.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       ...TRACKING_LIST,
     });
     const mapped = rows.map((t) => this.toPublicTracking(t));
@@ -223,6 +230,47 @@ export class TrackingsService {
     });
   }
 
+  /** New trackings appear at the top of the list (same as previous “newest first” behavior). */
+  private async nextSortOrderForNew(userId: string): Promise<number> {
+    const agg = await this.prisma.priceTracking.aggregate({
+      where: { userId },
+      _min: { sortOrder: true },
+    });
+    const min = agg._min.sortOrder;
+    if (min === null) return 0;
+    return min - 1;
+  }
+
+  async reorder(userId: string, ids: string[]): Promise<{ ok: true }> {
+    const existing = await this.prisma.priceTracking.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    if (existing.length !== ids.length) {
+      throw new BadRequestException('Reorder must include every tracking exactly once');
+    }
+    const set = new Set(existing.map((x) => x.id));
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (!set.has(id)) {
+        throw new BadRequestException('Invalid tracking id in reorder list');
+      }
+      if (seen.has(id)) {
+        throw new BadRequestException('Duplicate id in reorder list');
+      }
+      seen.add(id);
+    }
+    await this.prisma.$transaction(
+      ids.map((id, i) =>
+        this.prisma.priceTracking.update({
+          where: { id, userId },
+          data: { sortOrder: i },
+        }),
+      ),
+    );
+    return { ok: true };
+  }
+
   private async createWithInitialPrice(
     userId: string,
     args: {
@@ -239,6 +287,7 @@ export class TrackingsService {
     },
   ) {
     const dec = new Prisma.Decimal(args.price);
+    const sortOrder = await this.nextSortOrderForNew(userId);
     const row = await this.prisma.priceTracking.create({
       data: {
         userId,
@@ -253,6 +302,7 @@ export class TrackingsService {
         currency: args.currency,
         lastCheckedAt: new Date(),
         active: args.active,
+        sortOrder,
         snapshots: {
           create: { price: dec, currency: args.currency },
         },
@@ -425,6 +475,7 @@ export class TrackingsService {
     }
     await this.assertCanAddActive(userId);
     const dec50 = new Prisma.Decimal(50);
+    const sortOrder = await this.nextSortOrderForNew(userId);
     const row = await this.prisma.priceTracking.create({
       data: {
         userId,
@@ -436,6 +487,7 @@ export class TrackingsService {
         currency: 'EUR',
         lastCheckedAt: new Date(),
         active: true,
+        sortOrder,
         snapshots: { create: { price: dec50, currency: 'EUR' } },
       },
       ...TRACKING_LIST,
@@ -564,14 +616,11 @@ export class TrackingsService {
       const wasAbove = lp === null || lp.gt(th);
       const nowAtOrBelow = np.lte(th);
       if (wasAbove && nowAtOrBelow) {
-        await this.notifications.notifyPriceAlert(
-          before.userId,
-          userEmail,
-          before.id,
-          `Price at or below ${th.toString()} ${currency}`,
-          `${label} is now ${np.toString()} ${currency} (target: ≤ ${th.toString()} ${currency}).`,
-          { sendEmail: before.emailAlertsEnabled },
-        );
+        const { titleEn, bodyEn, payload } = buildPriceAlertMessages('below', th, currency, label, np);
+        await this.notifications.notifyPriceAlert(before.userId, userEmail, before.id, titleEn, bodyEn, {
+          sendEmail: before.emailAlertsEnabled,
+          payload,
+        });
       }
     }
 
@@ -580,14 +629,11 @@ export class TrackingsService {
       const wasBelow = lp === null || lp.lt(th);
       const nowAtOrAbove = np.gte(th);
       if (wasBelow && nowAtOrAbove) {
-        await this.notifications.notifyPriceAlert(
-          before.userId,
-          userEmail,
-          before.id,
-          `Price at or above ${th.toString()} ${currency}`,
-          `${label} is now ${np.toString()} ${currency} (target: ≥ ${th.toString()} ${currency}).`,
-          { sendEmail: before.emailAlertsEnabled },
-        );
+        const { titleEn, bodyEn, payload } = buildPriceAlertMessages('above', th, currency, label, np);
+        await this.notifications.notifyPriceAlert(before.userId, userEmail, before.id, titleEn, bodyEn, {
+          sendEmail: before.emailAlertsEnabled,
+          payload,
+        });
       }
     }
   }

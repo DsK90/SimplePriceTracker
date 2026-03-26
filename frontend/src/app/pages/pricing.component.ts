@@ -318,6 +318,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   proPlan = signal<Plan | null>(null);
   paypalReady = signal(false);
   cancelling = signal(false);
+  private paypalClientId = signal('');
 
   paypalHost = viewChild<ElementRef<HTMLDivElement>>('paypalHost');
 
@@ -330,7 +331,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   constructor(protected auth: AuthService) {}
 
   paypalClientConfigured(): boolean {
-    const id = environment.paypalClientId;
+    const id = this.paypalClientId();
     return !!id && !id.startsWith('__');
   }
 
@@ -348,16 +349,15 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       },
     });
 
-    const clientId = environment.paypalClientId;
-    if (!clientId || clientId.startsWith('__')) return;
-
-    void loadScript({
-      clientId,
-      vault: true,
-      intent: 'subscription',
-    }).then((sdk) => {
-      this.paypalSdk = sdk as typeof this.paypalSdk;
-      this.scheduleRender();
+    this.http.get<{ clientId: string }>(`${environment.apiUrl}/paypal/config`).subscribe({
+      next: ({ clientId }) => {
+        if (!clientId) return;
+        this.paypalClientId.set(clientId);
+        void loadScript({ clientId, vault: true, intent: 'subscription' }).then((sdk) => {
+          this.paypalSdk = sdk as typeof this.paypalSdk;
+          this.scheduleRender();
+        });
+      },
     });
   }
 

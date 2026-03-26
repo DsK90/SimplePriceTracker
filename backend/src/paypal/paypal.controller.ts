@@ -15,6 +15,12 @@ export class PaypalController {
     private trackings: TrackingsService,
   ) {}
 
+  /** Public — the client ID is not secret; it's embedded in the browser page anyway. */
+  @Get('config')
+  getConfig() {
+    return { clientId: this.paypal.getClientId() };
+  }
+
   @Get('status/:subscriptionId')
   @UseGuards(JwtAuthGuard)
   async status(@Param('subscriptionId') subscriptionId: string) {

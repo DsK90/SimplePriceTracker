@@ -211,7 +211,6 @@
     },
     "pushReminder": {
       "message": "Du hast einen Preisalarm gesetzt, aber Benachrichtigungen sind noch aus — du wirst so nicht informiert.",
-      "enableLabel": "Push-Benachrichtigungen aktivieren",
       "enable": "Aktivieren"
     },
     "errors": {

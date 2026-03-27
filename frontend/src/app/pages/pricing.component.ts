@@ -36,25 +36,6 @@ type Plan = {
       <h1>{{ 'pricing.title' | translate }}</h1>
 
       <div class="grid">
-        <article class="card card-free">
-          <div class="card-shine" aria-hidden="true"></div>
-          <div class="card-inner">
-            <h2 class="card-title">{{ 'pricing.freeTitle' | translate }}</h2>
-            <p class="price-block">
-              <span class="price-currency">€</span><span class="price-amount">0</span>
-            </p>
-            <p class="price-caption">{{ 'pricing.freeCaption' | translate }}</p>
-            <ul class="feature-list">
-              <li>{{ 'pricing.free1' | translate }}</li>
-              <li>{{ 'pricing.free2' | translate }}</li>
-              <li>{{ 'pricing.free4' | translate }}</li>
-            </ul>
-            @if (!auth.isLoggedIn()) {
-              <a class="btn btn-free" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
-            }
-          </div>
-        </article>
-
         <article class="card card-pro">
           <div class="card-pro-glow" aria-hidden="true"></div>
           <div class="card-inner">
@@ -88,6 +69,25 @@ type Plan = {
               }
             } @else {
               <div #paypalHost class="paypal-host"></div>
+            }
+          </div>
+        </article>
+
+        <article class="card card-free">
+          <div class="card-shine" aria-hidden="true"></div>
+          <div class="card-inner">
+            <h2 class="card-title">{{ 'pricing.freeTitle' | translate }}</h2>
+            <p class="price-block">
+              <span class="price-currency">€</span><span class="price-amount">0</span>
+            </p>
+            <p class="price-caption">{{ 'pricing.freeCaption' | translate }}</p>
+            <ul class="feature-list">
+              <li>{{ 'pricing.free1' | translate }}</li>
+              <li>{{ 'pricing.free2' | translate }}</li>
+              <li>{{ 'pricing.free4' | translate }}</li>
+            </ul>
+            @if (!auth.isLoggedIn()) {
+              <a class="btn btn-free" routerLink="/register">{{ 'pricing.getStarted' | translate }}</a>
             }
           </div>
         </article>

@@ -8,7 +8,6 @@
   ></div>
 
   <div class="relative z-10 mx-auto max-w-[1440px] px-4 pt-2 md:px-8 md:pt-2">
-    <!-- Page header + single add-URL form -->
     <header class="mb-4 md:mb-8">
       <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
@@ -162,11 +161,8 @@
           <span class="material-symbols-outlined text-lg text-tertiary">notifications_active</span>
           <p class="text-xs font-medium text-on-surface">{{ 'dashboard.pushReminder.message' | translate }}</p>
         </div>
-        <div class="flex shrink-0 items-center gap-2">
+        <div class="flex shrink-0 items-center gap-1">
           <div class="flex flex-col items-center">
-            <span class="text-[8px] leading-tight text-on-surface-variant/70">{{
-              'dashboard.pushReminder.enableLabel' | translate
-            }}</span>
             <button
               type="button"
               (click)="enablePushFromReminder()"
@@ -182,7 +178,7 @@
             class="flex h-6 w-6 items-center justify-center rounded-full text-on-surface-variant/60 transition hover:text-on-surface"
             aria-label="Dismiss"
           >
-            <span class="material-symbols-outlined text-sm">close</span>
+            <span class="material-symbols-outlined text-2xl">close</span>
           </button>
         </div>
       </div>
@@ -672,7 +668,7 @@
   }
 
   @if (!pushLoading() && !pushUnsupported() && pushServerOn() && !pushDenied()) {
-    <div class="fixed bottom-[9rem] right-4 z-40 md:hidden">
+    <div class="fixed top-[6.3rem] right-4 z-40 md:hidden">
       <button
         type="button"
         (click)="pushSubscribed() ? disablePush() : enablePush()"

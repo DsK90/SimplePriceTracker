@@ -166,6 +166,7 @@
     "store": "Shop",
     "stable": "Gleichbleibend",
     "stableUpper": "GLEICHBLEIBEND",
+    "savesYou": "Spart dir {{amount}} {{currency}}",
     "trackedProduct": "Verfolgtes Produkt",
     "colProduct": "Produkt",
     "colStore": "Shop",

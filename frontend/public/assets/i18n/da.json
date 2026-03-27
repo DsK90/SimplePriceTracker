@@ -113,6 +113,7 @@
     "store": "Butik",
     "stable": "Uændret",
     "stableUpper": "UÆNDRET",
+    "savesYou": "Sparer dig {{amount}} {{currency}}",
     "trackedProduct": "Overvåget produkt",
     "colProduct": "Produkt",
     "colStore": "Butik",

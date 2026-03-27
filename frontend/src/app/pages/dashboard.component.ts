@@ -301,6 +301,17 @@ export class DashboardComponent implements OnInit {
     return { pct, label: pct > 0 ? `+${pct}%` : `${pct}%` };
   }
 
+  /** Absolute savings when price dropped (current vs previous snapshot). */
+  priceSavings(t: Tracking): number | null {
+    const s = t.snapshots;
+    if (!s || s.length < 2) return null;
+    const cur = parseFloat(String(s[0].price));
+    const prev = parseFloat(String(s[1].price));
+    if (!Number.isFinite(cur) || !Number.isFinite(prev)) return null;
+    const diff = prev - cur;
+    return diff > 0 ? Math.round(diff * 100) / 100 : null;
+  }
+
   isDemoTracking(t: Tracking): boolean {
     return t.url?.startsWith('demo://') ?? false;
   }

@@ -11,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { buildPriceAlertMessages } from '../notifications/price-alert-messages';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
+  ADMIN_EMAIL,
   emailAlertSlotsForPlan,
   FREE_TRACKING_LIMIT,
   minRecheckIntervalMinutes,
@@ -529,6 +530,101 @@ export class TrackingsService {
     return this.toPublicTracking(row);
   }
 
+  /**
+   * Admin-only: seed 5 showcase trackings with price history
+   * demonstrating price drops, increases, and stable prices.
+   */
+  async seedShowcaseProducts(userId: string, email: string): Promise<PublicTracking[]> {
+    if (email !== ADMIN_EMAIL) {
+      throw new ForbiddenException('Showcase products are admin-only');
+    }
+
+    const existing = await this.prisma.priceTracking.findMany({
+      where: { userId, url: { startsWith: 'demo://showcase' } },
+    });
+    if (existing.length > 0) {
+      await this.prisma.priceSnapshot.deleteMany({
+        where: { trackingId: { in: existing.map((e) => e.id) } },
+      });
+      await this.prisma.priceTracking.deleteMany({
+        where: { id: { in: existing.map((e) => e.id) } },
+      });
+    }
+
+    const now = new Date();
+    const hoursAgo = (h: number) => new Date(now.getTime() - h * 3_600_000);
+
+    const showcases: {
+      url: string;
+      productName: string;
+      companyName: string;
+      prices: number[];
+    }[] = [
+      {
+        url: 'demo://showcase-1',
+        productName: 'Sony WH-1000XM5 Kopfhörer',
+        companyName: 'Amazon',
+        prices: [379, 359, 339, 319, 299, 279],
+      },
+      {
+        url: 'demo://showcase-2',
+        productName: 'Samsung Galaxy S24 Ultra 256GB',
+        companyName: 'Saturn',
+        prices: [1449, 1399, 1349, 1329, 1299, 1249],
+      },
+      {
+        url: 'demo://showcase-3',
+        productName: 'Nike Air Max 90',
+        companyName: 'Nike',
+        prices: [129, 135, 139, 145, 155, 169],
+      },
+      {
+        url: 'demo://showcase-4',
+        productName: 'Nintendo Switch OLED',
+        companyName: 'MediaMarkt',
+        prices: [319, 329, 335, 339, 349, 359],
+      },
+      {
+        url: 'demo://showcase-5',
+        productName: 'Apple AirPods Pro 2',
+        companyName: 'Apple',
+        prices: [279, 279, 279, 279, 279, 279],
+      },
+    ];
+
+    const results: PublicTracking[] = [];
+    let sortOrder = await this.nextSortOrderForNew(userId);
+
+    for (const s of showcases) {
+      const lastPrice = s.prices[s.prices.length - 1];
+      const snapshots = s.prices.map((price, i) => ({
+        price: new Prisma.Decimal(price),
+        currency: 'EUR',
+        recordedAt: hoursAgo((s.prices.length - 1 - i) * 24),
+      }));
+
+      const row = await this.prisma.priceTracking.create({
+        data: {
+          userId,
+          url: s.url,
+          productName: s.productName,
+          companyName: s.companyName,
+          recheckIntervalMinutes: 1440,
+          lastPrice: new Prisma.Decimal(lastPrice),
+          currency: 'EUR',
+          lastCheckedAt: now,
+          active: false,
+          sortOrder: sortOrder--,
+          snapshots: { create: snapshots },
+        },
+        ...TRACKING_LIST,
+      });
+      results.push(this.toPublicTracking(row));
+    }
+
+    return results;
+  }
+
   async refresh(userId: string, id: string) {
     const t = await this.prisma.priceTracking.findFirst({ where: { id, userId } });
     if (!t) throw new NotFoundException();
@@ -765,6 +861,7 @@ export class TrackingsService {
   private async assertCanAddActive(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException();
+    if (user.email === ADMIN_EMAIL) return;
     if (user.planTier === PlanTier.PRO) return;
 
     const count = await this.prisma.priceTracking.count({
@@ -782,6 +879,7 @@ export class TrackingsService {
   private async assertEmailAlertSlotsAvailable(userId: string, excludeTrackingId?: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException();
+    if (user.email === ADMIN_EMAIL) return;
     const limit = emailAlertSlotsForPlan(user.planTier);
     const count = await this.prisma.priceTracking.count({
       where: {

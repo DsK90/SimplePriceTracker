@@ -113,6 +113,7 @@
     "store": "Магазин",
     "stable": "Без изменений",
     "stableUpper": "БЕЗ ИЗМЕНЕНИЙ",
+    "savesYou": "Экономия {{amount}} {{currency}}",
     "trackedProduct": "Отслеживаемый товар",
     "colProduct": "Товар",
     "colStore": "Магазин",

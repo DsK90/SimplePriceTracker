@@ -27,6 +27,11 @@ export class TrackingsController {
     return this.trackings.createDemo(user.userId);
   }
 
+  @Post('showcase')
+  seedShowcase(@CurrentUser() user: RequestUser) {
+    return this.trackings.seedShowcaseProducts(user.userId, user.email);
+  }
+
   @Patch('reorder')
   reorder(@CurrentUser() user: RequestUser, @Body() dto: ReorderTrackingsDto) {
     return this.trackings.reorder(user.userId, dto.ids);

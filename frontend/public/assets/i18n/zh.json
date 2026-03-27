@@ -113,6 +113,7 @@
     "store": "商店",
     "stable": "持平",
     "stableUpper": "持平",
+    "savesYou": "为您节省 {{amount}} {{currency}}",
     "trackedProduct": "追踪中的商品",
     "colProduct": "商品",
     "colStore": "商店",

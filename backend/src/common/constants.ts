@@ -1,5 +1,8 @@
 import type { PlanTier } from '@prisma/client';
 
+/** Admin email — bypasses all plan limits. */
+export const ADMIN_EMAIL = 'doeldenberger@gmail.com';
+
 /** Active trackings allowed without a paid plan */
 export const FREE_TRACKING_LIMIT = 5;
 

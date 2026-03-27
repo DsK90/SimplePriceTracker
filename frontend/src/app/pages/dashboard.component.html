@@ -272,6 +272,11 @@
                           <span class="rounded bg-primary/20 px-1 py-0 text-[9px] font-bold text-primary">{{ d.label }}</span>
                         }
                       }
+                      @if (priceSavings(t); as saved) {
+                        <span class="text-[9px] font-medium text-tertiary">
+                          {{ 'dashboard.savesYou' | translate: { amount: (saved | number: '1.2-2'), currency: t.currency } }}
+                        </span>
+                      }
                     </div>
                     @if (t.lastCheckedAt) {
                       <span class="shrink-0 text-right text-[9px] tabular-nums text-outline">{{
@@ -435,6 +440,11 @@
                                 {{ d.label }}
                               </span>
                             }
+                          }
+                          @if (priceSavings(t); as saved) {
+                            <span class="text-[10px] font-medium text-tertiary">
+                              {{ 'dashboard.savesYou' | translate: { amount: (saved | number: '1.2-2'), currency: t.currency } }}
+                            </span>
                           }
                         </div>
                       } @else {

@@ -166,6 +166,7 @@
     "store": "Store",
     "stable": "Stable",
     "stableUpper": "STABLE",
+    "savesYou": "Saves you {{amount}} {{currency}}",
     "trackedProduct": "Tracked product",
     "colProduct": "Product",
     "colStore": "Store",

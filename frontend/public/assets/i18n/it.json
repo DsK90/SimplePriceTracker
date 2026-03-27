@@ -113,6 +113,7 @@
     "store": "Negozio",
     "stable": "Stabile",
     "stableUpper": "STABILE",
+    "savesYou": "Risparmi {{amount}} {{currency}}",
     "trackedProduct": "Prodotto monitorato",
     "colProduct": "Prodotto",
     "colStore": "Negozio",

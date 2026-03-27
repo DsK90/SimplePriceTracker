@@ -18,7 +18,7 @@
           <p
             class="text-[10px] font-medium uppercase tracking-wider text-on-surface-variant opacity-80 md:text-sm md:normal-case md:tracking-normal"
           >
-            @if (profile()?.planTier === 'PRO') {
+            @if (isPro()) {
               <span>{{ 'dashboard.proSubtitle' | translate }}</span>
             } @else {
               <span
@@ -149,6 +149,13 @@
         </div>
       }
     </header>
+
+    @if (saving() && scrapeMessage()) {
+      <div class="mb-3 flex items-center gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+        <span class="text-base">🕵️</span>
+        <span class="animate-pulse text-xs font-medium text-primary">{{ scrapeMessage() }}</span>
+      </div>
+    }
 
     @if (formError()) {
       <p class="mb-3 text-sm text-error">{{ formError() }}</p>

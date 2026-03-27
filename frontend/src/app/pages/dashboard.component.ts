@@ -2,7 +2,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, DestroyRef, HostListener, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
@@ -125,6 +125,9 @@ export class DashboardComponent implements OnInit {
 
   demoAdding = signal(false);
 
+  scrapeMessage = signal('');
+  private scrapeInterval: ReturnType<typeof setInterval> | null = null;
+
   /** Pro-only: overlay with price snapshots for one tracking. */
   historyTracking = signal<Tracking | null>(null);
 
@@ -135,6 +138,29 @@ export class DashboardComponent implements OnInit {
   pushDenied = signal(false);
   pushBusy = signal(false);
   pushBannerDismissed = signal(false);
+
+  private readonly scrapeMsgEffect = effect(() => {
+    const active = this.saving();
+    if (active) {
+      this.cycleScrapeMessage();
+      this.scrapeInterval = setInterval(() => this.cycleScrapeMessage(), 2500);
+    } else {
+      if (this.scrapeInterval) {
+        clearInterval(this.scrapeInterval);
+        this.scrapeInterval = null;
+      }
+      this.scrapeMessage.set('');
+    }
+  });
+
+  private cycleScrapeMessage(): void {
+    const msgs: string[] = this.translate.instant('dashboard.scrapeMessages');
+    if (!Array.isArray(msgs) || !msgs.length) return;
+    const current = this.scrapeMessage();
+    const idx = msgs.indexOf(current);
+    const next = (idx + 1) % msgs.length;
+    this.scrapeMessage.set(msgs[next]);
+  }
 
   @HostListener('document:keydown.escape')
   onHistoryEscape(): void {
@@ -166,6 +192,9 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.destroyRef.onDestroy(() => {
+      if (this.scrapeInterval) clearInterval(this.scrapeInterval);
+    });
     this.dashboardUi.toggleNotifications.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.toggleNotifs());
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((q: Params) => {
       if (q['notifs'] === '1') {
@@ -242,7 +271,8 @@ export class DashboardComponent implements OnInit {
 
   /** Max products with email alerts: 2 free, 10 Pro (push unlimited). */
   protected emailAlertMax(): number {
-    return this.profile()?.planTier === 'PRO' ? 10 : 2;
+    const p = this.profile();
+    return p?.planTier === 'PRO' || p?.isAdmin ? Infinity : 2;
   }
 
   protected emailAlertsUsedExcluding(trackingId: string): number {
@@ -269,7 +299,8 @@ export class DashboardComponent implements OnInit {
   }
 
   protected isPro(): boolean {
-    return this.profile()?.planTier === 'PRO';
+    const p = this.profile();
+    return p?.planTier === 'PRO' || p?.isAdmin === true;
   }
 
   openPriceHistory(t: Tracking): void {

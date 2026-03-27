@@ -2,7 +2,7 @@
   "app": {
     "pageTitle": "Pricefly | Preis-Tracker",
     "brand": "Pricefly",
-    "tagline": "Preise verfolgen. Sofort benachrichtigt werden."
+    "tagline": "Preise verfolgt. Sofort benachrichtigt."
   },
   "common": {
     "imprint": "Impressum",
@@ -157,6 +157,15 @@
     "placeholderUrl": "Produkt-URL einfügen…",
     "add": "Hinzufügen",
     "adding": "Wird hinzugefügt…",
+    "scrapeMessages": [
+      "Datenbank wird verhört…",
+      "Fingerabdrücke sichern…",
+      "Verdächtigen Spuren folgen…",
+      "Server bestechen…",
+      "Fall fast gelöst…",
+      "Alibi überprüfen…",
+      "Code knacken…"
+    ],
     "notifications": "Benachrichtigungen",
     "markAllRead": "Alle als gelesen",
     "loading": "Laden…",

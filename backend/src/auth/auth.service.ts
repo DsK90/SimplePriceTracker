@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PlanTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
+import { ADMIN_EMAIL } from '../common/constants';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { PaypalService } from '../paypal/paypal.service';
@@ -71,11 +72,12 @@ export class AuthService {
           ...user,
           planTier: PlanTier.FREE,
           paypalSubscriptionId: null,
+          isAdmin: user.email === ADMIN_EMAIL,
         };
       }
     }
 
-    return user;
+    return { ...user, isAdmin: user.email === ADMIN_EMAIL };
   }
 
   private issueTokens(userId: string, email: string) {

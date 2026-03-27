@@ -2,7 +2,7 @@
   "app": {
     "pageTitle": "Pricefly | Price tracker",
     "brand": "Pricefly",
-    "tagline": "Track prices. Get notified instantly."
+    "tagline": "Prices tracked. Instantly notified."
   },
   "common": {
     "imprint": "Imprint",
@@ -157,6 +157,15 @@
     "placeholderUrl": "Paste product URL…",
     "add": "Add",
     "adding": "Adding…",
+    "scrapeMessages": [
+      "Interrogating the database…",
+      "Dusting for fingerprints…",
+      "Following suspicious leads…",
+      "Bribing the server…",
+      "Case almost solved…",
+      "Checking the alibi…",
+      "Cracking the code…"
+    ],
     "notifications": "Notifications",
     "markAllRead": "Mark all read",
     "loading": "Loading…",

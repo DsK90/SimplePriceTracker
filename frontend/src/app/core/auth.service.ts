@@ -10,6 +10,7 @@ export type UserProfile = {
   id: string;
   email: string;
   planTier: 'FREE' | 'PRO';
+  isAdmin: boolean;
   paypalSubscriptionId: string | null;
   createdAt: string;
 };

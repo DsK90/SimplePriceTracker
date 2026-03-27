@@ -2,7 +2,7 @@
   "app": {
     "pageTitle": "Pricefly | Prisovervågning",
     "brand": "Pricefly",
-    "tagline": "Spor priser. Få besked med det samme."
+    "tagline": "Priser sporet. Straks underrettet."
   },
   "common": {
     "imprint": "Juridiske oplysninger",
@@ -104,6 +104,15 @@
     "placeholderUrl": "Indsæt produkt-URL…",
     "add": "Tilføj",
     "adding": "Tilføjer…",
+    "scrapeMessages": [
+      "Forhører databasen…",
+      "Sikrer fingeraftryk…",
+      "Følger mistænkelige spor…",
+      "Bestikker serveren…",
+      "Sagen er næsten løst…",
+      "Tjekker alibiet…",
+      "Knækker koden…"
+    ],
     "notifications": "Notifikationer",
     "markAllRead": "Marker alle som læst",
     "loading": "Indlæser…",

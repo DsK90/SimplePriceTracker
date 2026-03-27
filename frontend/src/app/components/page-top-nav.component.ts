@@ -34,6 +34,7 @@ export class PageTopNavComponent {
 
   /** Hide upsell when already on Pro. */
   showUpgradeLink(): boolean {
-    return !this.auth.isLoggedIn() || this.auth.user()?.planTier !== 'PRO';
+    const u = this.auth.user();
+    return !this.auth.isLoggedIn() || (u?.planTier !== 'PRO' && !u?.isAdmin);
   }
 }

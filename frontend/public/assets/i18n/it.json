@@ -2,7 +2,7 @@
   "app": {
     "pageTitle": "Pricefly | Monitoraggio prezzi",
     "brand": "Pricefly",
-    "tagline": "Tieni traccia dei prezzi. Notifiche istantanee."
+    "tagline": "Prezzi tracciati. Notificato all'istante."
   },
   "common": {
     "imprint": "Note legali",
@@ -104,6 +104,15 @@
     "placeholderUrl": "Incolla URL prodotto…",
     "add": "Aggiungi",
     "adding": "Aggiunta in corso…",
+    "scrapeMessages": [
+      "Interrogazione del database…",
+      "Rilevamento impronte…",
+      "Seguendo piste sospette…",
+      "Corrompendo il server…",
+      "Caso quasi risolto…",
+      "Verifica dell'alibi…",
+      "Decifrando il codice…"
+    ],
     "notifications": "Notifiche",
     "markAllRead": "Segna tutto come letto",
     "loading": "Caricamento…",

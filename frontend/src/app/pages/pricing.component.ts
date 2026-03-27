@@ -79,11 +79,13 @@ type Plan = {
                 <a routerLink="/login">{{ 'nav.signIn' | translate }}</a
                 >{{ 'pricing.afterSignInToSubscribe' | translate }}
               </p>
-            } @else if (auth.user()?.planTier === 'PRO') {
+            } @else if (auth.user()?.planTier === 'PRO' || auth.user()?.isAdmin) {
               <p class="ok">{{ 'pricing.onPro' | translate }}</p>
-              <button type="button" class="btn danger" (click)="cancel()" [disabled]="cancelling()">
-                {{ 'pricing.cancelSub' | translate }}
-              </button>
+              @if (!auth.user()?.isAdmin) {
+                <button type="button" class="btn danger" (click)="cancel()" [disabled]="cancelling()">
+                  {{ 'pricing.cancelSub' | translate }}
+                </button>
+              }
             } @else {
               <div #paypalHost class="paypal-host"></div>
             }
@@ -380,7 +382,8 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
       this.auth.loadProfile().subscribe({ error: () => {} });
     }
 
-    if (this.auth.isLoggedIn() && this.auth.user()?.planTier !== 'PRO') {
+    const u = this.auth.user();
+    if (this.auth.isLoggedIn() && u?.planTier !== 'PRO' && !u?.isAdmin) {
       this.startLoadTimeout();
     }
 
@@ -403,7 +406,7 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
         this.paypalClientId.set(clientId);
         void loadScript({ clientId, vault: true, intent: 'subscription' })
           .then((sdk) => {
-            this.paypalSdk = sdk as typeof this.paypalSdk;
+            this.paypalSdk = sdk as PricingComponent['paypalSdk'];
             this.scheduleRender();
           })
           .catch((err) => this.handleLoadFailure(`PayPal SDK failed: ${err}`));
@@ -448,7 +451,8 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     const paypal = this.paypalSdk;
     const host = this.paypalHost()?.nativeElement;
     if (!plan?.paypalPlanId || !paypal?.Buttons || !host) return;
-    if (!this.auth.isLoggedIn() || this.auth.user()?.planTier === 'PRO') return;
+    const cu = this.auth.user();
+    if (!this.auth.isLoggedIn() || cu?.planTier === 'PRO' || cu?.isAdmin) return;
 
     host.innerHTML = '';
     this.paypalReady.set(false);

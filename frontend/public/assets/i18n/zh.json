@@ -2,7 +2,7 @@
   "app": {
     "pageTitle": "Pricefly | 价格追踪",
     "brand": "Pricefly",
-    "tagline": "追踪价格，即时提醒。"
+    "tagline": "价格已追踪。即时通知。"
   },
   "common": {
     "imprint": "法律信息",
@@ -104,6 +104,15 @@
     "placeholderUrl": "粘贴商品链接…",
     "add": "添加",
     "adding": "添加中…",
+    "scrapeMessages": [
+      "正在审讯数据库…",
+      "正在采集指纹…",
+      "正在追踪可疑线索…",
+      "正在贿赂服务器…",
+      "案件即将破解…",
+      "正在核实不在场证明…",
+      "正在破解密码…"
+    ],
     "notifications": "通知",
     "markAllRead": "全部标为已读",
     "loading": "加载中…",

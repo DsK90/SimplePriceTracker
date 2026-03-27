@@ -155,7 +155,7 @@ export class TrackingsService {
   async list(userId: string): Promise<PublicTracking[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { planTier: true },
+      select: { planTier: true, email: true },
     });
     const rows = await this.prisma.priceTracking.findMany({
       where: { userId },
@@ -163,7 +163,7 @@ export class TrackingsService {
       ...TRACKING_LIST,
     });
     const mapped = rows.map((t) => this.toPublicTracking(t));
-    if (user?.planTier === PlanTier.PRO) return mapped;
+    if (user?.planTier === PlanTier.PRO || user?.email === ADMIN_EMAIL) return mapped;
     return mapped.map((t) => ({
       ...t,
       snapshots: (t.snapshots ?? []).slice(0, 2),

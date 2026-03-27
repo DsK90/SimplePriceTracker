@@ -2,7 +2,7 @@
   "app": {
     "pageTitle": "Pricefly | Suivi des prix",
     "brand": "Pricefly",
-    "tagline": "Suivez les prix. Soyez averti instantanément."
+    "tagline": "Prix suivis. Alerté instantanément."
   },
   "common": {
     "imprint": "Mentions légales",
@@ -104,6 +104,15 @@
     "placeholderUrl": "Collez l’URL du produit…",
     "add": "Ajouter",
     "adding": "Ajout en cours…",
+    "scrapeMessages": [
+      "Interrogatoire de la base de données…",
+      "Relevé d'empreintes…",
+      "Pistes suspectes en cours…",
+      "Corruption du serveur…",
+      "Affaire presque résolue…",
+      "Vérification de l'alibi…",
+      "Déchiffrage du code…"
+    ],
     "notifications": "Notifications",
     "markAllRead": "Tout marquer comme lu",
     "loading": "Chargement…",

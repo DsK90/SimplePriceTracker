@@ -150,7 +150,10 @@
       "saveFailed": "Impossibile salvare",
       "refreshFailed": "Aggiornamento non riuscito",
       "invalidDecimal": "Inserisci un prezzo valido (es. 25,99 o 25.99).",
-      "freeTrackingLimit": "Il piano gratuito consente fino a {{max}} monitoraggi attivi. Passa a un piano superiore per averne di più."
+      "freeTrackingLimit": "Il piano gratuito consente fino a {{max}} monitoraggi attivi. Passa a un piano superiore per averne di più.",
+      "priceNotFound": "Impossibile trovare un prezzo su questa pagina. Il negozio potrebbe bloccare i bot o richiedere JavaScript.",
+      "emailAlertLimit": "Gli avvisi e-mail sui prezzi sono limitati a {{max}} prodotti nel tuo piano. Disattiva l'e-mail su un altro prodotto o passa a Pro.",
+      "httpFetchError": "Impossibile caricare la pagina. Il sito potrebbe non essere disponibile o bloccare le richieste."
     },
     "history": {
       "title": "Storico prezzi",

@@ -150,7 +150,10 @@
       "saveFailed": "无法保存",
       "refreshFailed": "刷新失败",
       "invalidDecimal": "请输入有效价格（例如 25.99 或 25,99）。",
-      "freeTrackingLimit": "免费版最多 {{max}} 个活跃追踪。升级即可添加更多。"
+      "freeTrackingLimit": "免费版最多 {{max}} 个活跃追踪。升级即可添加更多。",
+      "priceNotFound": "无法在此页面找到价格。该商店可能阻止了机器人访问或需要 JavaScript。",
+      "emailAlertLimit": "您的计划中电子邮件价格提醒最多支持 {{max}} 个产品。请关闭其他产品的邮件提醒或升级到 Pro。",
+      "httpFetchError": "无法加载该页面。网站可能不可用或正在阻止请求。"
     },
     "history": {
       "title": "价格历史",

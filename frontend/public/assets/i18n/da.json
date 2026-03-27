@@ -150,7 +150,10 @@
       "saveFailed": "Kunne ikke gemme",
       "refreshFailed": "Opdatering mislykkedes",
       "invalidDecimal": "Angiv en gyldig pris (f.eks. 25,99 eller 25.99).",
-      "freeTrackingLimit": "Gratis-planen tillader op til {{max}} aktive overvågninger. Opgrader for flere."
+      "freeTrackingLimit": "Gratis-planen tillader op til {{max}} aktive overvågninger. Opgrader for flere.",
+      "priceNotFound": "Kunne ikke finde en pris på denne side. Butikken blokerer muligvis bots eller kræver JavaScript.",
+      "emailAlertLimit": "E-mail-prisalarmer er begrænset til {{max}} produkter på din plan. Deaktiver e-mail på et andet produkt eller opgrader til Pro.",
+      "httpFetchError": "Siden kunne ikke indlæses. Websitet er muligvis utilgængeligt eller blokerer anmodninger."
     },
     "history": {
       "title": "Prishistorik",

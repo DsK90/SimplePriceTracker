@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -42,6 +43,8 @@ export type PublicTracking = TrackingRow & {
 
 @Injectable()
 export class TrackingsService {
+  private readonly log = new Logger(TrackingsService.name);
+
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
@@ -722,7 +725,10 @@ export class TrackingsService {
       },
       redirect: 'follow',
     });
-    if (!res.ok) throw new BadRequestException(`HTTP ${res.status} fetching page`);
+    if (!res.ok) {
+      this.log.error(`HTTP ${res.status} fetching ${url}`);
+      throw new BadRequestException({ code: 'HTTP_FETCH_ERROR' });
+    }
     return res.text();
   }
 
@@ -751,9 +757,9 @@ export class TrackingsService {
       /* browser unavailable or page failed — fall through */
     }
 
-    throw new BadRequestException(
-      'Could not find a price on this page. The shop may block bots or need JavaScript.',
-    );
+    throw new BadRequestException({
+      code: 'PRICE_NOT_FOUND',
+    });
   }
 
   private async assertCanAddActive(userId: string) {
@@ -785,9 +791,10 @@ export class TrackingsService {
       },
     });
     if (count >= limit) {
-      throw new ForbiddenException(
-        `Email price alerts are limited to ${limit} products on your plan. Turn off email on another product or upgrade to Pro.`,
-      );
+      throw new ForbiddenException({
+        code: 'EMAIL_ALERT_LIMIT',
+        limit,
+      });
     }
   }
 

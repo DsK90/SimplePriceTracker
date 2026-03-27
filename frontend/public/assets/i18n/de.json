@@ -203,7 +203,10 @@
       "saveFailed": "Speichern fehlgeschlagen",
       "refreshFailed": "Aktualisierung fehlgeschlagen",
       "invalidDecimal": "Bitte einen gültigen Preis eingeben (z. B. 25,99 oder 25.99).",
-      "freeTrackingLimit": "Im Free-Tarif sind bis zu {{max}} aktive Trackings möglich. Upgrade für mehr."
+      "freeTrackingLimit": "Im Free-Tarif sind bis zu {{max}} aktive Trackings möglich. Upgrade für mehr.",
+      "priceNotFound": "Auf dieser Seite konnte kein Preis gefunden werden. Der Shop blockiert möglicherweise Bots oder benötigt JavaScript.",
+      "emailAlertLimit": "E-Mail-Preisalarme sind auf {{max}} Produkte in deinem Tarif begrenzt. Deaktiviere E-Mail bei einem anderen Produkt oder upgrade auf Pro.",
+      "httpFetchError": "Die Seite konnte nicht geladen werden. Die Website ist möglicherweise nicht erreichbar oder blockiert Anfragen."
     },
     "history": {
       "title": "Preisverlauf",

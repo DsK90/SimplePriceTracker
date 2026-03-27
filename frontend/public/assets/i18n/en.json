@@ -203,7 +203,10 @@
       "saveFailed": "Could not save",
       "refreshFailed": "Refresh failed",
       "invalidDecimal": "Enter a valid price (e.g. 25.99 or 25,99).",
-      "freeTrackingLimit": "The free plan allows up to {{max}} active trackings. Upgrade for more."
+      "freeTrackingLimit": "The free plan allows up to {{max}} active trackings. Upgrade for more.",
+      "priceNotFound": "Could not find a price on this page. The shop may block bots or require JavaScript.",
+      "emailAlertLimit": "Email price alerts are limited to {{max}} products on your plan. Turn off email on another product or upgrade to Pro.",
+      "httpFetchError": "Could not load the page. The website may be unavailable or blocking requests."
     },
     "history": {
       "title": "Price history",

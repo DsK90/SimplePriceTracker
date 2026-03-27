@@ -148,6 +148,17 @@ export class DashboardComponent implements OnInit {
         max: body.limit ?? 5,
       });
     }
+    if (body?.code === 'PRICE_NOT_FOUND') {
+      return this.translate.instant('dashboard.errors.priceNotFound');
+    }
+    if (body?.code === 'EMAIL_ALERT_LIMIT') {
+      return this.translate.instant('dashboard.errors.emailAlertLimit', {
+        max: body.limit ?? 2,
+      });
+    }
+    if (body?.code === 'HTTP_FETCH_ERROR') {
+      return this.translate.instant('dashboard.errors.httpFetchError');
+    }
     const m = body?.message;
     if (Array.isArray(m)) return m[0] ?? this.translate.instant(fallbackKey);
     if (typeof m === 'string' && m.length > 0) return m;

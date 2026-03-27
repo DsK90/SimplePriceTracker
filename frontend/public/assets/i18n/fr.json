@@ -150,6 +150,9 @@
       "saveFailed": "Impossible d’enregistrer",
       "refreshFailed": "Échec de l’actualisation",
       "invalidDecimal": "Saisissez un prix valide (p. ex. 25,99 ou 25.99).",
+      "priceNotFound": "Impossible de trouver un prix sur cette page. Le site bloque peut-être les robots ou nécessite JavaScript.",
+      "emailAlertLimit": "Les alertes e-mail sont limitées à {{max}} produits sur votre forfait. Désactivez l'e-mail pour un autre produit ou passez à Pro.",
+      "httpFetchError": "Impossible de charger la page. Le site est peut-être indisponible ou bloque les requêtes.",
       "freeTrackingLimit": "L’offre gratuite autorise jusqu’à {{max}} suivis actifs. Passez à une offre supérieure pour en avoir plus."
     },
     "history": {

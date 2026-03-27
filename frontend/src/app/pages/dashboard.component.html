@@ -84,7 +84,7 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
             </svg>
           }
-          <span>{{ (saving() ? 'dashboard.adding' : 'dashboard.add') | translate }}</span>
+          <span>{{ saving() && scrapeMessage() ? scrapeMessage() : (saving() ? 'dashboard.adding' : 'dashboard.add') | translate }}</span>
         </button>
       </form>
       @if (demoPriceEnabled && !hasDemoRow()) {
@@ -149,13 +149,6 @@
         </div>
       }
     </header>
-
-    @if (saving() && scrapeMessage()) {
-      <div class="mb-3 flex items-center gap-2.5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-        <span class="text-base">🕵️</span>
-        <span class="animate-pulse text-xs font-medium text-primary">{{ scrapeMessage() }}</span>
-      </div>
-    }
 
     @if (formError()) {
       <p class="mb-3 text-sm text-error">{{ formError() }}</p>

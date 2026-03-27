@@ -179,6 +179,12 @@ export function extractProductAndCompany(
     if (txt) productName = txt;
   }
 
+  // Amazon: dedicated #productTitle element
+  if (!productName) {
+    const amzTitle = $('#productTitle').first().text().trim();
+    if (amzTitle) productName = amzTitle;
+  }
+
   const brandContent = $('meta[itemprop="brand"][content]').attr('content')?.trim();
   if (brandContent) companyName = companyName || brandContent;
 

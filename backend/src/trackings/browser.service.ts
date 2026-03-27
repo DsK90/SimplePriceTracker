@@ -36,8 +36,21 @@ export class BrowserService implements OnModuleDestroy {
         await page
           .waitForLoadState('networkidle', { timeout: 8_000 })
           .catch(() => {});
+
+        // Some sites (Amazon) serve a JS challenge that resolves after a few
+        // seconds. If the page is suspiciously small after networkidle, poll
+        // briefly to wait for the real content to appear.
+        let html = await page.content();
+        if (html.length < 20_000) {
+          for (let i = 0; i < 3; i++) {
+            await page.waitForTimeout(3_000);
+            html = await page.content();
+            if (html.length >= 20_000) break;
+          }
+        }
+
         await this.dismissConsentDialogs(page);
-        await page.waitForTimeout(1_500);
+        await page.waitForTimeout(1_000);
         return await page.content();
       } finally {
         await page.close().catch(() => {});

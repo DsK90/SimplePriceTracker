@@ -55,12 +55,27 @@ function expandJsonLdNodes(data: unknown): unknown[] {
  * whose pages have no structured data (LD+JSON / meta / microdata).
  */
 function extractPriceFromCssSelectors($: cheerio.CheerioAPI): string | null {
-  // Amazon: <span class="a-price-whole">229,</span><span class="a-price-fraction">00</span>
-  const amzWhole = $('.a-price-whole').first().text().trim().replace(/[.,]$/, '');
-  if (amzWhole) {
-    const amzFraction = $('.a-price-fraction').first().text().trim();
-    const combined = amzFraction ? `${amzWhole}.${amzFraction}` : amzWhole;
-    if (/^\d[\d.,]*\d$|^\d+$/.test(combined)) return combined;
+  // Amazon: the main product price lives inside specific containers.
+  // .a-offscreen holds the full formatted price ("474,99\u00a0€") for screen readers.
+  const amzContainers = [
+    '#corePrice_feature_div',
+    '#corePriceDisplay_desktop_feature_div',
+    '#apex_desktop',
+    '#newBuyBoxPrice',
+    '#price_inside_buybox',
+  ];
+  for (const container of amzContainers) {
+    const offscreen = $(`${container} .a-price .a-offscreen`).first().text().trim();
+    if (offscreen) {
+      const m = offscreen.match(/([\d]+[.,]\d{2})/);
+      if (m) return m[1].replace(',', '.');
+    }
+    const whole = $(`${container} .a-price-whole`).first().text().trim().replace(/[.,]$/, '');
+    if (whole) {
+      const frac = $(`${container} .a-price-fraction`).first().text().trim();
+      const combined = frac ? `${whole}.${frac}` : whole;
+      if (/^\d[\d.,]*\d$|^\d+$/.test(combined)) return combined;
+    }
   }
 
   // Generic: element with data-price attribute

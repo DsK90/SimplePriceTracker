@@ -224,22 +224,38 @@
           <h2 class="font-headline text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
             {{ 'dashboard.watchlist' | translate }}
           </h2>
-          <span class="text-[9px] font-bold uppercase tracking-widest text-primary/70">{{
-            'dashboard.recent' | translate
-          }}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[9px] text-on-surface-variant/70">{{ 'dashboard.reorder' | translate }}</span>
+            <button
+              type="button"
+              (click)="mobileReorder.set(!mobileReorder())"
+              [class]="mobileReorder()
+                ? 'relative inline-flex h-5 w-9 items-center rounded-full bg-primary transition-colors'
+                : 'relative inline-flex h-5 w-9 items-center rounded-full bg-outline-variant/40 transition-colors'"
+              [attr.aria-label]="'dashboard.reorder' | translate"
+            >
+              <span
+                [class]="mobileReorder()
+                  ? 'inline-block h-3.5 w-3.5 translate-x-[18px] rounded-full bg-white shadow transition-transform'
+                  : 'inline-block h-3.5 w-3.5 translate-x-[3px] rounded-full bg-white shadow transition-transform'"
+              ></span>
+            </button>
+          </div>
         </div>
         <div
           cdkDropList
           (cdkDropListDropped)="onDrop($event)"
-          [cdkDropListDisabled]="editingId() !== null"
+          [cdkDropListDisabled]="!mobileReorder() || editingId() !== null"
           class="space-y-1.5"
         >
           @for (t of items(); track t.id) {
             <div
               cdkDrag
-              [cdkDragDisabled]="editingId() !== null"
+              [cdkDragDisabled]="!mobileReorder() || editingId() !== null"
               [attr.aria-label]="'dashboard.reorderHandle' | translate"
-              class="touch-manipulation cursor-grab rounded-lg border border-outline-variant/5 bg-surface-container/40 p-2 transition-colors hover:bg-surface-container/60 active:cursor-grabbing"
+              [class]="mobileReorder()
+                ? 'touch-manipulation cursor-grab rounded-lg border border-primary/20 bg-surface-container/40 p-2 transition-colors hover:bg-surface-container/60 active:cursor-grabbing'
+                : 'rounded-lg border border-outline-variant/5 bg-surface-container/40 p-2 transition-colors'"
             >
               <div class="flex items-center gap-2.5">
                 <div

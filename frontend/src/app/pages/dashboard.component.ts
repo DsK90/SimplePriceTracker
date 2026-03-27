@@ -117,6 +117,7 @@ export class DashboardComponent implements OnInit {
   refreshError = signal<string | null>(null);
   patchError = signal<string | null>(null);
   editingId = signal<string | null>(null);
+  mobileReorder = signal(false);
 
   notifications = signal<AppNotification[]>([]);
   notifCount = signal(0);
@@ -127,6 +128,8 @@ export class DashboardComponent implements OnInit {
 
   scrapeMessage = signal('');
   private scrapeInterval: ReturnType<typeof setInterval> | null = null;
+  private scrapeIdx = 0;
+  private static readonly SCRAPE_MSG_COUNT = 7;
 
   /** Pro-only: overlay with price snapshots for one tracking. */
   historyTracking = signal<Tracking | null>(null);
@@ -142,8 +145,14 @@ export class DashboardComponent implements OnInit {
   private readonly scrapeMsgEffect = effect(() => {
     const active = this.saving();
     if (active) {
-      this.cycleScrapeMessage();
-      this.scrapeInterval = setInterval(() => this.cycleScrapeMessage(), 2500);
+      this.scrapeIdx = 0;
+      this.scrapeMessage.set(this.translate.instant('dashboard.scrapeMsg0'));
+      this.scrapeInterval = setInterval(() => {
+        this.scrapeIdx = (this.scrapeIdx + 1) % DashboardComponent.SCRAPE_MSG_COUNT;
+        this.scrapeMessage.set(
+          this.translate.instant(`dashboard.scrapeMsg${this.scrapeIdx}`),
+        );
+      }, 2500);
     } else {
       if (this.scrapeInterval) {
         clearInterval(this.scrapeInterval);
@@ -152,15 +161,6 @@ export class DashboardComponent implements OnInit {
       this.scrapeMessage.set('');
     }
   });
-
-  private cycleScrapeMessage(): void {
-    const msgs: string[] = this.translate.instant('dashboard.scrapeMessages');
-    if (!Array.isArray(msgs) || !msgs.length) return;
-    const current = this.scrapeMessage();
-    const idx = msgs.indexOf(current);
-    const next = (idx + 1) % msgs.length;
-    this.scrapeMessage.set(msgs[next]);
-  }
 
   @HostListener('document:keydown.escape')
   onHistoryEscape(): void {

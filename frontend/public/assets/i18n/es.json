@@ -156,6 +156,11 @@
       "unsupported": "Las notificaciones del navegador no están disponibles aquí.",
       "serverOff": "Web Push no está configurado en el servidor (claves VAPID en la API)."
     },
+    "pushReminder": {
+      "message": "Has configurado una alerta de precio pero las notificaciones están desactivadas — no serás avisado.",
+      "enableLabel": "Activar notificaciones push",
+      "enable": "Activar"
+    },
     "errors": {
       "addFailed": "No se pudo añadir el seguimiento",
       "saveFailed": "No se pudo guardar",

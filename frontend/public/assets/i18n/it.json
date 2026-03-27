@@ -156,6 +156,11 @@
       "unsupported": "Le notifiche del browser non sono disponibili qui.",
       "serverOff": "Web Push non configurato sul server (imposta le chiavi VAPID nell’API)."
     },
+    "pushReminder": {
+      "message": "Hai impostato un avviso di prezzo ma le notifiche sono disattivate — non riceverai avvisi.",
+      "enableLabel": "Attiva le notifiche push",
+      "enable": "Attiva"
+    },
     "errors": {
       "addFailed": "Impossibile aggiungere il monitoraggio",
       "saveFailed": "Impossibile salvare",

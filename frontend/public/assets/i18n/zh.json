@@ -156,6 +156,11 @@
       "unsupported": "当前环境不支持浏览器通知。",
       "serverOff": "服务器未配置 Web Push（请在 API 环境中设置 VAPID 密钥）。"
     },
+    "pushReminder": {
+      "message": "您设置了价格提醒，但通知已关闭——您将不会收到通知。",
+      "enableLabel": "启用推送通知",
+      "enable": "启用"
+    },
     "errors": {
       "addFailed": "无法添加追踪",
       "saveFailed": "无法保存",

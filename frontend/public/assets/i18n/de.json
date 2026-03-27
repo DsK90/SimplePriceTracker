@@ -209,6 +209,11 @@
       "unsupported": "Browser-Benachrichtigungen sind hier nicht verfügbar.",
       "serverOff": "Web Push ist auf dem Server nicht konfiguriert (VAPID-Schlüssel in der API-Umgebung setzen)."
     },
+    "pushReminder": {
+      "message": "Du hast einen Preisalarm gesetzt, aber Benachrichtigungen sind noch aus — du wirst so nicht informiert.",
+      "enableLabel": "Push-Benachrichtigungen aktivieren",
+      "enable": "Aktivieren"
+    },
     "errors": {
       "addFailed": "Tracking konnte nicht hinzugefügt werden",
       "saveFailed": "Speichern fehlgeschlagen",

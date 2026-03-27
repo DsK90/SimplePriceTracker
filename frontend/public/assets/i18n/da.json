@@ -156,6 +156,11 @@
       "unsupported": "Browsernotifikationer er ikke tilgængelige her.",
       "serverOff": "Web Push er ikke konfigureret på serveren (VAPID-nøgler i API-miljøet)."
     },
+    "pushReminder": {
+      "message": "Du har sat en prisalarm, men notifikationer er slået fra — du vil ikke blive underrettet.",
+      "enableLabel": "Aktivér push-notifikationer",
+      "enable": "Aktivér"
+    },
     "errors": {
       "addFailed": "Kunne ikke tilføje overvågning",
       "saveFailed": "Kunne ikke gemme",

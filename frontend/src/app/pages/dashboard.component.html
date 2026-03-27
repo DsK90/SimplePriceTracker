@@ -154,6 +154,40 @@
       <p class="mb-3 text-sm text-error">{{ formError() }}</p>
     }
 
+    @if (pushReminderVisible()) {
+      <div
+        class="mb-3 flex items-center justify-between gap-3 rounded-lg border border-tertiary/25 bg-tertiary/5 px-3 py-2.5"
+      >
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-lg text-tertiary">notifications_active</span>
+          <p class="text-xs font-medium text-on-surface">{{ 'dashboard.pushReminder.message' | translate }}</p>
+        </div>
+        <div class="flex shrink-0 items-center gap-2">
+          <div class="flex flex-col items-center">
+            <span class="text-[8px] leading-tight text-on-surface-variant/70">{{
+              'dashboard.pushReminder.enableLabel' | translate
+            }}</span>
+            <button
+              type="button"
+              (click)="enablePushFromReminder()"
+              [disabled]="pushBusy()"
+              class="rounded-md bg-tertiary px-3 py-1 text-[11px] font-bold text-on-tertiary shadow-sm active:scale-95 disabled:opacity-50"
+            >
+              {{ 'dashboard.pushReminder.enable' | translate }}
+            </button>
+          </div>
+          <button
+            type="button"
+            (click)="dismissPushReminder()"
+            class="flex h-6 w-6 items-center justify-center rounded-full text-on-surface-variant/60 transition hover:text-on-surface"
+            aria-label="Dismiss"
+          >
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      </div>
+    }
+
     @if (notifOpen()) {
       <section
         class="mb-4 overflow-hidden rounded-lg border border-outline-variant/10 bg-surface-container-low shadow-sm"

@@ -209,6 +209,11 @@
       "unsupported": "Browser notifications are not available in this environment.",
       "serverOff": "Web Push is not configured on the server (set VAPID keys in the API environment)."
     },
+    "pushReminder": {
+      "message": "You set a price alert but notifications are off — you won't be notified.",
+      "enableLabel": "Enable push notifications",
+      "enable": "Enable"
+    },
     "errors": {
       "addFailed": "Could not add tracking",
       "saveFailed": "Could not save",

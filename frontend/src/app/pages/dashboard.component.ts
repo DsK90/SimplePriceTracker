@@ -141,6 +141,10 @@ export class DashboardComponent implements OnInit {
   pushDenied = signal(false);
   pushBusy = signal(false);
   pushBannerDismissed = signal(false);
+  pushReminderVisible = signal(false);
+  private pushReminderTimer: ReturnType<typeof setTimeout> | null = null;
+  private static readonly PUSH_REMINDER_KEY = 'pricefly_push_reminder';
+  private static readonly PUSH_REMINDER_DELAYS = [0, 5 * 60_000, 30 * 60_000, 2 * 3600_000, 12 * 3600_000];
 
   private readonly scrapeMsgEffect = effect(() => {
     const active = this.saving();
@@ -194,6 +198,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.destroyRef.onDestroy(() => {
       if (this.scrapeInterval) clearInterval(this.scrapeInterval);
+      if (this.pushReminderTimer) clearTimeout(this.pushReminderTimer);
     });
     this.dashboardUi.toggleNotifications.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.toggleNotifs());
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((q: Params) => {
@@ -218,6 +223,46 @@ export class DashboardComponent implements OnInit {
     void this.initPush();
   }
 
+  private hasAlertThresholds(): boolean {
+    return this.items().some((t) => t.alertBelowPrice || t.alertAbovePrice);
+  }
+
+  schedulePushReminder(): void {
+    if (this.pushReminderTimer) clearTimeout(this.pushReminderTimer);
+    this.pushReminderVisible.set(false);
+
+    if (this.pushSubscribed() || this.pushUnsupported() || !this.pushServerOn() || this.pushDenied()) return;
+    if (!this.hasAlertThresholds()) return;
+
+    const raw = localStorage.getItem(DashboardComponent.PUSH_REMINDER_KEY);
+    const state = raw ? JSON.parse(raw) as { count: number; lastDismissed: number } : null;
+    const count = state?.count ?? 0;
+    const lastDismissed = state?.lastDismissed ?? 0;
+
+    const delays = DashboardComponent.PUSH_REMINDER_DELAYS;
+    const delay = delays[Math.min(count, delays.length - 1)];
+
+    const elapsed = Date.now() - lastDismissed;
+    const remaining = Math.max(0, delay - elapsed);
+
+    this.pushReminderTimer = setTimeout(() => this.pushReminderVisible.set(true), remaining);
+  }
+
+  dismissPushReminder(): void {
+    this.pushReminderVisible.set(false);
+    const raw = localStorage.getItem(DashboardComponent.PUSH_REMINDER_KEY);
+    const state = raw ? JSON.parse(raw) as { count: number; lastDismissed: number } : { count: 0, lastDismissed: 0 };
+    state.count++;
+    state.lastDismissed = Date.now();
+    localStorage.setItem(DashboardComponent.PUSH_REMINDER_KEY, JSON.stringify(state));
+  }
+
+  async enablePushFromReminder(): Promise<void> {
+    await this.enablePush();
+    this.pushReminderVisible.set(false);
+    localStorage.removeItem(DashboardComponent.PUSH_REMINDER_KEY);
+  }
+
   async initPush(): Promise<void> {
     this.pushLoading.set(true);
     try {
@@ -234,6 +279,7 @@ export class DashboardComponent implements OnInit {
       }
     } finally {
       this.pushLoading.set(false);
+      this.schedulePushReminder();
     }
   }
 
@@ -414,6 +460,7 @@ export class DashboardComponent implements OnInit {
       next: (rows) => {
         this.items.set(rows);
         this.loading.set(false);
+        this.schedulePushReminder();
       },
       error: () => this.loading.set(false),
     });

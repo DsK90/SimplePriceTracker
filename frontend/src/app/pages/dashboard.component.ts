@@ -320,6 +320,21 @@ export class DashboardComponent implements OnInit {
     return s.currency ?? t.currency;
   }
 
+  protected currencySymbol(code?: string | null): string {
+    if (!code) return '';
+    try {
+      const parts = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'narrowSymbol',
+      }).formatToParts(0);
+      const sym = parts.filter((p) => p.type === 'currency').map((p) => p.value).join('');
+      return sym || code;
+    } catch {
+      return code;
+    }
+  }
+
   priceDelta(t: Tracking): { pct: number; label: string } | null {
     const s = t.snapshots;
     if (!s || s.length < 2) return null;

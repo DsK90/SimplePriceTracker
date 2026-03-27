@@ -176,6 +176,8 @@
     "stableUpper": "STABLE",
     "savesYou": "Saves you {{amount}} {{currency}}",
     "trackedProduct": "Tracked product",
+    "notificationActive": "Notification active",
+    "notificationInactive": "Notification inactive",
     "colProduct": "Product",
     "colStore": "Store",
     "colPrice": "Current price",

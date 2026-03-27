@@ -123,6 +123,8 @@
     "stableUpper": "UÆNDRET",
     "savesYou": "Sparer dig {{amount}} {{currency}}",
     "trackedProduct": "Overvåget produkt",
+    "notificationActive": "Notifikation aktiv",
+    "notificationInactive": "Notifikation inaktiv",
     "colProduct": "Produkt",
     "colStore": "Butik",
     "colPrice": "Aktuel pris",

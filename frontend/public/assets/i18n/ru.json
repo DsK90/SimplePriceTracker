@@ -123,6 +123,8 @@
     "stableUpper": "БЕЗ ИЗМЕНЕНИЙ",
     "savesYou": "Экономия {{amount}} {{currency}}",
     "trackedProduct": "Отслеживаемый товар",
+    "notificationActive": "Уведомления включены",
+    "notificationInactive": "Уведомления выключены",
     "colProduct": "Товар",
     "colStore": "Магазин",
     "colPrice": "Текущая цена",

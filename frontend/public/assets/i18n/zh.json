@@ -123,6 +123,8 @@
     "stableUpper": "持平",
     "savesYou": "为您节省 {{amount}} {{currency}}",
     "trackedProduct": "追踪中的商品",
+    "notificationActive": "通知已开启",
+    "notificationInactive": "通知已关闭",
     "colProduct": "商品",
     "colStore": "商店",
     "colPrice": "当前价格",

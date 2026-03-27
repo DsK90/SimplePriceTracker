@@ -176,6 +176,8 @@
     "stableUpper": "GLEICHBLEIBEND",
     "savesYou": "Spart dir {{amount}} {{currency}}",
     "trackedProduct": "Verfolgtes Produkt",
+    "notificationActive": "Benachrichtigung aktiv",
+    "notificationInactive": "Benachrichtigung inaktiv",
     "colProduct": "Produkt",
     "colStore": "Shop",
     "colPrice": "Aktueller Preis",

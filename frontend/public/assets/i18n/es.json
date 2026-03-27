@@ -123,6 +123,8 @@
     "stableUpper": "ESTABLE",
     "savesYou": "Te ahorras {{amount}} {{currency}}",
     "trackedProduct": "Producto seguido",
+    "notificationActive": "Notificacion activa",
+    "notificationInactive": "Notificacion inactiva",
     "colProduct": "Producto",
     "colStore": "Tienda",
     "colPrice": "Precio actual",

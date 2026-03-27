@@ -103,6 +103,7 @@
     "activeAlertsPlural": "{{count}} aktive prisalarmer",
     "placeholderUrl": "Indsæt produkt-URL…",
     "add": "Tilføj",
+    "adding": "Tilføjer…",
     "notifications": "Notifikationer",
     "markAllRead": "Marker alle som læst",
     "loading": "Indlæser…",

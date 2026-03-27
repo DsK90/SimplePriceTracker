@@ -69,15 +69,22 @@
             formControlName="url"
             type="url"
             [attr.placeholder]="'dashboard.placeholderUrl' | translate"
-            class="w-full rounded-lg border border-outline-variant/45 bg-surface-container-highest py-2 pl-3 pr-3 text-xs text-on-surface shadow-inner shadow-black/10 placeholder:text-on-surface-variant/65 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/35 md:py-2 md:pl-9 md:text-sm md:placeholder:text-on-surface-variant/55"
+            [disabled]="saving()"
+            class="w-full rounded-lg border border-outline-variant/45 bg-surface-container-highest py-2 pl-3 pr-3 text-xs text-on-surface shadow-inner shadow-black/10 placeholder:text-on-surface-variant/65 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/35 disabled:opacity-60 disabled:cursor-not-allowed md:py-2 md:pl-9 md:text-sm md:placeholder:text-on-surface-variant/55"
           />
         </div>
         <button
           type="submit"
           [disabled]="form.invalid || saving()"
-          class="shrink-0 rounded-lg border border-white/25 bg-primary px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-on-primary-container shadow-lg shadow-primary-container/45 ring-1 ring-white/20 transition active:scale-95 hover:brightness-110 disabled:opacity-70 md:rounded-lg md:px-4 md:text-sm md:normal-case md:tracking-normal"
+          class="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/25 bg-primary px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-on-primary-container shadow-lg shadow-primary-container/45 ring-1 ring-white/20 transition active:scale-95 hover:brightness-110 disabled:opacity-70 md:rounded-lg md:px-4 md:text-sm md:normal-case md:tracking-normal"
         >
-          {{ 'dashboard.add' | translate }}
+          @if (saving()) {
+            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
+            </svg>
+          }
+          <span>{{ (saving() ? 'dashboard.adding' : 'dashboard.add') | translate }}</span>
         </button>
       </form>
       @if (demoPriceEnabled && !hasDemoRow()) {

@@ -103,6 +103,7 @@
     "activeAlertsPlural": "{{count}} активных ценовых уведомлений",
     "placeholderUrl": "Вставьте URL товара…",
     "add": "Добавить",
+    "adding": "Добавление…",
     "notifications": "Уведомления",
     "markAllRead": "Прочитать все",
     "loading": "Загрузка…",

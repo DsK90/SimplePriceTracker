@@ -156,6 +156,7 @@
     "activeAlertsPlural": "{{count}} active price alerts",
     "placeholderUrl": "Paste product URL…",
     "add": "Add",
+    "adding": "Adding…",
     "notifications": "Notifications",
     "markAllRead": "Mark all read",
     "loading": "Loading…",

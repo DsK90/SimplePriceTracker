@@ -156,6 +156,7 @@
     "activeAlertsPlural": "{{count}} aktive Preisalarme",
     "placeholderUrl": "Produkt-URL einfügen…",
     "add": "Hinzufügen",
+    "adding": "Wird hinzugefügt…",
     "notifications": "Benachrichtigungen",
     "markAllRead": "Alle als gelesen",
     "loading": "Laden…",

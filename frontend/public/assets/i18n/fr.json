@@ -103,6 +103,7 @@
     "activeAlertsPlural": "{{count}} alertes prix actives",
     "placeholderUrl": "Collez l’URL du produit…",
     "add": "Ajouter",
+    "adding": "Ajout en cours…",
     "notifications": "Notifications",
     "markAllRead": "Tout marquer comme lu",
     "loading": "Chargement…",

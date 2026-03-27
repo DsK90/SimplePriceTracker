@@ -14,7 +14,18 @@ RUN npx prisma generate
 RUN npm run build
 
 FROM node:20-bookworm-slim AS runner
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y \
+      openssl \
+      chromium \
+      fonts-liberation \
+      libnss3 \
+      libatk-bridge2.0-0 \
+      libdrm2 \
+      libxkbcommon0 \
+      libgbm1 \
+      libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+ENV CHROMIUM_PATH=/usr/bin/chromium
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./

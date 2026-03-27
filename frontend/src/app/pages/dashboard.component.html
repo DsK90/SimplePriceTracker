@@ -323,6 +323,13 @@
                   >
                     <span class="material-symbols-outlined text-[16px]">tune</span>
                   </button>
+                  <button
+                    type="button"
+                    (click)="remove(t.id)"
+                    class="flex h-7 w-7 items-center justify-center rounded bg-surface-container-highest/50 text-on-surface-variant transition hover:text-error active:scale-90"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
                 </div>
               </div>
               @if (editingId() === t.id) {

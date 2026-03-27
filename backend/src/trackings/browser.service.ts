@@ -1,0 +1,206 @@
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import type { Browser, BrowserContext, Page } from 'playwright-core';
+
+const IDLE_CLOSE_MS = 5 * 60_000;
+const PAGE_TIMEOUT_MS = 25_000;
+
+/**
+ * Manages a singleton headless Chromium instance for rendering JS-heavy pages.
+ * Used as a fallback when the simple HTTP fetch finds no structured price data.
+ *
+ * - Lazy launch: Chromium starts only on first request
+ * - Auto-close: shuts down after 5 min of inactivity
+ * - Sequential: one page at a time (mutex) to keep RAM ~150-250 MB
+ * - Stealth patches: hides navigator.webdriver and other headless tells
+ */
+@Injectable()
+export class BrowserService implements OnModuleDestroy {
+  private readonly log = new Logger(BrowserService.name);
+  private browser: Browser | null = null;
+  private context: BrowserContext | null = null;
+  private idleTimer: ReturnType<typeof setTimeout> | null = null;
+  private launching: Promise<Browser> | null = null;
+  private mutex: Promise<void> = Promise.resolve();
+
+  async onModuleDestroy() {
+    await this.closeBrowser();
+  }
+
+  async fetchRenderedHtml(url: string): Promise<string> {
+    return this.withMutex(async () => {
+      const ctx = await this.getContext();
+      const page = await ctx.newPage();
+      try {
+        await this.applyStealthScripts(page);
+        await page.goto(url, { waitUntil: 'load', timeout: PAGE_TIMEOUT_MS });
+        await page
+          .waitForLoadState('networkidle', { timeout: 8_000 })
+          .catch(() => {});
+        await this.dismissConsentDialogs(page);
+        await page.waitForTimeout(1_500);
+        return await page.content();
+      } finally {
+        await page.close().catch(() => {});
+        this.resetIdleTimer();
+      }
+    });
+  }
+
+  /** Patch common headless browser detection vectors before navigation. */
+  private async applyStealthScripts(page: Page) {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['de-DE', 'de', 'en-US', 'en'],
+      });
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+      });
+      (window as any).chrome = { runtime: {} };
+    });
+  }
+
+  /** Try to click away common cookie/consent overlays. */
+  private async dismissConsentDialogs(page: Page) {
+    const selectors = [
+      '[data-testid="uc-accept-all-button"]',
+      '#onetrust-accept-btn-handler',
+      'button[id*="accept"]',
+      'button[class*="consent"]',
+      'button[class*="cookie"]',
+      '[data-action="accept-all"]',
+      '.js-accept-cookies',
+    ];
+    for (const sel of selectors) {
+      try {
+        const btn = page.locator(sel).first();
+        if (await btn.isVisible({ timeout: 300 })) {
+          await btn.click({ timeout: 1_000 });
+          await page.waitForTimeout(500);
+          return;
+        }
+      } catch {
+        /* not found — try next */
+      }
+    }
+  }
+
+  private async withMutex<T>(fn: () => Promise<T>): Promise<T> {
+    let release: () => void;
+    const next = new Promise<void>((r) => (release = r));
+    const prev = this.mutex;
+    this.mutex = next;
+    await prev;
+    try {
+      return await fn();
+    } finally {
+      release!();
+    }
+  }
+
+  private async getContext(): Promise<BrowserContext> {
+    if (this.context) return this.context;
+    const browser = await this.ensureBrowser();
+    this.context = await browser.newContext({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      locale: 'de-DE',
+      viewport: { width: 1920, height: 1080 },
+      extraHTTPHeaders: {
+        'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+      },
+    });
+    return this.context;
+  }
+
+  private async ensureBrowser(): Promise<Browser> {
+    if (this.browser?.isConnected()) return this.browser;
+    if (this.launching) return this.launching;
+
+    this.launching = this.launchBrowser();
+    try {
+      this.browser = await this.launching;
+      return this.browser;
+    } finally {
+      this.launching = null;
+    }
+  }
+
+  private async launchBrowser(): Promise<Browser> {
+    this.log.log('Launching headless Chromium…');
+    const { chromium } = await import('playwright-core');
+
+    const execPath = this.findChromiumPath();
+    const browser = await chromium.launch({
+      executablePath: execPath ?? undefined,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-blink-features=AutomationControlled',
+      ],
+    });
+
+    browser.on('disconnected', () => {
+      this.log.warn('Chromium disconnected');
+      this.browser = null;
+      this.context = null;
+    });
+
+    this.log.log('Chromium ready');
+    this.resetIdleTimer();
+    return browser;
+  }
+
+  private findChromiumPath(): string | null {
+    const envPath = process.env['CHROMIUM_PATH'];
+    if (envPath) return envPath;
+
+    const candidates =
+      process.platform === 'win32'
+        ? [
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            `${process.env['LOCALAPPDATA']}\\Google\\Chrome\\Application\\chrome.exe`,
+          ]
+        : [
+            '/usr/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable',
+          ];
+
+    try {
+      const { existsSync } = require('fs');
+      for (const p of candidates) {
+        if (existsSync(p)) return p;
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  }
+
+  private resetIdleTimer() {
+    if (this.idleTimer) clearTimeout(this.idleTimer);
+    this.idleTimer = setTimeout(() => this.closeBrowser(), IDLE_CLOSE_MS);
+  }
+
+  private async closeBrowser() {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
+      this.idleTimer = null;
+    }
+    if (this.context) {
+      await this.context.close().catch(() => {});
+      this.context = null;
+    }
+    if (this.browser) {
+      this.log.log('Closing idle Chromium');
+      await this.browser.close().catch(() => {});
+      this.browser = null;
+    }
+  }
+}

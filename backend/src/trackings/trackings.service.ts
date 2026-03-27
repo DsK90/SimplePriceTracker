@@ -23,6 +23,8 @@ import {
   fallbackProductNameFromUrl,
 } from './extract-product-metadata';
 import { fetchSteamProduct, parseSteamAppIdFromUrl } from './steam-store';
+import { fetchAsosPrice, parseAsosProductIdFromUrl } from './asos-store';
+import { BrowserService } from './browser.service';
 
 /** Synthetic URL for dev-only demo tracking (price adjusted via API, not scraped). */
 const DEMO_URL = 'demo://price-test';
@@ -44,6 +46,7 @@ export class TrackingsService {
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private config: ConfigService,
+    private browser: BrowserService,
   ) {}
 
   private clampIntervalMinutes(n: number): number {
@@ -202,24 +205,30 @@ export class TrackingsService {
       });
     }
 
-    const html = await this.fetchHtml(dto.url);
-    const { raw } = extractListedPriceWithSource(html);
-    const meta = extractProductAndCompany(html, dto.url);
-    if (!raw) {
-      throw new BadRequestException(
-        'Could not find a price on this page. The shop may block bots or need JavaScript.',
-      );
-    }
-    const num = parsePriceFromText(raw);
-    if (num === null) {
-      throw new BadRequestException(`Could not parse price from: ${raw.slice(0, 80)}`);
+    const asosProductId = parseAsosProductIdFromUrl(dto.url);
+
+    const httpHtml = await this.fetchHtml(dto.url);
+
+    let num: number | null = null;
+    let html = httpHtml;
+
+    if (asosProductId) {
+      const asos = await fetchAsosPrice(asosProductId, dto.url, currency);
+      if (asos) num = asos.price;
     }
 
+    if (num === null) {
+      const result = await this.extractPriceWithBrowserFallback(dto.url, httpHtml);
+      num = result.price;
+      html = result.html;
+    }
+
+    const meta = extractProductAndCompany(html, dto.url);
     const productName = meta.productName ?? fallbackProductNameFromUrl(dto.url);
     return this.createWithInitialPrice(userId, {
       url: dto.url,
       productName,
-      companyName: meta.companyName ?? null,
+      companyName: meta.companyName ?? (asosProductId ? 'ASOS' : null),
       price: num,
       currency,
       active,
@@ -421,18 +430,25 @@ export class TrackingsService {
       return this.toPublicTracking(row);
     }
 
-    const html = await this.fetchHtml(url);
-    const { raw } = extractListedPriceWithSource(html);
-    const meta = extractProductAndCompany(html, url);
-    if (!raw) {
-      throw new BadRequestException(
-        'Could not find a price on this page. The shop may block bots or need JavaScript.',
-      );
+    const asosProductId = parseAsosProductIdFromUrl(url);
+
+    const httpHtml = await this.fetchHtml(url);
+
+    let num: number | null = null;
+    let html = httpHtml;
+
+    if (asosProductId) {
+      const asos = await fetchAsosPrice(asosProductId, url, currency);
+      if (asos) num = asos.price;
     }
-    const num = parsePriceFromText(raw);
+
     if (num === null) {
-      throw new BadRequestException(`Could not parse price from: ${raw.slice(0, 80)}`);
+      const result = await this.extractPriceWithBrowserFallback(url, httpHtml);
+      num = result.price;
+      html = result.html;
     }
+
+    const meta = extractProductAndCompany(html, url);
     const dec = new Prisma.Decimal(num);
     const productName = meta.productName ?? fallbackProductNameFromUrl(url);
     const row = await this.prisma.priceTracking.update({
@@ -440,7 +456,7 @@ export class TrackingsService {
       data: {
         url,
         productName,
-        companyName: meta.companyName ?? null,
+        companyName: meta.companyName ?? (asosProductId ? 'ASOS' : null),
         lastPrice: dec,
         currency,
         lastCheckedAt: new Date(),
@@ -573,20 +589,19 @@ export class TrackingsService {
       }
     }
 
-    const html = await this.fetchHtml(t.url);
-    const meta = extractProductAndCompany(html, t.url);
-    const { raw } = extractListedPriceWithSource(html);
-    if (!raw) {
-      throw new BadRequestException(
-        'Could not find a price on this page. The shop may block bots or need JavaScript.',
-      );
-    }
-    const num = parsePriceFromText(raw);
-    if (num === null) {
-      throw new BadRequestException(`Could not parse price from: ${raw.slice(0, 80)}`);
+    const asosProductId = parseAsosProductIdFromUrl(t.url);
+    if (asosProductId) {
+      const asos = await fetchAsosPrice(asosProductId, t.url, t.currency);
+      if (asos) {
+        return this.persistPrice(id, asos.price, asos.currency);
+      }
     }
 
-    return this.persistPrice(id, num, t.currency, {
+    const httpHtml = await this.fetchHtml(t.url);
+    const { html, price } = await this.extractPriceWithBrowserFallback(t.url, httpHtml);
+    const meta = extractProductAndCompany(html, t.url);
+
+    return this.persistPrice(id, price, t.currency, {
       productName: meta.productName ?? undefined,
       companyName: meta.companyName,
     });
@@ -692,11 +707,53 @@ export class TrackingsService {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Ch-Ua':
+          '"Chromium";v="120", "Not_A Brand";v="8", "Google Chrome";v="120"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
       },
+      redirect: 'follow',
     });
     if (!res.ok) throw new BadRequestException(`HTTP ${res.status} fetching page`);
     return res.text();
+  }
+
+  /**
+   * Try extracting a price from HTML. If the fast HTTP fetch yields nothing
+   * (e.g. JS-rendered page or bot challenge), retry once with headless Chromium.
+   */
+  private async extractPriceWithBrowserFallback(
+    url: string,
+    httpHtml: string,
+  ): Promise<{ html: string; price: number }> {
+    const first = extractListedPriceWithSource(httpHtml);
+    if (first.raw) {
+      const num = parsePriceFromText(first.raw);
+      if (num !== null) return { html: httpHtml, price: num };
+    }
+
+    try {
+      const rendered = await this.browser.fetchRenderedHtml(url);
+      const second = extractListedPriceWithSource(rendered);
+      if (second.raw) {
+        const num = parsePriceFromText(second.raw);
+        if (num !== null) return { html: rendered, price: num };
+      }
+    } catch {
+      /* browser unavailable or page failed — fall through */
+    }
+
+    throw new BadRequestException(
+      'Could not find a price on this page. The shop may block bots or need JavaScript.',
+    );
   }
 
   private async assertCanAddActive(userId: string) {

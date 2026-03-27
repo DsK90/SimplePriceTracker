@@ -69,11 +69,14 @@ function expandJsonLdNodes(data: unknown): unknown[] {
   if (Array.isArray(data)) return data.flatMap(expandJsonLdNodes);
   if (typeof data === 'object') {
     const o = data as Record<string, unknown>;
-    const graph = o['@graph'];
-    if (Array.isArray(graph)) {
-      return [...graph.flatMap(expandJsonLdNodes), data];
+    const nested: unknown[] = [];
+    if (Array.isArray(o['@graph'])) {
+      nested.push(...o['@graph'].flatMap(expandJsonLdNodes));
     }
-    return [data];
+    if (Array.isArray(o['hasVariant'])) {
+      nested.push(...o['hasVariant'].flatMap(expandJsonLdNodes));
+    }
+    return [...nested, data];
   }
   return [];
 }
@@ -100,13 +103,15 @@ function extractProductFromJsonLd($: cheerio.CheerioAPI): { name?: string; brand
         const o = obj as Record<string, unknown>;
         const type = o['@type'];
         const types = Array.isArray(type) ? type : type ? [type] : [];
-        if (
-          !types.some(
-            (x) => x === 'Product' || x === 'SoftwareApplication' || x === 'IndividualProduct',
-          )
-        ) {
-          continue;
-        }
+        const isProductType = types.some(
+          (x) =>
+            x === 'Product' ||
+            x === 'SoftwareApplication' ||
+            x === 'IndividualProduct' ||
+            x === 'ProductGroup' ||
+            x === 'ProductModel',
+        );
+        if (!isProductType) continue;
         const name = o['name'];
         const brand = brandToString(o['brand']);
         const n = typeof name === 'string' ? name.trim() : null;

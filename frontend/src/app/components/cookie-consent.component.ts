@@ -11,7 +11,7 @@ import { CookieConsentService } from '../core/cookie-consent.service';
   template: `
     @if (visible()) {
       <div
-        class="fixed bottom-0 left-0 right-0 z-[100] border-t border-outline-variant/20 bg-surface-container-low/95 px-4 py-4 shadow-[0_-8px_32px_rgba(0,0,0,0.35)] backdrop-blur-md md:px-8"
+        class="fixed bottom-0 left-0 right-0 z-[200] border-t border-outline-variant/20 bg-surface-container-low/95 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_32px_rgba(0,0,0,0.35)] backdrop-blur-md md:px-8"
         role="dialog"
         aria-labelledby="cookie-consent-title"
       >
@@ -60,7 +60,7 @@ export class CookieConsentComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.consent.hasAnswered()) return;
-    setTimeout(() => this.visible.set(true), 800);
+    this.visible.set(true);
   }
 
   onEssential(): void {

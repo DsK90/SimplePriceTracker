@@ -9,24 +9,40 @@ export type CookieConsentType = 'all' | 'essential';
 @Injectable({ providedIn: 'root' })
 export class CookieConsentService {
   hasAnswered(): boolean {
-    return localStorage.getItem(ACCEPT_KEY) === 'true';
+    try {
+      return localStorage.getItem(ACCEPT_KEY) === 'true';
+    } catch {
+      return false;
+    }
   }
 
   consentType(): CookieConsentType | null {
-    const t = localStorage.getItem(TYPE_KEY);
-    if (t === 'all' || t === 'essential') return t;
-    return null;
+    try {
+      const t = localStorage.getItem(TYPE_KEY);
+      if (t === 'all' || t === 'essential') return t;
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   acceptAll(): void {
-    localStorage.setItem(ACCEPT_KEY, 'true');
-    localStorage.setItem(TYPE_KEY, 'all');
+    try {
+      localStorage.setItem(ACCEPT_KEY, 'true');
+      localStorage.setItem(TYPE_KEY, 'all');
+    } catch {
+      /* localStorage unavailable */
+    }
     this.injectUmami();
   }
 
   acceptEssential(): void {
-    localStorage.setItem(ACCEPT_KEY, 'true');
-    localStorage.setItem(TYPE_KEY, 'essential');
+    try {
+      localStorage.setItem(ACCEPT_KEY, 'true');
+      localStorage.setItem(TYPE_KEY, 'essential');
+    } catch {
+      /* localStorage unavailable */
+    }
   }
 
   /** Call on app init: load analytics if the user previously chose “Accept all”. */

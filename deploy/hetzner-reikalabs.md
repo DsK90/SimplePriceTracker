@@ -34,6 +34,7 @@ Use this checklist on your Hetzner server together with the repo’s Docker Comp
 - Use `deploy/nginx-host-pricefly.example.conf` as a template.
 - Point `umami` upstream to the port you published (example uses `3001:3000`).
 - Obtain certificates (e.g. Certbot nginx plugin) for `pricefly.reikalabs.com` and `umami.reikalabs.com`.
+- **Cross-origin tracking (e.g. Pricefly on `pricefly.*` and Umami on `umami.*`):** the example includes **`location = /api/send`** with CORS so `fetch()` from the tracker succeeds. Same pattern for **`umami.showbk.com`**: see `deploy/nginx-umami-vhost-cors.example.conf` and `deploy/umami-cors-and-troubleshooting.md`.
 
 ### Future apps
 

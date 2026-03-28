@@ -11,6 +11,8 @@ services:
     environment:
       DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD}@db:5432/umami
       APP_SECRET: ${UMAMI_APP_SECRET}
+      # Optional: preflight cache (see https://docs.umami.is/docs/environment-variables)
+      # CORS_MAX_AGE: "86400"
     depends_on:
       db:
         condition: service_healthy

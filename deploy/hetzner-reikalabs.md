@@ -51,6 +51,7 @@ Use this checklist on your Hetzner server together with the repo’s Docker Comp
    UMAMI_SCRIPT_URL=https://umami.reikalabs.com/script.js
    UMAMI_WEBSITE_ID=<id from Umami UI>
    CORS_ORIGIN=https://pricefly.reikalabs.com
+   APP_PUBLIC_URL=https://pricefly.reikalabs.com
    SSL_PRIMARY_DOMAIN=pricefly.reikalabs.com
    LETSENCRYPT_EMAIL=your-email@example.com
    # Optional extra SANs on the same certificate (space-separated):
@@ -92,7 +93,7 @@ If you prefer TLS on the host instead of the **`edge`** service, use `deploy/ngi
 
    - `BREVO_API_KEY` — the API key from step 2.
    - `EMAIL_FROM` — must match a verified sender in Brevo, e.g. `Reikalabs <noreply@reikalabs.com>`.
-   - `APP_PUBLIC_URL` — **exact** public SPA URL (no trailing slash), e.g. `https://pricefly.reikalabs.com`. Used in registration verification e-mails; if omitted in production, the API tries the first non-localhost `https` origin from `CORS_ORIGIN`.
+   - `APP_PUBLIC_URL` — **exact** public SPA URL (no trailing slash), e.g. `https://pricefly.reikalabs.com`. CI merges this from `SSL_PRIMARY_DOMAIN` on deploy. If both are unset, the API builds `https://<SSL_PRIMARY_DOMAIN>` when that variable is passed into the `api` container (see `docker-compose.yml`). Otherwise it uses the first non-localhost `https` entry from `CORS_ORIGIN` — do **not** leave `CORS_ORIGIN` as localhost-only in production or verification links will be wrong.
 
 4. Redeploy the `api` container after changing env.
 

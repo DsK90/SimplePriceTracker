@@ -127,13 +127,17 @@ jobs:
             echo "::error::Add repository secrets SSL_PRIMARY_DOMAIN and LETSENCRYPT_EMAIL (required for certbot-init)."
             exit 1
           fi
-          printf '%s\n' "SSL_PRIMARY_DOMAIN=$SSL_PRIMARY_DOMAIN" "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" > /tmp/ssl_fragment.env
+          printf '%s\n' \
+            "SSL_PRIMARY_DOMAIN=$SSL_PRIMARY_DOMAIN" \
+            "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" \
+            "APP_PUBLIC_URL=https://$SSL_PRIMARY_DOMAIN" \
+            > /tmp/ssl_fragment.env
           if [ -n "$SSL_EXTRA_DOMAINS" ]; then
             printf '%s\n' "SSL_EXTRA_DOMAINS=$SSL_EXTRA_DOMAINS" >> /tmp/ssl_fragment.env
           fi
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no /tmp/ssl_fragment.env root@${{ secrets.DEPLOY_HOST }}:/tmp/ssl_fragment.env
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
-            "cd '${{ env.DEPLOY_PATH }}' && touch .env && (grep -vE '^(SSL_PRIMARY_DOMAIN|LETSENCRYPT_EMAIL|SSL_EXTRA_DOMAINS)=' .env > .env.tmp || true) && mv .env.tmp .env && cat /tmp/ssl_fragment.env >> .env && rm -f /tmp/ssl_fragment.env"
+            "cd '${{ env.DEPLOY_PATH }}' && touch .env && (grep -vE '^(SSL_PRIMARY_DOMAIN|LETSENCRYPT_EMAIL|SSL_EXTRA_DOMAINS|APP_PUBLIC_URL)=' .env > .env.tmp || true) && mv .env.tmp .env && cat /tmp/ssl_fragment.env >> .env && rm -f /tmp/ssl_fragment.env"
 
       - name: Run docker-update on server
         run: |

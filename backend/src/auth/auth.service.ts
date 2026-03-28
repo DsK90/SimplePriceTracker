@@ -244,8 +244,9 @@ export class AuthService {
 
   /**
    * Link target for the SPA `/verify-email` route. Must be the user-facing site, not the API.
-   * Order: APP_PUBLIC_URL → UI_URL → first public origin in CORS_ORIGIN (skips localhost in production)
-   * → else first CORS entry → dev fallback localhost:4200.
+   * Order: APP_PUBLIC_URL → UI_URL → https://SSL_PRIMARY_DOMAIN (TLS / docker-compose.ssl setups)
+   * → first public origin in CORS_ORIGIN (skips localhost in production) → else first CORS entry
+   * → dev fallback localhost:4200.
    */
   private buildVerifyUrl(rawToken: string): string {
     const base = this.resolvePublicAppBaseUrl();
@@ -271,6 +272,13 @@ export class AuthService {
       this.config.get<string>('APP_PUBLIC_URL')?.trim() ||
       this.config.get<string>('UI_URL')?.trim();
     if (explicit) return this.stripTrailingSlash(explicit);
+
+    const sslDomain =
+      this.config.get<string>('SSL_PRIMARY_DOMAIN')?.trim() ||
+      process.env.SSL_PRIMARY_DOMAIN?.trim();
+    if (sslDomain && !sslDomain.includes('*') && !this.isLoopbackOrigin(`https://${sslDomain}`)) {
+      return this.stripTrailingSlash(`https://${sslDomain}`);
+    }
 
     const cors = this.config.get<string>('CORS_ORIGIN')?.trim();
     const origins = cors ? cors.split(',').map((s) => s.trim()).filter(Boolean) : [];

@@ -36,6 +36,8 @@ services:
       PAYPAL_SANDBOX_CLIENT_ID: ${PAYPAL_SANDBOX_CLIENT_ID:-}
       PAYPAL_SANDBOX_SECRET: ${PAYPAL_SANDBOX_SECRET:-}
       BREVO_API_KEY: ${BREVO_API_KEY:-}
+      # Same host as certbot / edge nginx — used as fallback for verification e-mail links when APP_PUBLIC_URL is unset.
+      SSL_PRIMARY_DOMAIN: ${SSL_PRIMARY_DOMAIN:-}
       # Must match the live Angular URL for e-mail verification links (no trailing slash). If unset, first public origin from CORS_ORIGIN is used.
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-}
       SKIP_EMAIL_VERIFICATION: ${SKIP_EMAIL_VERIFICATION:-false}

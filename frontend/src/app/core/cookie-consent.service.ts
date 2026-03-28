@@ -51,7 +51,12 @@ export class CookieConsentService {
     this.injectUmami();
   }
 
+  /**
+   * Same as Umami’s official embed (defer + data-website-id), appended to document.head.
+   * Only runs after the user chose “Accept all” (here or on a prior visit).
+   */
   private injectUmami(): void {
+    if (typeof document === 'undefined') return;
     const url = environment.umamiScriptUrl?.trim();
     const id = environment.umamiWebsiteId?.trim();
     if (!url || !id) return;

@@ -5,7 +5,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CookieConsentComponent } from './components/cookie-consent.component';
 import { MobileBottomNavComponent } from './components/mobile-bottom-nav.component';
 import { AuthService } from './core/auth.service';
-import { CookieConsentService } from './core/cookie-consent.service';
 import { PwaInstallService } from './core/pwa-install.service';
 
 @Component({
@@ -113,7 +112,6 @@ import { PwaInstallService } from './core/pwa-install.service';
 export class AppComponent implements OnInit {
   protected auth = inject(AuthService);
   protected pwa = inject(PwaInstallService);
-  private cookieConsent = inject(CookieConsentService);
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
@@ -121,7 +119,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.cookieConsent.loadUmamiIfConsented();
     if (this.auth.isLoggedIn()) {
       this.auth.loadProfile().subscribe({ error: () => {} });
     }

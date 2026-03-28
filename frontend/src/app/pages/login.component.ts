@@ -20,6 +20,11 @@ import { AuthService } from '../core/auth.service';
         @if (error()) {
           <p class="err">{{ error() }}</p>
         }
+        @if (showResend()) {
+          <button type="button" class="secondary" [disabled]="resendBusy() || form.controls.email.invalid" (click)="resend()">
+            {{ 'login.resendVerification' | translate }}
+          </button>
+        }
         <button type="submit" [disabled]="form.invalid || loading()">{{ 'login.submit' | translate }}</button>
       </form>
       <p class="muted"><a routerLink="/register">{{ 'login.createAccount' | translate }}</a></p>
@@ -85,6 +90,21 @@ import { AuthService } from '../core/auth.service';
       a {
         color: var(--accent);
       }
+      button.secondary {
+        margin-top: 0.75rem;
+        width: 100%;
+        padding: 0.55rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--text);
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button.secondary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     `,
   ],
 })
@@ -96,6 +116,8 @@ export class LoginComponent {
 
   loading = signal(false);
   error = signal<string | null>(null);
+  showResend = signal(false);
+  resendBusy = signal(false);
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -106,6 +128,7 @@ export class LoginComponent {
     if (this.form.invalid) return;
     this.loading.set(true);
     this.error.set(null);
+    this.showResend.set(false);
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
       next: () => {
@@ -117,10 +140,31 @@ export class LoginComponent {
       },
       error: (e) => {
         this.loading.set(false);
+        if (e.error?.code === 'EMAIL_NOT_VERIFIED') {
+          this.showResend.set(true);
+          this.error.set(this.translate.instant('login.emailNotVerified'));
+          return;
+        }
         const m = e.error?.message;
         this.error.set(
           Array.isArray(m) ? m[0] : m || this.translate.instant('login.failed'),
         );
+      },
+    });
+  }
+
+  resend() {
+    const email = this.form.getRawValue().email;
+    if (!email) return;
+    this.resendBusy.set(true);
+    this.auth.resendVerification(email).subscribe({
+      next: () => {
+        this.resendBusy.set(false);
+        this.error.set(this.translate.instant('login.resendSent'));
+      },
+      error: () => {
+        this.resendBusy.set(false);
+        this.error.set(this.translate.instant('login.resendFailed'));
       },
     });
   }

@@ -41,7 +41,11 @@
     "password": "Mot de passe",
     "submit": "Connexion",
     "createAccount": "Créer un compte",
-    "failed": "Échec de la connexion"
+    "failed": "Échec de la connexion",
+    "emailNotVerified": "Veuillez d’abord confirmer votre adresse e-mail. Nous vous avons envoyé un lien.",
+    "resendVerification": "Renvoyer l’e-mail de confirmation",
+    "resendSent": "Si un compte existe, nous avons envoyé un nouveau lien.",
+    "resendFailed": "Impossible d’envoyer l’e-mail. Réessayez plus tard."
   },
   "register": {
     "title": "Créer un compte",
@@ -55,7 +59,21 @@
     "acceptTermsEnd": ".",
     "termsDoc": "Terms of Service",
     "privacyDoc": "Privacy Policy",
-    "acceptTermsRequired": "Please accept the Terms of Service and Privacy Policy."
+    "acceptTermsRequired": "Please accept the Terms of Service and Privacy Policy.",
+    "verifyPendingTitle": "Presque terminé",
+    "verifyPendingBody": "Nous avons envoyé un e-mail à {{email}}. Ouvrez le lien de confirmation (valable 48 h) pour activer votre compte.",
+    "resend": "Renvoyer l’e-mail de confirmation",
+    "resendSent": "Si un compte existe, nous avons envoyé un nouveau lien.",
+    "resendFailed": "Impossible d’envoyer l’e-mail.",
+    "serviceUnavailable": "Inscription temporairement indisponible (e-mail non configuré)."
+  },
+  "verify": {
+    "title": "Confirmer l’e-mail",
+    "working": "Confirmation…",
+    "success": "E-mail confirmé. Redirection…",
+    "fail": "Ce lien est invalide ou expiré.",
+    "missingToken": "Aucun jeton de confirmation dans ce lien.",
+    "goLogin": "Aller à la connexion"
   },
   "fairUse": {
     "title": "Politique d’usage équitable",

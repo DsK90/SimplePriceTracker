@@ -5,7 +5,8 @@ import { BrevoClient } from '@getbrevo/brevo';
 /**
  * Transactional e-mail via Brevo (`transactionalEmails.sendTransacEmail` only — no marketing campaigns).
  *
- * - **Welcome** on sign-up: always attempted when `BREVO_API_KEY` is set.
+ * - **Welcome** after the user confirms their e-mail (verification link).
+ * - **Verify e-mail** link on sign-up when double opt-in is active.
  * - **Price alerts**: only if `SEND_PRICE_ALERT_EMAILS` is truthy (`true`, `1`, `yes`). If unset, defaults to
  *   enabled so existing deployments keep behaviour; set `SEND_PRICE_ALERT_EMAILS=false` for sign-up-only mail.
  *
@@ -65,6 +66,23 @@ export class MailService {
       textContent: text,
       htmlContent: `<div style="font-family:sans-serif">${plainTextToHtml(text)}</div>`,
     });
+  }
+
+  async sendEmailVerification(to: string, verifyUrl: string) {
+    if (!this.brevo) {
+      this.log.debug('BREVO_API_KEY not set; skipping verification email');
+      return;
+    }
+    const text =
+      'Please confirm your e-mail address to activate your Pricefly account.\n\n' +
+      'Open this link (valid 48 hours):\n' +
+      verifyUrl +
+      '\n\nIf you did not sign up, you can ignore this message.';
+    try {
+      await this.sendTransactional(to, 'Confirm your Pricefly e-mail', text);
+    } catch (e) {
+      this.log.warn(`Verification e-mail failed: ${(e as Error).message}`);
+    }
   }
 
   async sendWelcome(to: string) {

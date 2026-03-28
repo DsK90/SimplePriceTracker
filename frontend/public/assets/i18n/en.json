@@ -47,7 +47,11 @@
     "password": "Password",
     "submit": "Sign in",
     "createAccount": "Create an account",
-    "failed": "Login failed"
+    "failed": "Login failed",
+    "emailNotVerified": "Please confirm your email address first. We sent you a link.",
+    "resendVerification": "Resend confirmation email",
+    "resendSent": "If an account exists, we sent a new link.",
+    "resendFailed": "Could not send email. Please try again later."
   },
   "register": {
     "title": "Create account",
@@ -61,7 +65,21 @@
     "acceptTermsEnd": ".",
     "termsDoc": "Terms of Service",
     "privacyDoc": "Privacy Policy",
-    "acceptTermsRequired": "Please accept the Terms of Service and Privacy Policy."
+    "acceptTermsRequired": "Please accept the Terms of Service and Privacy Policy.",
+    "verifyPendingTitle": "Almost there",
+    "verifyPendingBody": "We sent an email to {{email}}. Open the confirmation link (valid 48 hours) to activate your account.",
+    "resend": "Resend confirmation email",
+    "resendSent": "If an account exists, we sent a new link.",
+    "resendFailed": "Could not send email.",
+    "serviceUnavailable": "Registration is temporarily unavailable (email not configured)."
+  },
+  "verify": {
+    "title": "Confirm email",
+    "working": "Confirming…",
+    "success": "Your email is confirmed. Redirecting…",
+    "fail": "This link is invalid or has expired.",
+    "missingToken": "No confirmation token in this link.",
+    "goLogin": "Go to sign in"
   },
   "fairUse": {
     "title": "Fair use policy",
@@ -349,7 +367,7 @@
       "intro": "We process personal data only where necessary to provide Pricefly. This includes in particular:",
       "li1": "Account data: e-mail address, password hash, plan status, PayPal subscription reference where applicable",
       "li2": "Product data you add: URLs you track, scraped product names/prices, your labels and alert settings",
-      "li3": "Communication data: e-mails sent via our provider (e.g. welcome mail, price alerts) and technical logs",
+      "li3": "Communication data: e-mails via Brevo (registration confirmation link = double opt-in, welcome mail after confirmation, optional price alerts) and technical logs",
       "li4": "Payment-related data processed by PayPal when you subscribe (we do not receive your full payment credentials)",
       "li5": "Web Push: push subscription endpoints and keys stored for delivering browser notifications if you opt in",
       "li6": "Usage data: IP address, timestamps, browser type where technically required (e.g. security, abuse prevention)",

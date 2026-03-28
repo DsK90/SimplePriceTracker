@@ -15,6 +15,10 @@ export type UserProfile = {
   createdAt: string;
 };
 
+export type RegisterResponse =
+  | { access_token: string; user: { id: string; email: string } }
+  | { verificationRequired: true; email: string };
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly tokenSig = signal<string | null>(localStorage.getItem(TOKEN_KEY));
@@ -35,11 +39,25 @@ export class AuthService {
 
   register(email: string, password: string, acceptTerms: boolean) {
     return this.http
+      .post<RegisterResponse>(`${environment.apiUrl}/auth/register`, { email, password, acceptTerms })
+      .pipe(
+        tap((r) => {
+          if ('access_token' in r) this.setToken(r.access_token);
+        }),
+      );
+  }
+
+  verifyEmail(token: string) {
+    return this.http
       .post<{ access_token: string; user: { id: string; email: string } }>(
-        `${environment.apiUrl}/auth/register`,
-        { email, password, acceptTerms },
+        `${environment.apiUrl}/auth/verify-email`,
+        { token },
       )
       .pipe(tap((r) => this.setToken(r.access_token)));
+  }
+
+  resendVerification(email: string) {
+    return this.http.post<{ ok: boolean }>(`${environment.apiUrl}/auth/resend-verification`, { email });
   }
 
   login(email: string, password: string) {

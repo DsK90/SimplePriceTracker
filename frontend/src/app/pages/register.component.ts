@@ -11,8 +11,22 @@ import { AuthService } from '../core/auth.service';
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="card">
-      <h1>{{ 'register.title' | translate }}</h1>
-      <form [formGroup]="form" (ngSubmit)="submit()">
+      @if (pendingEmail(); as pe) {
+        <h1>{{ 'register.verifyPendingTitle' | translate }}</h1>
+        <p class="info">{{ 'register.verifyPendingBody' | translate: { email: pe } }}</p>
+        @if (resendHint()) {
+          <p class="muted">{{ 'register.resendSent' | translate }}</p>
+        }
+        @if (resendErr()) {
+          <p class="err">{{ resendErr() }}</p>
+        }
+        <button type="button" class="secondary" [disabled]="resendBusy()" (click)="resend(pe)">
+          {{ 'register.resend' | translate }}
+        </button>
+        <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
+      } @else {
+        <h1>{{ 'register.title' | translate }}</h1>
+        <form [formGroup]="form" (ngSubmit)="submit()">
         <label>{{ 'register.email' | translate }}</label>
         <input type="email" formControlName="email" autocomplete="email" />
         <label>{{ 'register.password' | translate }}</label>
@@ -34,8 +48,9 @@ import { AuthService } from '../core/auth.service';
           <p class="err">{{ error() }}</p>
         }
         <button type="submit" [disabled]="form.invalid || loading()">{{ 'register.submit' | translate }}</button>
-      </form>
-      <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
+        </form>
+        <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
+      }
     </div>
   `,
   styles: [
@@ -98,6 +113,16 @@ import { AuthService } from '../core/auth.service';
       a {
         color: var(--accent);
       }
+      .info {
+        line-height: 1.5;
+        color: var(--text);
+        margin-top: 0.5rem;
+      }
+      button.secondary {
+        margin-top: 1rem;
+        background: var(--border);
+        color: var(--text);
+      }
       .terms-row {
         display: flex;
         gap: 0.6rem;
@@ -127,6 +152,10 @@ export class RegisterComponent {
 
   loading = signal(false);
   error = signal<string | null>(null);
+  pendingEmail = signal<string | null>(null);
+  resendBusy = signal(false);
+  resendHint = signal(false);
+  resendErr = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -143,8 +172,12 @@ export class RegisterComponent {
     this.error.set(null);
     const { email, password, acceptTerms } = this.form.getRawValue();
     this.auth.register(email, password, acceptTerms).subscribe({
-      next: () => {
+      next: (r) => {
         this.loading.set(false);
+        if ('verificationRequired' in r && r.verificationRequired) {
+          this.pendingEmail.set(r.email);
+          return;
+        }
         void this.auth.loadProfile().subscribe({
           next: () => void this.router.navigate(['/dashboard']),
           error: () => void this.router.navigate(['/dashboard']),
@@ -152,11 +185,31 @@ export class RegisterComponent {
       },
       error: (e) => {
         this.loading.set(false);
+        if (e.error?.code === 'EMAIL_VERIFICATION_UNAVAILABLE') {
+          this.error.set(this.translate.instant('register.serviceUnavailable'));
+          return;
+        }
         this.error.set(
           Array.isArray(e.error?.message)
             ? e.error.message[0]
             : e.error?.message || this.translate.instant('register.failed'),
         );
+      },
+    });
+  }
+
+  resend(email: string) {
+    this.resendBusy.set(true);
+    this.resendErr.set(null);
+    this.resendHint.set(false);
+    this.auth.resendVerification(email).subscribe({
+      next: () => {
+        this.resendBusy.set(false);
+        this.resendHint.set(true);
+      },
+      error: () => {
+        this.resendBusy.set(false);
+        this.resendErr.set(this.translate.instant('register.resendFailed'));
       },
     });
   }

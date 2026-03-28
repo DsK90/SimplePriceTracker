@@ -47,7 +47,11 @@
     "password": "Passwort",
     "submit": "Anmelden",
     "createAccount": "Konto erstellen",
-    "failed": "Anmeldung fehlgeschlagen"
+    "failed": "Anmeldung fehlgeschlagen",
+    "emailNotVerified": "Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse. Wir haben Ihnen einen Link geschickt.",
+    "resendVerification": "Bestätigungsmail erneut senden",
+    "resendSent": "Wenn ein Konto existiert, haben wir einen neuen Link gesendet.",
+    "resendFailed": "E-Mail konnte nicht gesendet werden. Bitte später erneut versuchen."
   },
   "register": {
     "title": "Konto erstellen",
@@ -61,7 +65,21 @@
     "acceptTermsEnd": " gelesen und akzeptiere sie.",
     "termsDoc": "AGB",
     "privacyDoc": "Datenschutzerklärung",
-    "acceptTermsRequired": "Bitte bestätigen Sie die AGB und die Datenschutzerklärung."
+    "acceptTermsRequired": "Bitte bestätigen Sie die AGB und die Datenschutzerklärung.",
+    "verifyPendingTitle": "Fast geschafft",
+    "verifyPendingBody": "Wir haben eine E-Mail an {{email}} gesendet. Bitte öffnen Sie den Bestätigungslink (48 Stunden gültig), um Ihr Konto zu aktivieren.",
+    "resend": "Bestätigungsmail erneut senden",
+    "resendSent": "Wenn ein Konto existiert, haben wir einen neuen Link gesendet.",
+    "resendFailed": "E-Mail konnte nicht gesendet werden.",
+    "serviceUnavailable": "Registrierung ist vorübergehend nicht möglich (E-Mail-Versand nicht konfiguriert)."
+  },
+  "verify": {
+    "title": "E-Mail bestätigen",
+    "working": "Wird bestätigt…",
+    "success": "Ihre E-Mail ist bestätigt. Sie werden weitergeleitet…",
+    "fail": "Dieser Link ist ungültig oder abgelaufen.",
+    "missingToken": "Kein Bestätigungscode in diesem Link.",
+    "goLogin": "Zur Anmeldung"
   },
   "fairUse": {
     "title": "Fair-Use-Richtlinie",
@@ -348,7 +366,7 @@
       "intro": "Wir verarbeiten personenbezogene Daten nur, soweit dies zur Bereitstellung von Pricefly erforderlich ist. Dazu gehören insbesondere:",
       "li1": "Kontodaten: E-Mail-Adresse, Passwort-Hash, Tarifstatus, ggf. PayPal-Abonnement-Referenz",
       "li2": "Produktdaten, die Sie eintragen: URLs, ausgelesene Produktnamen/Preise, Ihre Bezeichnungen und Alarmeinstellungen",
-      "li3": "Kommunikationsdaten: E-Mails über unseren Anbieter (z. B. Willkommensmail, Preisalarme) und technische Protokolle",
+      "li3": "Kommunikationsdaten: E-Mails über Brevo (Bestätigungslink bei der Registrierung = Double-Opt-in, Willkommensmail nach Bestätigung, ggf. Preisalarme) und technische Protokolle",
       "li4": "Zahlungsbezogene Daten, die PayPal bei einem Abonnement verarbeitet (wir erhalten keine vollständigen Zahlungsdaten)",
       "li5": "Web Push: gespeicherte Push-Endpunkte und Schlüssel für Browser-Benachrichtigungen bei Opt-in",
       "li6": "Nutzungsdaten: IP-Adresse, Zeitstempel, Browsertyp soweit technisch erforderlich (z. B. Sicherheit, Missbrauchsprävention)",

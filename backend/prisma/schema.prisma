@@ -21,6 +21,11 @@ model User {
   paypalSubscriptionId String?            @unique
   /// Set on registration when the user accepts the Terms of Service (AGB).
   termsAcceptedAt      DateTime?
+  /// Double opt-in: set when the user confirms the verification link (e-mail ownership).
+  emailVerifiedAt            DateTime?
+  /// SHA-256 hex of the raw token sent by e-mail; cleared after successful verification.
+  emailVerificationTokenHash String?
+  emailVerificationExpiresAt DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   trackings            PriceTracking[]

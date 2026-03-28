@@ -41,7 +41,11 @@
     "password": "Contraseña",
     "submit": "Iniciar sesión",
     "createAccount": "Crear una cuenta",
-    "failed": "Error al iniciar sesión"
+    "failed": "Error al iniciar sesión",
+    "emailNotVerified": "Please confirm your email address first. We sent you a link.",
+    "resendVerification": "Resend confirmation email",
+    "resendSent": "If an account exists, we sent a new link.",
+    "resendFailed": "Could not send email. Please try again later."
   },
   "register": {
     "acceptTermsStart": "I have read and accept the ",
@@ -55,7 +59,21 @@
     "password": "Contraseña (mín. 8 caracteres)",
     "submit": "Registrarse",
     "hasAccount": "¿Ya tienes cuenta?",
-    "failed": "Error en el registro"
+    "failed": "Error en el registro",
+    "verifyPendingTitle": "Almost there",
+    "verifyPendingBody": "We sent an email to {{email}}. Open the confirmation link (valid 48 hours) to activate your account.",
+    "resend": "Resend confirmation email",
+    "resendSent": "If an account exists, we sent a new link.",
+    "resendFailed": "Could not send email.",
+    "serviceUnavailable": "Registration is temporarily unavailable (email not configured)."
+  },
+  "verify": {
+    "title": "Confirm email",
+    "working": "Confirming…",
+    "success": "Your email is confirmed. Redirecting…",
+    "fail": "This link is invalid or has expired.",
+    "missingToken": "No confirmation token in this link.",
+    "goLogin": "Go to sign in"
   },
   "fairUse": {
     "title": "Política de uso justo",

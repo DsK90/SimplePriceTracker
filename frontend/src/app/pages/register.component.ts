@@ -10,19 +10,15 @@ import { AuthService } from '../core/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
-    @if (verificationModalOpen()) {
-      <div
-        class="verify-overlay"
-        role="presentation"
-        (click)="closeVerificationModal()"
-      ></div>
+    <!-- ===== VERIFICATION MODAL (blocks everything until user clicks "Got it") ===== -->
+    @if (pendingEmail() && !modalDismissed()) {
+      <div class="verify-overlay"></div>
       <div
         class="verify-modal"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="verify-modal-title"
         aria-describedby="verify-modal-desc"
-        (click)="$event.stopPropagation()"
       >
         <h2 id="verify-modal-title" class="verify-modal-title">
           {{ 'register.verificationModalTitle' | translate }}
@@ -45,54 +41,60 @@ import { AuthService } from '../core/auth.service';
         >
           {{ 'register.verificationModalResend' | translate }}
         </button>
-        <button type="button" class="verify-modal-close" (click)="closeVerificationModal()">
+        <button type="button" class="verify-modal-close" (click)="dismissModal()">
           {{ 'register.verificationModalClose' | translate }}
         </button>
       </div>
     }
 
     <div class="card">
-      <h1>{{ 'register.title' | translate }}</h1>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <label>{{ 'register.email' | translate }}</label>
-        <input type="email" formControlName="email" autocomplete="email" />
-        <label>{{ 'register.password' | translate }}</label>
-        <input type="password" formControlName="password" autocomplete="new-password" />
-        <label class="terms-row">
-          <input type="checkbox" formControlName="acceptTerms" />
-          <span class="terms-label">
-            {{ 'register.acceptTermsStart' | translate }}
-            <a routerLink="/terms" target="_blank" rel="noopener noreferrer">{{ 'register.termsDoc' | translate }}</a>
-            {{ 'register.acceptTermsMiddle' | translate }}
-            <a routerLink="/gdpr" target="_blank" rel="noopener noreferrer">{{ 'register.privacyDoc' | translate }}</a>
-            {{ 'register.acceptTermsEnd' | translate }}
-          </span>
-        </label>
-        @if (form.controls.acceptTerms.touched && form.controls.acceptTerms.invalid) {
-          <p class="err">{{ 'register.acceptTermsRequired' | translate }}</p>
-        }
-        @if (error()) {
-          <p class="err">{{ error() }}</p>
-        }
-        <button type="submit" [disabled]="form.invalid || loading()">{{ 'register.submit' | translate }}</button>
-      </form>
-      <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
+      <!-- ===== AFTER MODAL DISMISSED: permanent inline block replaces the form ===== -->
       @if (pendingEmail(); as pe) {
-        @if (!verificationModalOpen()) {
-          <div class="verify-inline" role="status">
-            <strong>{{ 'register.verifyAlertTitle' | translate }}</strong>
-            <p>{{ 'register.verifyPendingBody' | translate: { email: pe } }}</p>
-            @if (resendHint()) {
-              <p class="verify-inline-sent">{{ 'register.resendSent' | translate }}</p>
-            }
-            @if (resendErr()) {
-              <p class="err">{{ resendErr() }}</p>
-            }
-            <button type="button" class="secondary" [disabled]="resendBusy()" (click)="resend(pe)">
-              {{ 'register.resend' | translate }}
-            </button>
-          </div>
+        <div class="verify-callout" role="alert" aria-live="assertive">
+          <strong>{{ 'register.verifyAlertTitle' | translate }}</strong>
+          <p>{{ 'register.verifyAlertBody' | translate }}</p>
+        </div>
+        <h1>{{ 'register.verifyPendingTitle' | translate }}</h1>
+        <p class="info">{{ 'register.verifyPendingBody' | translate: { email: pe } }}</p>
+        @if (resendHint()) {
+          <p class="verify-inline-sent">{{ 'register.resendSent' | translate }}</p>
         }
+        @if (resendErr()) {
+          <p class="err">{{ resendErr() }}</p>
+        }
+        <button type="button" class="secondary" [disabled]="resendBusy()" (click)="resend(pe)">
+          {{ 'register.resend' | translate }}
+        </button>
+        <p class="muted">
+          <a routerLink="/login" [queryParams]="{ pendingVerification: '1' }">{{ 'register.hasAccount' | translate }}</a>
+        </p>
+      } @else {
+        <!-- ===== REGISTRATION FORM ===== -->
+        <h1>{{ 'register.title' | translate }}</h1>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <label>{{ 'register.email' | translate }}</label>
+          <input type="email" formControlName="email" autocomplete="email" />
+          <label>{{ 'register.password' | translate }}</label>
+          <input type="password" formControlName="password" autocomplete="new-password" />
+          <label class="terms-row">
+            <input type="checkbox" formControlName="acceptTerms" />
+            <span class="terms-label">
+              {{ 'register.acceptTermsStart' | translate }}
+              <a routerLink="/terms" target="_blank" rel="noopener noreferrer">{{ 'register.termsDoc' | translate }}</a>
+              {{ 'register.acceptTermsMiddle' | translate }}
+              <a routerLink="/gdpr" target="_blank" rel="noopener noreferrer">{{ 'register.privacyDoc' | translate }}</a>
+              {{ 'register.acceptTermsEnd' | translate }}
+            </span>
+          </label>
+          @if (form.controls.acceptTerms.touched && form.controls.acceptTerms.invalid) {
+            <p class="err">{{ 'register.acceptTermsRequired' | translate }}</p>
+          }
+          @if (error()) {
+            <p class="err">{{ error() }}</p>
+          }
+          <button type="submit" [disabled]="form.invalid || loading()">{{ 'register.submit' | translate }}</button>
+        </form>
+        <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
       }
     </div>
   `,
@@ -104,13 +106,15 @@ import { AuthService } from '../core/auth.service';
         margin: 3rem auto;
         position: relative;
       }
+
+      /* ── Modal overlay: NO click handler, cannot be dismissed by tapping outside ── */
       .verify-overlay {
         position: fixed;
         inset: 0;
-        /* Above nav (z-50), cookie bar (z-[200]), dashboard overlays (z-[100]) */
         z-index: 10000;
         background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(2px);
+        /* pointer-events: auto is default; overlay simply blocks everything beneath */
       }
       .verify-modal {
         position: fixed;
@@ -174,6 +178,34 @@ import { AuthService } from '../core/auth.service';
         font-weight: 500;
         cursor: pointer;
       }
+
+      /* ── Inline verification block (shown after modal is dismissed) ── */
+      .verify-callout {
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.1rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--accent);
+        background: color-mix(in srgb, var(--accent) 14%, var(--card));
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .verify-callout strong {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-size: 1rem;
+        color: var(--text);
+      }
+      .verify-callout p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .verify-inline-sent {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--accent);
+      }
+
+      /* ── Form card ── */
       .card {
         background: var(--card);
         border-radius: 12px;
@@ -227,6 +259,16 @@ import { AuthService } from '../core/auth.service';
       a {
         color: var(--accent);
       }
+      .info {
+        line-height: 1.5;
+        color: var(--text);
+        margin-top: 0.5rem;
+      }
+      button.secondary {
+        margin-top: 1rem;
+        background: var(--border);
+        color: var(--text);
+      }
       .terms-row {
         display: flex;
         gap: 0.6rem;
@@ -245,45 +287,6 @@ import { AuthService } from '../core/auth.service';
       .terms-label a {
         text-decoration: underline;
       }
-      .verify-inline {
-        margin-top: 1.25rem;
-        padding: 1rem 1.1rem;
-        border-radius: 12px;
-        border-left: 4px solid var(--accent);
-        background: color-mix(in srgb, var(--accent) 14%, var(--card));
-        font-size: 0.9rem;
-        line-height: 1.45;
-      }
-      .verify-inline strong {
-        display: block;
-        margin-bottom: 0.4rem;
-        font-size: 1rem;
-        color: var(--text);
-      }
-      .verify-inline p {
-        margin: 0;
-        color: var(--muted);
-      }
-      .verify-inline-sent {
-        margin-top: 0.5rem !important;
-        font-size: 0.85rem;
-        color: var(--accent);
-      }
-      button.secondary {
-        margin-top: 0.75rem;
-        width: 100%;
-        padding: 0.55rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: var(--card);
-        color: var(--text);
-        font-weight: 500;
-        cursor: pointer;
-      }
-      button.secondary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
     `,
   ],
 })
@@ -295,8 +298,12 @@ export class RegisterComponent {
 
   loading = signal(false);
   error = signal<string | null>(null);
+
+  /** Set once on successful registration when verification is required. Never cleared. */
   pendingEmail = signal<string | null>(null);
-  verificationModalOpen = signal(false);
+  /** Only set to true when user explicitly clicks "Got it" in the modal. */
+  modalDismissed = signal(false);
+
   resendBusy = signal(false);
   resendHint = signal(false);
   resendErr = signal<string | null>(null);
@@ -319,11 +326,7 @@ export class RegisterComponent {
       next: (r) => {
         this.loading.set(false);
         if ('verificationRequired' in r && r.verificationRequired) {
-          const registeredEmail = r.email;
-          this.pendingEmail.set(registeredEmail);
-          // Defer opening: the same click that submitted the form would otherwise hit the
-          // full-screen overlay and immediately close the modal (ghost click).
-          setTimeout(() => this.verificationModalOpen.set(true), 0);
+          this.pendingEmail.set(r.email);
           return;
         }
         void this.auth.loadProfile().subscribe({
@@ -346,8 +349,8 @@ export class RegisterComponent {
     });
   }
 
-  closeVerificationModal() {
-    this.verificationModalOpen.set(false);
+  dismissModal() {
+    this.modalDismissed.set(true);
   }
 
   resend(email: string) {

@@ -40,7 +40,8 @@ export class NotificationsService {
   }
 
   /**
-   * In-app + push always (when push configured). Email only if `sendEmail` (plan-limited per product).
+   * In-app + push always (when push configured). E-mail only if `sendEmail` (plan-limited per product)
+   * and `SEND_PRICE_ALERT_EMAILS` is not disabled in `MailService`.
    */
   async notifyPriceAlert(
     userId: string,

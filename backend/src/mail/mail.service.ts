@@ -1,17 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EmailParams, MailerSend, Recipient, Sender } from 'mailersend';
+import { BrevoClient } from '@getbrevo/brevo';
 
-/** Parses `Name <email@domain.com>` or a bare email into MailerSend's Sender. */
-function senderFromAddress(raw: string): Sender {
+/**
+ * Transactional e-mail via Brevo (`transactionalEmails.sendTransacEmail` only — no marketing campaigns).
+ *
+ * - **Welcome** on sign-up: always attempted when `BREVO_API_KEY` is set.
+ * - **Price alerts**: only if `SEND_PRICE_ALERT_EMAILS` is truthy (`true`, `1`, `yes`). If unset, defaults to
+ *   enabled so existing deployments keep behaviour; set `SEND_PRICE_ALERT_EMAILS=false` for sign-up-only mail.
+ *
+ * MailerSend reference: `mailersend-transactional.reference.ts` (not wired).
+ */
+
+/** Parses `Name <email@domain.com>` or a bare email into Brevo's sender shape. */
+function brevoSenderFromAddress(raw: string): { name: string; email: string } {
   const trimmed = raw.trim();
   const angle = trimmed.match(/^(.+?)\s*<([^>]+)>$/);
   if (angle) {
     const name = angle[1].replace(/^["']|["']$/g, '').trim();
     const email = angle[2].trim();
-    return new Sender(email, name || undefined);
+    return { name: name || email.split('@')[0] || 'Pricefly', email };
   }
-  return new Sender(trimmed);
+  return { name: trimmed.split('@')[0] || 'Pricefly', email: trimmed };
 }
 
 function plainTextToHtml(text: string): string {
@@ -22,37 +32,44 @@ function plainTextToHtml(text: string): string {
     .replace(/\n/g, '<br/>');
 }
 
+/** Env unset → allow price-alert mail (backward compatible). Explicit false/0/off → skip. */
+function envAllowsPriceAlertEmails(raw: string | undefined): boolean {
+  if (raw == null || String(raw).trim() === '') return true;
+  return !['0', 'false', 'no', 'off'].includes(String(raw).trim().toLowerCase());
+}
+
 @Injectable()
 export class MailService {
   private readonly log = new Logger(MailService.name);
-  private readonly mailerSend: MailerSend | null = null;
+  private readonly brevo: BrevoClient | null = null;
 
   constructor(private config: ConfigService) {
-    const key = this.config.get<string>('MAILERSEND_API_KEY');
-    if (key) this.mailerSend = new MailerSend({ apiKey: key });
+    const key = this.config.get<string>('BREVO_API_KEY');
+    if (key) this.brevo = new BrevoClient({ apiKey: key });
   }
 
-  private fromSender(): Sender {
+  private fromSender() {
     const raw =
       this.config.get<string>('EMAIL_FROM') ||
       this.config.get<string>('MAIL_FROM', 'noreply@example.com');
-    return senderFromAddress(raw);
+    return brevoSenderFromAddress(raw);
   }
 
   private async sendTransactional(to: string, subject: string, text: string) {
-    if (!this.mailerSend) return;
-    const params = new EmailParams()
-      .setFrom(this.fromSender())
-      .setTo([new Recipient(to)])
-      .setSubject(subject)
-      .setText(text)
-      .setHtml(`<div style="font-family:sans-serif">${plainTextToHtml(text)}</div>`);
-    await this.mailerSend.email.send(params);
+    if (!this.brevo) return;
+    const sender = this.fromSender();
+    await this.brevo.transactionalEmails.sendTransacEmail({
+      sender,
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+      htmlContent: `<div style="font-family:sans-serif">${plainTextToHtml(text)}</div>`,
+    });
   }
 
   async sendWelcome(to: string) {
-    if (!this.mailerSend) {
-      this.log.debug('MAILERSEND_API_KEY not set; skipping welcome email');
+    if (!this.brevo) {
+      this.log.debug('BREVO_API_KEY not set; skipping welcome email');
       return;
     }
     const text =
@@ -67,8 +84,12 @@ export class MailService {
   }
 
   async sendPriceAlert(to: string, subject: string, text: string) {
-    if (!this.mailerSend) {
-      this.log.debug('MAILERSEND_API_KEY not set; skipping price alert email');
+    if (!envAllowsPriceAlertEmails(this.config.get<string>('SEND_PRICE_ALERT_EMAILS'))) {
+      this.log.debug('SEND_PRICE_ALERT_EMAILS disabled; skipping price alert email');
+      return;
+    }
+    if (!this.brevo) {
+      this.log.debug('BREVO_API_KEY not set; skipping price alert email');
       return;
     }
     try {

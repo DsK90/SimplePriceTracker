@@ -1,4 +1,4 @@
-# Deploying `pricefly.reikalabs.com` + Umami + Cloudflare + MailerSend
+# Deploying `pricefly.reikalabs.com` + Umami + Cloudflare + Brevo
 
 Use this checklist on your Hetzner server together with the repo’s Docker Compose stack.
 
@@ -57,7 +57,7 @@ Use this checklist on your Hetzner server together with the repo’s Docker Comp
    # SSL_EXTRA_DOMAINS=umami.reikalabs.com
    ```
 
-3. Set `DATABASE_URL`, PayPal, `MAILERSEND_API_KEY`, `EMAIL_FROM`, etc. as needed.
+3. Set `DATABASE_URL`, PayPal, `BREVO_API_KEY`, `EMAIL_FROM`, etc. as needed.
 
 ### Option A — HTTPS in Docker (Let’s Encrypt, same pattern as ShowBK)
 
@@ -84,19 +84,18 @@ If you prefer TLS on the host instead of the **`edge`** service, use `deploy/ngi
 
 6. If you use **Option B** and the host nginx proxies to Docker `web` on `127.0.0.1:8080`, bind stack ports to localhost only (or firewall) so the API is not exposed publicly except through nginx.
 
-## 4. MailerSend (transactional email)
+## 4. Brevo (transactional email)
 
-1. In [MailerSend](https://www.mailersend.com/) → **Sending** → **Domains**: add your domain (e.g. **`reikalabs.com`**) and add the **DNS records** they show (SPF, DKIM, etc.) in Cloudflare until the domain is **Verified**.
-2. **Sending** → **Sender identities** (or use the domain’s default): ensure the **From** address you will use is allowed (e.g. `noreply@reikalabs.com`).
-3. **Integrations** → **API tokens** (or **Settings** → **API tokens**): create a token with **Email** permission and copy it once.
-4. In this app’s `.env` / Compose:
+1. In [Brevo](https://www.brevo.com/) → **Settings** → **Senders, Domains & dedicated IPs**: verify your domain (e.g. **`reikalabs.com`**) and complete **DKIM** / **DMARC** in Cloudflare as shown until the sender is **Verified** (e.g. `noreply@reikalabs.com`).
+2. **Settings** → **SMTP & API** → **API keys**: create an API key (v3) with permission to send transactional e-mails and copy it once.
+3. In this app’s `.env` / Compose:
 
-   - `MAILERSEND_API_KEY` — the API token from step 3.
-   - `EMAIL_FROM` — must match a verified sender/domain in MailerSend, e.g. `Pricefly <noreply@reikalabs.com>`.
+   - `BREVO_API_KEY` — the API key from step 2.
+   - `EMAIL_FROM` — must match a verified sender in Brevo, e.g. `Reikalabs <noreply@reikalabs.com>`.
 
-5. Redeploy the `api` container after changing env.
+4. Redeploy the `api` container after changing env.
 
-The backend uses the official **`mailersend`** npm package and `EMAIL_FROM` / `MAIL_FROM` (same meaning as before; only the provider and env key name changed from Resend).
+The backend uses the official **`@getbrevo/brevo`** package (`MailService`). Optional marketing campaigns (lists) are not used by the app; see `backend/scripts/brevo-email-campaign-example.cjs` for a separate API sample.
 
 ## 5. PayPal (production)
 

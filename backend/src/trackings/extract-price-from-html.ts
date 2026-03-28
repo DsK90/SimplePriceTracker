@@ -51,9 +51,39 @@ function expandJsonLdNodes(data: unknown): unknown[] {
     if (o['object'] && typeof o['object'] === 'object') {
       nested.push(...expandJsonLdNodes(o['object']));
     }
+    if (o['mainEntity'] != null) {
+      nested.push(...expandJsonLdNodes(o['mainEntity']));
+    }
     return [...nested, data];
   }
   return [];
+}
+
+/**
+ * MediaMarkt / Saturn (MSX): PDP price is in data-test="mms-product-price" (React).
+ * Legacy selectors no longer match; JSON-LD may be missing on some responses.
+ * Block text often lists UVP then sale (e.g. …599,00€…299,00€…) — take the last
+ * amount before "inkl." so we prefer the current price, not the strikethrough UVP.
+ */
+function extractMmsProductPriceFromDom($: cheerio.CheerioAPI): string | null {
+  const selectors = [
+    '[data-test="mms-product-price"]',
+    '[data-test*="mms-branded-price"]',
+    '[data-test*="cofr-price"]',
+  ];
+  for (const sel of selectors) {
+    const text = $(sel)
+      .first()
+      .text()
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!text) continue;
+    const segment = /\binkl\./i.test(text) ? text.split(/\binkl\./i)[0]! : text;
+    const amounts = [...segment.matchAll(/(\d{1,5}[.,]\d{2})/g)].map((m) => m[1]!);
+    if (amounts.length === 0) continue;
+    return amounts[amounts.length - 1]!;
+  }
+  return null;
 }
 
 function firstPriceMatch($: cheerio.CheerioAPI, selectors: string[]): string | null {
@@ -113,10 +143,13 @@ function extractPriceFromCssSelectors(
   if (ebay) return ebay;
 
   // --- MediaMarkt / Saturn (MSX platform) ---
+  const msxDom = extractMmsProductPriceFromDom($);
+  if (msxDom) return msxDom;
   const msx = firstPriceMatch($, [
     '[data-test="branded-price-whole-value"]',
     '[data-test="product-price"]',
     '[data-test="current-price"]',
+    '[data-test="mms-product-price"]',
     '.price--total',
     '.product-details__price',
     '[class*="StyledPriceTypo"]',
@@ -180,9 +213,14 @@ function extractPriceFromCssSelectors(
   ]);
   if (nbb) return nbb;
 
-  // --- Mindfactory ---
+  // --- Mindfactory (often WebPage + mainEntity Product in JSON-LD; price in #bProductInfo after JS) ---
   const mf = firstPriceMatch($, [
+    '#bProductInfo .pprice',
+    '#bProductInfo span.pprice',
+    '#bProductInfo .textright .pprice',
+    '#productPrices .pprice',
     '#product_detail .pprice',
+    'span[itemprop="price"]',
     '.product-price-container .price',
     '.ppricetag',
   ]);

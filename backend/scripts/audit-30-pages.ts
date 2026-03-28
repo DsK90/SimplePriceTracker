@@ -5,7 +5,6 @@
 import { parsePriceFromText } from '../src/trackings/price-parse';
 import { extractListedPriceWithSource } from '../src/trackings/extract-price-from-html';
 import { extractProductAndCompany } from '../src/trackings/extract-product-metadata';
-import { fetchAsosPrice, parseAsosProductIdFromUrl } from '../src/trackings/asos-store';
 import { fetchSteamProduct, parseSteamAppIdFromUrl } from '../src/trackings/steam-store';
 
 const UA =
@@ -28,10 +27,6 @@ const HEADERS: Record<string, string> = {
 type Row = { shop: string; url: string };
 
 const PAGES: Row[] = [
-  // ASOS (should use API)
-  { shop: 'ASOS DE', url: 'https://www.asos.com/de/asos-design/asos-design-netzstoff-maxikleid-mit-sichtbarer-ziernaht-und-verschwommenem-braunem-blumenmuster/prd/208780262' },
-  { shop: 'ASOS UK', url: 'https://www.asos.com/asos-design/asos-design-mesh-maxi-dress-with-contrast-stitch-in-blurred-brown-floral/prd/208780262' },
-
   // H&M (bot-protected)
   { shop: 'H&M DE', url: 'https://www2.hm.com/de_de/productpage.1323366001.html' },
 
@@ -111,25 +106,6 @@ async function main() {
         });
       } else {
         results.push({ shop: p.shop, http: 0, source: 'steam_api', product: '—', parsed: null, raw: '', detect: 'no' });
-      }
-      await sleep(300);
-      continue;
-    }
-
-    // ASOS API
-    const asosProductId = parseAsosProductIdFromUrl(p.url);
-    if (asosProductId) {
-      const asos = await fetchAsosPrice(asosProductId, p.url);
-      if (asos) {
-        const { ok, html } = await fetchHtml(p.url);
-        const meta = ok && html.length > 500 ? extractProductAndCompany(html, p.url) : { productName: null, companyName: null };
-        results.push({
-          shop: p.shop, http: 200, source: 'asos_api',
-          product: (meta.productName ?? 'ASOS Product').slice(0, 40),
-          parsed: asos.price, raw: `${asos.price} ${asos.currency}`, detect: 'yes',
-        });
-      } else {
-        results.push({ shop: p.shop, http: 0, source: 'asos_api', product: '—', parsed: null, raw: '', detect: 'no' });
       }
       await sleep(300);
       continue;

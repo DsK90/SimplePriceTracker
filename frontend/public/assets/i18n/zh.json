@@ -49,7 +49,13 @@
     "password": "密码（至少 8 位）",
     "submit": "注册",
     "hasAccount": "已有账户？",
-    "failed": "注册失败"
+    "failed": "注册失败",
+    "acceptTermsStart": "I have read and accept the ",
+    "acceptTermsMiddle": " and the ",
+    "acceptTermsEnd": ".",
+    "termsDoc": "Terms of Service",
+    "privacyDoc": "Privacy Policy",
+    "acceptTermsRequired": "Please accept the Terms of Service and Privacy Policy."
   },
   "fairUse": {
     "title": "公平使用政策",

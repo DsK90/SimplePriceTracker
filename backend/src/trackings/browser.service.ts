@@ -32,10 +32,26 @@ export class BrowserService implements OnModuleDestroy {
       const page = await ctx.newPage();
       try {
         await this.applyStealthScripts(page);
-        await page.goto(url, { waitUntil: 'load', timeout: PAGE_TIMEOUT_MS });
+        const mindfactory = this.isMindfactoryHost(url);
+        await page.goto(url, {
+          waitUntil: 'load',
+          timeout: PAGE_TIMEOUT_MS,
+          referer: mindfactory ? 'https://www.mindfactory.de/' : undefined,
+        });
         await page
           .waitForLoadState('networkidle', { timeout: 8_000 })
           .catch(() => {});
+
+        if (mindfactory) {
+          await this.dismissMindfactorySecurityGate(page);
+          await page
+            .waitForSelector(
+              '#bProductInfo .pprice, #bProductInfo span.pprice, span[itemprop="price"], script[type="application/ld+json"]',
+              { timeout: 12_000 },
+            )
+            .catch(() => {});
+          await page.waitForTimeout(1_200);
+        }
 
         // Some sites (Amazon) serve a JS challenge that resolves after a few
         // seconds. If the page is suspiciously small after networkidle, poll
@@ -71,6 +87,62 @@ export class BrowserService implements OnModuleDestroy {
       });
       (window as any).chrome = { runtime: {} };
     });
+  }
+
+  private isMindfactoryHost(url: string): boolean {
+    try {
+      const h = new URL(url).hostname.toLowerCase();
+      return h === 'mindfactory.de' || h === 'www.mindfactory.de';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Mindfactory often shows an interstitial ("SICHERHEITSCHECK" / "Ich bin ein Mensch")
+   * before the product page. Try to click through; Turnstile-style gates may still block.
+   */
+  private async dismissMindfactorySecurityGate(page: Page) {
+    for (let round = 0; round < 5; round++) {
+      const html = await page.content();
+      if (html.includes('Datenbank-Updates')) {
+        this.log.warn('Mindfactory maintenance page — cannot load product');
+        return;
+      }
+      const gate =
+        html.includes('SICHERHEITSCHECK') ||
+        html.includes('Ich bin ein Mensch') ||
+        (html.length < 6_000 && html.includes('mindfactory'));
+      if (!gate) return;
+
+      const selectors = [
+        'button:has-text("Ich bin ein Mensch")',
+        'a:has-text("Ich bin ein Mensch")',
+        'input[type="submit"][value*="Mensch"]',
+        'input[type="button"][value*="Mensch"]',
+      ];
+      let clicked = false;
+      for (const sel of selectors) {
+        try {
+          const loc = page.locator(sel).first();
+          if (await loc.isVisible({ timeout: 700 })) {
+            await Promise.all([
+              page.waitForNavigation({ waitUntil: 'load', timeout: 22_000 }).catch(() => {}),
+              loc.click({ timeout: 4_000 }),
+            ]);
+            clicked = true;
+            await page.waitForTimeout(1_500);
+            await page
+              .waitForLoadState('networkidle', { timeout: 10_000 })
+              .catch(() => {});
+            break;
+          }
+        } catch {
+          /* try next selector */
+        }
+      }
+      if (!clicked) await page.waitForTimeout(2_000);
+    }
   }
 
   /** Try to click away common cookie/consent overlays (German + international). */

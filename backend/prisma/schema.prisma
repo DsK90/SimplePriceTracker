@@ -19,6 +19,8 @@ model User {
   passwordHash         String
   planTier             PlanTier           @default(FREE)
   paypalSubscriptionId String?            @unique
+  /// Set on registration when the user accepts the Terms of Service (AGB).
+  termsAcceptedAt      DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   trackings            PriceTracking[]

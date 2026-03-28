@@ -44,6 +44,12 @@
     "failed": "Error al iniciar sesión"
   },
   "register": {
+    "acceptTermsStart": "I have read and accept the ",
+    "acceptTermsMiddle": " and the ",
+    "acceptTermsEnd": ".",
+    "termsDoc": "Terms of Service",
+    "privacyDoc": "Privacy Policy",
+    "acceptTermsRequired": "Please accept the Terms of Service and Privacy Policy.",
     "title": "Crear cuenta",
     "email": "Correo electrónico",
     "password": "Contraseña (mín. 8 caracteres)",

@@ -17,6 +17,19 @@ import { AuthService } from '../core/auth.service';
         <input type="email" formControlName="email" autocomplete="email" />
         <label>{{ 'register.password' | translate }}</label>
         <input type="password" formControlName="password" autocomplete="new-password" />
+        <label class="terms-row">
+          <input type="checkbox" formControlName="acceptTerms" />
+          <span class="terms-label">
+            {{ 'register.acceptTermsStart' | translate }}
+            <a routerLink="/terms" target="_blank" rel="noopener noreferrer">{{ 'register.termsDoc' | translate }}</a>
+            {{ 'register.acceptTermsMiddle' | translate }}
+            <a routerLink="/gdpr" target="_blank" rel="noopener noreferrer">{{ 'register.privacyDoc' | translate }}</a>
+            {{ 'register.acceptTermsEnd' | translate }}
+          </span>
+        </label>
+        @if (form.controls.acceptTerms.touched && form.controls.acceptTerms.invalid) {
+          <p class="err">{{ 'register.acceptTermsRequired' | translate }}</p>
+        }
         @if (error()) {
           <p class="err">{{ error() }}</p>
         }
@@ -85,6 +98,24 @@ import { AuthService } from '../core/auth.service';
       a {
         color: var(--accent);
       }
+      .terms-row {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .terms-row input {
+        width: auto;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+      }
+      .terms-label a {
+        text-decoration: underline;
+      }
     `,
   ],
 })
@@ -100,14 +131,18 @@ export class RegisterComponent {
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    acceptTerms: [false, Validators.requiredTrue],
   });
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.controls.acceptTerms.markAsTouched();
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
-    const { email, password } = this.form.getRawValue();
-    this.auth.register(email, password).subscribe({
+    const { email, password, acceptTerms } = this.form.getRawValue();
+    this.auth.register(email, password, acceptTerms).subscribe({
       next: () => {
         this.loading.set(false);
         void this.auth.loadProfile().subscribe({

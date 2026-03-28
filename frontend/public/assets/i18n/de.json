@@ -55,7 +55,13 @@
     "password": "Passwort (mind. 8 Zeichen)",
     "submit": "Registrieren",
     "hasAccount": "Bereits ein Konto?",
-    "failed": "Registrierung fehlgeschlagen"
+    "failed": "Registrierung fehlgeschlagen",
+    "acceptTermsStart": "Ich habe die ",
+    "acceptTermsMiddle": " und die ",
+    "acceptTermsEnd": " gelesen und akzeptiere sie.",
+    "termsDoc": "AGB",
+    "privacyDoc": "Datenschutzerklärung",
+    "acceptTermsRequired": "Bitte bestätigen Sie die AGB und die Datenschutzerklärung."
   },
   "fairUse": {
     "title": "Fair-Use-Richtlinie",
@@ -72,7 +78,7 @@
   },
   "terms": {
     "title": "Allgemeine Geschäftsbedingungen (AGB)",
-    "updated": "Stand: März 2025 — gilt für die Nutzung von Pricefly.",
+    "updated": "Stand: März 2026 — gilt für die Nutzung von Pricefly.",
     "back": "Zurück zu den Preisen",
     "notLegalAdvice": "Hinweis: Die folgenden Bedingungen ersetzen keine individuelle Rechtsberatung.",
     "scope": {
@@ -92,13 +98,17 @@
       "li4": "Historische Werte und Verläufe sind ebenfalls nur zur Orientierung; sie spiegeln nicht notwendigerweise den tatsächlichen Kaufpreis am POS wider.",
       "outro": "Sie sind selbst dafür verantwortlich, Preise und Konditionen vor einem Kauf beim jeweiligen Händler zu prüfen. Pricefly ist keine Preisgarantie und kein Ersatz für Ihre eigene Kontrolle."
     },
+    "thirdPartyUrls": {
+      "title": "Verantwortung für von Ihnen gewählte Shop-URLs",
+      "body": "Sie tragen die alleinige Verantwortung dafür, dass das Hinterlegen und der wiederholte Abruf der von Ihnen angegebenen Produkt-URLs gegenüber dem jeweiligen Website-Betreiber zulässig sind (z. B. nach dessen Nutzungsbedingungen, robots.txt und geltendem Recht).\n\nPricefly ruft öffentlich erreichbare Seiten technisch ab (HTTP-Anfragen; ggf. Headless-Browser), um Preise und erkennbare Produktdaten zu ermitteln. Wir entscheiden nicht im Einzelfall, ob Ihre Nutzung bei einem bestimmten Shop erlaubt ist.\n\nVerboten ist insbesondere die Nutzung des Dienstes, um geschützte Bereiche (z. B. nach Login), Paywalls oder technische Schutzmaßnahmen zu umgehen oder Server Dritter oder unsere Infrastruktur in missbräuchlicher Weise zu belasten (siehe Fair-Use-Richtlinie)."
+    },
     "availability": {
       "title": "4. Verfügbarkeit und technische Störungen",
       "body": "Wir bemühen uns um einen verlässlichen Betrieb, garantieren jedoch keine unterbrechungsfreie oder fehlerfreie Verfügbarkeit des Dienstes. Wartungen, Updates, Infrastrukturprobleme, Sicherheitsmaßnahmen oder höhere Gewalt können zu Ausfällen oder eingeschränkter Funktion führen.\n\nInsoweit ist die Nutzung „wie besehen“; es besteht kein Anspruch auf einen bestimmten Funktionsumfang über die von uns kommunizierten Produktmerkmale hinaus, soweit gesetzlich zulässig."
     },
     "account": {
       "title": "5. Nutzerkonto, Fair Use und Sperre",
-      "body": "Für bestimmte Funktionen ist ein Nutzerkonto erforderlich. Sie sind verpflichtet, wahrheitsgemäße Angaben zu machen und Zugangsdaten geheim zu halten.\n\nMissbrauch (z. B. Umgehung von Limits, übermäßige automatisierte Abfragen belastender Art gegen unsere Systeme, rechtswidrige Nutzung) ist untersagt. Wir können Konten nach billigem Ermessen einschränken oder kündigen; Näheres ergänzt unsere Fair-Use-Richtlinie."
+      "body": "Für bestimmte Funktionen ist ein Nutzerkonto erforderlich. Sie sind verpflichtet, wahrheitsgemäße Angaben zu machen und Zugangsdaten geheim zu halten.\n\nMit der Registrierung bestätigen Sie, die AGB zur Kenntnis genommen zu haben.\n\nMissbrauch (z. B. Umgehung von Limits, übermäßige automatisierte Abfragen belastender Art gegen unsere Systeme, rechtswidrige Nutzung) ist untersagt. Wir können Konten nach billigem Ermessen einschränken oder kündigen; Näheres ergänzt unsere Fair-Use-Richtlinie."
     },
     "paid": {
       "title": "6. Kostenpflichtiger Tarif (Pro) und Zahlung",
@@ -333,7 +343,8 @@
       "li4": "Zahlungsbezogene Daten, die PayPal bei einem Abonnement verarbeitet (wir erhalten keine vollständigen Zahlungsdaten)",
       "li5": "Web Push: gespeicherte Push-Endpunkte und Schlüssel für Browser-Benachrichtigungen bei Opt-in",
       "li6": "Nutzungsdaten: IP-Adresse, Zeitstempel, Browsertyp soweit technisch erforderlich (z. B. Sicherheit, Missbrauchsprävention)",
-      "li7": "Optionale Analyse: nach Einwilligung aggregierte Besuchsstatistik über selbst gehostetes Umami (siehe Cookie-Abschnitt)"
+      "li7": "Optionale Analyse: nach Einwilligung aggregierte Besuchsstatistik über selbst gehostetes Umami (siehe Cookie-Abschnitt)",
+      "li8": "Abrufe bei Drittanbietern: Zur Preisaktualisierung ruft unser Backend die von Ihnen eingetragenen, öffentlich erreichbaren Produktseiten auf. Dabei können technische Daten (z. B. Zeitpunkt, Antwortgröße) in unseren Logs anfallen; die betreffenden Shops verarbeiten die Anfrage nach deren eigenen Hinweisen."
     },
     "legalBasis": {
       "title": "3. Rechtsgrundlagen",

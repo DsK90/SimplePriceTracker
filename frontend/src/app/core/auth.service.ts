@@ -33,11 +33,11 @@ export class AuthService {
     );
   }
 
-  register(email: string, password: string) {
+  register(email: string, password: string, acceptTerms: boolean) {
     return this.http
       .post<{ access_token: string; user: { id: string; email: string } }>(
         `${environment.apiUrl}/auth/register`,
-        { email, password },
+        { email, password, acceptTerms },
       )
       .pipe(tap((r) => this.setToken(r.access_token)));
   }

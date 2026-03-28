@@ -25,7 +25,6 @@ import {
   fallbackProductNameFromUrl,
 } from './extract-product-metadata';
 import { fetchSteamProduct, parseSteamAppIdFromUrl } from './steam-store';
-import { fetchAsosPrice, parseAsosProductIdFromUrl } from './asos-store';
 import { BrowserService } from './browser.service';
 
 /** Synthetic URL for dev-only demo tracking (price adjusted via API, not scraped). */
@@ -209,30 +208,18 @@ export class TrackingsService {
       });
     }
 
-    const asosProductId = parseAsosProductIdFromUrl(dto.url);
-
     const httpHtml = await this.fetchHtml(dto.url);
 
-    let num: number | null = null;
-    let html = httpHtml;
-
-    if (asosProductId) {
-      const asos = await fetchAsosPrice(asosProductId, dto.url, currency);
-      if (asos) num = asos.price;
-    }
-
-    if (num === null) {
-      const result = await this.extractPriceWithBrowserFallback(dto.url, httpHtml);
-      num = result.price;
-      html = result.html;
-    }
+    const result = await this.extractPriceWithBrowserFallback(dto.url, httpHtml);
+    const num = result.price;
+    const html = result.html;
 
     const meta = extractProductAndCompany(html, dto.url);
     const productName = meta.productName ?? fallbackProductNameFromUrl(dto.url);
     return this.createWithInitialPrice(userId, {
       url: dto.url,
       productName,
-      companyName: meta.companyName ?? (asosProductId ? 'ASOS' : null),
+      companyName: meta.companyName ?? null,
       price: num,
       currency,
       active,
@@ -434,23 +421,11 @@ export class TrackingsService {
       return this.toPublicTracking(row);
     }
 
-    const asosProductId = parseAsosProductIdFromUrl(url);
-
     const httpHtml = await this.fetchHtml(url);
 
-    let num: number | null = null;
-    let html = httpHtml;
-
-    if (asosProductId) {
-      const asos = await fetchAsosPrice(asosProductId, url, currency);
-      if (asos) num = asos.price;
-    }
-
-    if (num === null) {
-      const result = await this.extractPriceWithBrowserFallback(url, httpHtml);
-      num = result.price;
-      html = result.html;
-    }
+    const result = await this.extractPriceWithBrowserFallback(url, httpHtml);
+    const num = result.price;
+    const html = result.html;
 
     const meta = extractProductAndCompany(html, url);
     const dec = new Prisma.Decimal(num);
@@ -460,7 +435,7 @@ export class TrackingsService {
       data: {
         url,
         productName,
-        companyName: meta.companyName ?? (asosProductId ? 'ASOS' : null),
+        companyName: meta.companyName ?? null,
         lastPrice: dec,
         currency,
         lastCheckedAt: new Date(),
@@ -685,14 +660,6 @@ export class TrackingsService {
           productName: steam.name,
           companyName: 'Steam',
         });
-      }
-    }
-
-    const asosProductId = parseAsosProductIdFromUrl(t.url);
-    if (asosProductId) {
-      const asos = await fetchAsosPrice(asosProductId, t.url, t.currency);
-      if (asos) {
-        return this.persistPrice(id, asos.price, asos.currency);
       }
     }
 

@@ -59,6 +59,16 @@ export type SteamProductInfo = {
   currency: string;
 };
 
+/** Identifies our app to Steam; set `PUBLIC_IMPRESSUM_URL` to your public imprint/legal notice URL (https…). */
+function steamStoreUserAgent(): string {
+  const imprint = process.env['PUBLIC_IMPRESSUM_URL']?.trim();
+  const id = 'Pricefly/1.0';
+  if (imprint && /^https?:\/\//i.test(imprint)) {
+    return `Mozilla/5.0 (compatible; ${id}; +${imprint}`;
+  }
+  return `Mozilla/5.0 (compatible; ${id})`;
+}
+
 export async function fetchSteamProduct(
   appId: string,
   currencyIso: string,
@@ -68,8 +78,7 @@ export async function fetchSteamProduct(
   const res = await fetch(apiUrl, {
     headers: {
       Accept: 'application/json',
-      'User-Agent':
-        'Mozilla/5.0 (compatible; SimplePriceTracker/1.0; +https://example.com)',
+      'User-Agent': steamStoreUserAgent(),
     },
   });
   if (!res.ok) return null;

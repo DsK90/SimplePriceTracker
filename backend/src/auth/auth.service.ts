@@ -30,6 +30,7 @@ export class AuthService {
         email: dto.email.toLowerCase(),
         passwordHash,
         planTier: PlanTier.FREE,
+        termsAcceptedAt: new Date(),
       },
     });
 

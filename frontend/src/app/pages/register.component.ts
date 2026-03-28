@@ -22,6 +22,7 @@ import { AuthService } from '../core/auth.service';
         aria-modal="true"
         aria-labelledby="verify-modal-title"
         aria-describedby="verify-modal-desc"
+        (click)="$event.stopPropagation()"
       >
         <h2 id="verify-modal-title" class="verify-modal-title">
           {{ 'register.verificationModalTitle' | translate }}
@@ -76,6 +77,23 @@ import { AuthService } from '../core/auth.service';
         <button type="submit" [disabled]="form.invalid || loading()">{{ 'register.submit' | translate }}</button>
       </form>
       <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
+      @if (pendingEmail(); as pe) {
+        @if (!verificationModalOpen()) {
+          <div class="verify-inline" role="status">
+            <strong>{{ 'register.verifyAlertTitle' | translate }}</strong>
+            <p>{{ 'register.verifyPendingBody' | translate: { email: pe } }}</p>
+            @if (resendHint()) {
+              <p class="verify-inline-sent">{{ 'register.resendSent' | translate }}</p>
+            }
+            @if (resendErr()) {
+              <p class="err">{{ resendErr() }}</p>
+            }
+            <button type="button" class="secondary" [disabled]="resendBusy()" (click)="resend(pe)">
+              {{ 'register.resend' | translate }}
+            </button>
+          </div>
+        }
+      }
     </div>
   `,
   styles: [
@@ -89,13 +107,14 @@ import { AuthService } from '../core/auth.service';
       .verify-overlay {
         position: fixed;
         inset: 0;
-        z-index: 1000;
+        /* Above nav (z-50), cookie bar (z-[200]), dashboard overlays (z-[100]) */
+        z-index: 10000;
         background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(2px);
       }
       .verify-modal {
         position: fixed;
-        z-index: 1001;
+        z-index: 10001;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
@@ -226,6 +245,45 @@ import { AuthService } from '../core/auth.service';
       .terms-label a {
         text-decoration: underline;
       }
+      .verify-inline {
+        margin-top: 1.25rem;
+        padding: 1rem 1.1rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--accent);
+        background: color-mix(in srgb, var(--accent) 14%, var(--card));
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .verify-inline strong {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-size: 1rem;
+        color: var(--text);
+      }
+      .verify-inline p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .verify-inline-sent {
+        margin-top: 0.5rem !important;
+        font-size: 0.85rem;
+        color: var(--accent);
+      }
+      button.secondary {
+        margin-top: 0.75rem;
+        width: 100%;
+        padding: 0.55rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--text);
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button.secondary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     `,
   ],
 })
@@ -261,8 +319,11 @@ export class RegisterComponent {
       next: (r) => {
         this.loading.set(false);
         if ('verificationRequired' in r && r.verificationRequired) {
-          this.pendingEmail.set(r.email);
-          this.verificationModalOpen.set(true);
+          const registeredEmail = r.email;
+          this.pendingEmail.set(registeredEmail);
+          // Defer opening: the same click that submitted the form would otherwise hit the
+          // full-screen overlay and immediately close the modal (ghost click).
+          setTimeout(() => this.verificationModalOpen.set(true), 0);
           return;
         }
         void this.auth.loadProfile().subscribe({

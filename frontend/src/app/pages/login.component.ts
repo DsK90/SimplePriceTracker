@@ -31,6 +31,7 @@ function apiErrorCode(e: unknown): string | undefined {
         aria-modal="true"
         aria-labelledby="verify-modal-title"
         aria-describedby="verify-modal-desc"
+        (click)="$event.stopPropagation()"
       >
         <h2 id="verify-modal-title" class="verify-modal-title">
           {{ 'login.verificationModalTitle' | translate }}
@@ -97,13 +98,13 @@ function apiErrorCode(e: unknown): string | undefined {
       .verify-overlay {
         position: fixed;
         inset: 0;
-        z-index: 1000;
+        z-index: 10000;
         background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(2px);
       }
       .verify-modal {
         position: fixed;
-        z-index: 1001;
+        z-index: 10001;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
@@ -270,7 +271,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.pipe(take(1)).subscribe((q) => {
       if (q['pendingVerification'] === '1' || q['needVerify'] === '1') {
-        this.verificationModalOpen.set(true);
+        setTimeout(() => this.verificationModalOpen.set(true), 0);
       }
     });
   }
@@ -304,7 +305,7 @@ export class LoginComponent implements OnInit {
         if (code === 'EMAIL_NOT_VERIFIED') {
           this.showResend.set(true);
           this.error.set(this.translate.instant('login.emailNotVerified'));
-          this.verificationModalOpen.set(true);
+          setTimeout(() => this.verificationModalOpen.set(true), 0);
           return;
         }
         const m = (e as { error?: { message?: unknown } }).error?.message;

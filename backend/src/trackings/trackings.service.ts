@@ -771,6 +771,15 @@ export class TrackingsService {
   /** HTTP statuses where a plain fetch often fails bot checks but Playwright may succeed. */
   private static readonly FETCH_RETRY_WITH_BROWSER_STATUSES = new Set([403, 429, 502, 503]);
 
+  private static isNotebooksbilligerHost(url: string): boolean {
+    try {
+      const h = new URL(url).hostname.toLowerCase();
+      return h === 'notebooksbilliger.de' || h === 'www.notebooksbilliger.de';
+    } catch {
+      return false;
+    }
+  }
+
   private async fetchHtml(url: string): Promise<string> {
     let res: Response;
     try {
@@ -803,6 +812,13 @@ export class TrackingsService {
     if (TrackingsService.FETCH_RETRY_WITH_BROWSER_STATUSES.has(res.status)) {
       await res.text().catch(() => {});
       this.log.warn(`HTTP ${res.status} fetching ${url} — will try headless browser`);
+      return '';
+    }
+
+    // Notebooksbilliger sometimes answers bots with 404 while the PDP exists; Playwright can load it.
+    if (res.status === 404 && TrackingsService.isNotebooksbilligerHost(url)) {
+      await res.text().catch(() => {});
+      this.log.warn(`HTTP 404 fetching ${url} (notebooksbilliger) — will try headless browser`);
       return '';
     }
 

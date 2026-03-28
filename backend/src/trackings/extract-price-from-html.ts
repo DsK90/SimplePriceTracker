@@ -204,12 +204,20 @@ function extractPriceFromCssSelectors(
   ]);
   if (alt) return alt;
 
-  // --- Notebooksbilliger ---
+  // --- Notebooksbilliger (Vue/Nuxt PDP; JSON-LD often uses Offer.priceSpecification) ---
   const nbb = firstPriceMatch($, [
     '.product-price__regular',
+    '.product-price__current',
     '.pdp__price .price__amount',
     '.product-price--main',
     '.nbb-product-price__main',
+    '[class*="nbb-product-price"]',
+    '[class*="ProductDetailPrice"]',
+    '[class*="productDetail__price"]',
+    '[data-qa="product-price"]',
+    '[data-testid="product-price"]',
+    '.article-price .price',
+    '.buybox__price .price',
   ]);
   if (nbb) return nbb;
 
@@ -400,12 +408,28 @@ function extractPriceFromCssSelectors(
   return null;
 }
 
+function priceFromPriceSpecification(spec: unknown): string | null {
+  if (spec == null) return null;
+  const list = Array.isArray(spec) ? spec : [spec];
+  for (const item of list) {
+    if (!item || typeof item !== 'object') continue;
+    const p = (item as Record<string, unknown>)['price'];
+    if (typeof p === 'number' || typeof p === 'string') {
+      const s = String(p).trim();
+      if (s && /[\d]/.test(s)) return s;
+    }
+  }
+  return null;
+}
+
 function extractPriceFromOffer(off: Record<string, unknown>): string | null {
   const price = off['price'];
   if (typeof price === 'number' || typeof price === 'string') {
     const s = String(price).trim();
     if (s && /[\d]/.test(s)) return s;
   }
+  const fromSpec = priceFromPriceSpecification(off['priceSpecification']);
+  if (fromSpec) return fromSpec;
   const lowPrice = off['lowPrice'];
   if (typeof lowPrice === 'number' || typeof lowPrice === 'string') {
     const s = String(lowPrice).trim();
@@ -446,6 +470,13 @@ function extractPriceFromJsonLd($: cheerio.CheerioAPI): string | null {
         const types = Array.isArray(type) ? type : type ? [type] : [];
         const isProductType = types.some((x) => PRODUCT_LD_TYPES.has(x as string));
         if (!isProductType) continue;
+        const direct = o['price'];
+        if (typeof direct === 'number' || typeof direct === 'string') {
+          const ds = String(direct).trim();
+          if (ds && /[\d]/.test(ds)) return ds;
+        }
+        const directSpec = priceFromPriceSpecification(o['priceSpecification']);
+        if (directSpec) return directSpec;
         const offers = o['offers'];
         if (!offers) continue;
         const offerArr = Array.isArray(offers) ? offers : [offers];

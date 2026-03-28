@@ -23,6 +23,10 @@ const PAGES: Row[] = [
   { shop: 'Saturn', url: 'https://www.saturn.de/de/product/_apple-airpods-pro-2-generation-in-ear-kopfhorer-bluetooth-weiss-2832770.html' },
   { shop: 'Cyberport', url: 'https://www.cyberport.de/apple-und-zubehoer/apple-kopfhoerer/apple/pdp/2261-239/apple-airpods-pro-2-generation-mit-magsafe-ladecase-usb-c.html' },
   { shop: 'notebooksbilliger', url: 'https://www.notebooksbilliger.de/apple+airpods+pro+2nd+gen+mit+magsafe+usb+c+mtjv3zma+815236' },
+  {
+    shop: 'notebooksbilliger',
+    url: 'https://www.notebooksbilliger.de/msi+katana+17+hx+b14wgk+061+879938',
+  },
   { shop: 'Alternate', url: 'https://www.alternate.de/Apple/AirPods-Pro-2-Generation-Kopfh%C3%B6rer/html/product/100015992' },
   { shop: 'Mindfactory', url: 'https://www.mindfactory.de/product_info.php/1TB-Samsung-980-Pro-M-2-PCIe-4--3D-NAND-TLC--MZ-V8P1T0BW-_1374976.html' },
   { shop: 'Caseking', url: 'https://www.caseking.de/msi-geforce-rtx-4070-super-ventus-2x-oc-12g-12288-mb-gddr6x/GCMC-389.html' },
@@ -44,6 +48,15 @@ const PAGES: Row[] = [
   { shop: 'Decathlon', url: 'https://www.decathlon.de/p/fahrradhelm-city-500-schwarz/_/R-p-325660' },
   { shop: 'IKEA DE', url: 'https://www.ikea.com/de/de/p/kallax-regal-schwarzbraun-s29047437/' },
 ];
+
+function isNotebooksbilligerHost(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === 'notebooksbilliger.de' || h === 'www.notebooksbilliger.de';
+  } catch {
+    return false;
+  }
+}
 
 async function fetchHtmlLikeApp(
   url: string,
@@ -69,6 +82,10 @@ async function fetchHtmlLikeApp(
     });
     if (res.ok) return { status: res.status, html: await res.text(), allowBrowser: true };
     if (FETCH_RETRY_WITH_BROWSER.has(res.status)) {
+      await res.text().catch(() => {});
+      return { status: res.status, html: '', allowBrowser: true };
+    }
+    if (res.status === 404 && isNotebooksbilligerHost(url)) {
       await res.text().catch(() => {});
       return { status: res.status, html: '', allowBrowser: true };
     }

@@ -25,6 +25,11 @@ const PAGES: Row[] = [
   { shop: 'Saturn', label: 'AirPods Pro 2', url: 'https://www.saturn.de/de/product/_apple-airpods-pro-2-generation-in-ear-kopfhorer-bluetooth-weiss-2832770.html' },
   { shop: 'Cyberport', label: 'AirPods Pro 2', url: 'https://www.cyberport.de/apple-und-zubehoer/apple-kopfhoerer/apple/pdp/2261-239/apple-airpods-pro-2-generation-mit-magsafe-ladecase-usb-c.html' },
   { shop: 'notebooksbilliger', label: 'AirPods Pro 2', url: 'https://www.notebooksbilliger.de/apple+airpods+pro+2nd+gen+mit+magsafe+usb+c+mtjv3zma+815236' },
+  {
+    shop: 'notebooksbilliger',
+    label: 'MSI Katana 17 HX',
+    url: 'https://www.notebooksbilliger.de/msi+katana+17+hx+b14wgk+061+879938',
+  },
   { shop: 'Alternate', label: 'AirPods Pro 2', url: 'https://www.alternate.de/Apple/AirPods-Pro-2-Generation-Kopfh%C3%B6rer/html/product/100015992' },
   { shop: 'Mindfactory', label: 'Samsung 980 Pro 1TB', url: 'https://www.mindfactory.de/product_info.php/1TB-Samsung-980-Pro-M-2-PCIe-4--3D-NAND-TLC--MZ-V8P1T0BW-_1374976.html' },
   { shop: 'Caseking', label: 'RTX 4070 Super', url: 'https://www.caseking.de/msi-geforce-rtx-4070-super-ventus-2x-oc-12g-12288-mb-gddr6x/GCMC-389.html' },

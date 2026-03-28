@@ -33,14 +33,36 @@ export class BrowserService implements OnModuleDestroy {
       try {
         await this.applyStealthScripts(page);
         const mindfactory = this.isMindfactoryHost(url);
+        const notebooksbilliger = this.isNotebooksbilligerHost(url);
         await page.goto(url, {
           waitUntil: 'load',
           timeout: PAGE_TIMEOUT_MS,
-          referer: mindfactory ? 'https://www.mindfactory.de/' : undefined,
+          referer: mindfactory
+            ? 'https://www.mindfactory.de/'
+            : notebooksbilliger
+              ? 'https://www.notebooksbilliger.de/'
+              : undefined,
         });
         await page
           .waitForLoadState('networkidle', { timeout: 8_000 })
           .catch(() => {});
+
+        if (notebooksbilliger) {
+          await page
+            .waitForSelector(
+              [
+                '.product-price__regular',
+                '.nbb-product-price__main',
+                '[itemprop="price"]',
+                'script[type="application/ld+json"]',
+                '[class*="product-price"]',
+                '[class*="ProductPrice"]',
+              ].join(', '),
+              { timeout: 14_000 },
+            )
+            .catch(() => {});
+          await page.waitForTimeout(1_500);
+        }
 
         if (mindfactory) {
           await this.dismissMindfactorySecurityGate(page);
@@ -93,6 +115,15 @@ export class BrowserService implements OnModuleDestroy {
     try {
       const h = new URL(url).hostname.toLowerCase();
       return h === 'mindfactory.de' || h === 'www.mindfactory.de';
+    } catch {
+      return false;
+    }
+  }
+
+  private isNotebooksbilligerHost(url: string): boolean {
+    try {
+      const h = new URL(url).hostname.toLowerCase();
+      return h === 'notebooksbilliger.de' || h === 'www.notebooksbilliger.de';
     } catch {
       return false;
     }

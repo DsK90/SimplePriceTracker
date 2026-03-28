@@ -130,6 +130,7 @@ export class DashboardComponent implements OnInit {
   private scrapeInterval: ReturnType<typeof setInterval> | null = null;
   private scrapeIdx = 0;
   private static readonly SCRAPE_MSG_COUNT = 7;
+  private static readonly PRICE_NOT_FOUND_MSG_COUNT = 10;
 
   /** Pro-only: overlay with price snapshots for one tracking. */
   historyTracking = signal<Tracking | null>(null);
@@ -179,7 +180,8 @@ export class DashboardComponent implements OnInit {
       });
     }
     if (body?.code === 'PRICE_NOT_FOUND') {
-      return this.translate.instant('dashboard.errors.priceNotFound');
+      const i = Math.floor(Math.random() * DashboardComponent.PRICE_NOT_FOUND_MSG_COUNT);
+      return this.translate.instant(`dashboard.errors.priceNotFound${i}`);
     }
     if (body?.code === 'EMAIL_ALERT_LIMIT') {
       return this.translate.instant('dashboard.errors.emailAlertLimit', {

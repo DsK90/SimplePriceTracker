@@ -59,8 +59,16 @@ if (!umamiScriptUrl && umamiHost) {
   umamiScriptUrl = `${umamiHost}/script.js`;
 }
 
-const umamiWebsiteId =
-  envResolve('UMAMI_WEBSITE_ID') || '8ef58fb8-8291-40c4-904c-77850d9558fa';
+const umamiWebsiteId = envResolve('UMAMI_WEBSITE_ID') || '';
+
+if (
+  String(umamiScriptUrl || '').trim() !== '' &&
+  String(umamiWebsiteId || '').trim() === ''
+) {
+  console.warn(
+    '[generate-env] UMAMI_SCRIPT_URL is set but UMAMI_WEBSITE_ID is empty — Umami will not load (avoids 400 from a wrong default ID). Set UMAMI_WEBSITE_ID to your site UUID from Umami → Settings → Websites.',
+  );
+}
 
 const rawSandbox = envResolve('PAYPAL_USE_SANDBOX');
 const useSandbox =

@@ -50,3 +50,26 @@ Wenn Umami **und** Nginx jeweils `Access-Control-Allow-Origin` setzen, meldet di
 proxy_hide_header Access-Control-Allow-Origin;
 proxy_hide_header Access-Control-Allow-Methods;
 ```
+
+## 6. `POST /api/send` → **400 Bad Request** (nicht CORS)
+
+Ein **400** bedeutet: die Anfrage kam beim Server an, wurde aber **inhaltlich abgelehnt**. Das ist **kein** reines CORS-Problem (das wäre oft ein Netzwerk-/Browser-Block mit CORS-Meldung).
+
+Typische Ursachen:
+
+1. **Falsche Website-ID**  
+   In Pricefly muss `UMAMI_WEBSITE_ID` **exakt** die UUID der Website sein, die du unter *Umami → Settings → Websites* für **dieses** Projekt angelegt hast.  
+   Eine ID von einer anderen App oder ein veralteter Build mit leerer/fehlender Variable führt oft zu 400. Nach Änderung: **`web`-Image neu bauen** (Compose-`build` args lesen die Werte aus der `.env`).
+
+2. **Domain-Filter in Umami**  
+   Wenn für die Website **erlaubte Domains** gesetzt sind, muss der **Hostname** der laufenden App (z. B. `pricefly.example.com`) dort passen — sonst kann die API ablehnen.
+
+3. **Falsche Umami-Instanz**  
+   `script.js` und `/api/send` müssen zur **gleichen** Installation gehören (gleicher Host wie `UMAMI_SCRIPT_URL` bzw. `UMAMI_HOST_URL`). Eine ID aus Instanz A an Instanz B senden → 400.
+
+4. **Sehr alte / sehr neue Umami-Version**  
+   Bei selbst gehostetem Umami: Image aktualisieren (`docker compose pull` …), damit Tracker und API zusammenpassen.
+
+**In der Pricefly-Codebasis:** Es gibt **keinen** fest eingebauten Default mehr für `UMAMI_WEBSITE_ID`. Ohne gesetzte ID wird der Tracker gar nicht geladen — damit entstehen keine „Geister“-Requests mit falscher UUID.
+
+Zum Debuggen: In den DevTools die **POST**-Antwort von `/api/send` öffnen → **Antworttext** (Body) enthält bei neueren Umami-Versionen oft einen kurzen Ablehnungsgrund.

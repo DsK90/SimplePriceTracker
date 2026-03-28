@@ -65,6 +65,12 @@ export class CookieConsentService {
     s.defer = true;
     s.src = url;
     s.setAttribute('data-website-id', id);
+    // Match ShowBK `analytics.service.ts`: explicit collect origin (same as script host for normal URLs).
+    try {
+      s.setAttribute('data-host-url', new URL(url).origin);
+    } catch {
+      /* invalid script URL — Umami infers host from src */
+    }
     document.head.appendChild(s);
   }
 }

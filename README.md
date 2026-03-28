@@ -61,7 +61,8 @@ Set `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_SECRET` for sandbox; the web im
 You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core` for **PayPal** and **`JWT_SECRET`**. For **email**, this app uses **Brevo** (`BREVO_API_KEY` + **`EMAIL_FROM`** / **`MAIL_FROM`**), not Resend. Copy values into this project’s `.env` files only on your machine — do not commit secrets.
 
 - **Database host in Docker**: ShowBK uses `db` as the Postgres service name; this stack uses **`postgres`**. Set `DATABASE_URL` with host `postgres` when running via Compose, or use the default in `docker-compose.yml`.
-- **Umami**: optional analytics — set `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in `.env` and rebuild the `web` image (see `deploy/hetzner-reikalabs.md`). If the tracker host (e.g. `umami.showbk.com`) differs from the app domain and views stay at zero, see `deploy/umami-cors-and-troubleshooting.md`.
+- **Umami**: optional analytics — set `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in `.env` and rebuild the `web` image (see `deploy/hetzner-reikalabs.md`). If the tracker host (e.g. `umami.showbk.com`) differs from the app domain and views stay at zero, see `deploy/umami-cors-and-troubleshooting.md`.  
+  **Same server as ShowBK is OK**, but create a **separate website** in Umami for Pricefly’s domain and use **that** UUID — not ShowBK’s `umamiWebsiteId` from the other repo (wrong ID → `400` on `/api/send`).
 - **Email vs push**: price-alert **emails** are optional per tracking and capped by plan (2 Free, 10 Pro); **in-app** and **web push** notifications are unlimited. See the in-app Fair use policy.
 - Not used here (no code): `B2_CDN_*`, `REDIS_*`, `AWS_*` / SES, `PRODIGI_*`, `CAPTCHA_*`.
 

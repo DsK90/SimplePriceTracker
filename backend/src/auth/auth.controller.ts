@@ -23,7 +23,7 @@ export class AuthController {
 
   @Post('resend-verification')
   resendVerification(@Body() dto: ResendVerificationDto) {
-    return this.auth.resendVerification(dto.email);
+    return this.auth.resendVerification(dto);
   }
 
   @Post('login')

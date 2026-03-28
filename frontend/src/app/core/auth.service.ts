@@ -37,9 +37,14 @@ export class AuthService {
     );
   }
 
-  register(email: string, password: string, acceptTerms: boolean) {
+  register(email: string, password: string, acceptTerms: boolean, locale?: string) {
     return this.http
-      .post<RegisterResponse>(`${environment.apiUrl}/auth/register`, { email, password, acceptTerms })
+      .post<RegisterResponse>(`${environment.apiUrl}/auth/register`, {
+        email,
+        password,
+        acceptTerms,
+        ...(locale ? { locale } : {}),
+      })
       .pipe(
         tap((r) => {
           if ('access_token' in r) this.setToken(r.access_token);
@@ -56,8 +61,11 @@ export class AuthService {
       .pipe(tap((r) => this.setToken(r.access_token)));
   }
 
-  resendVerification(email: string) {
-    return this.http.post<{ ok: boolean }>(`${environment.apiUrl}/auth/resend-verification`, { email });
+  resendVerification(email: string, locale?: string) {
+    return this.http.post<{ ok: boolean }>(`${environment.apiUrl}/auth/resend-verification`, {
+      email,
+      ...(locale ? { locale } : {}),
+    });
   }
 
   login(email: string, password: string) {

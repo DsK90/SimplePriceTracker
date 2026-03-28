@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BrevoClient } from '@getbrevo/brevo';
+import { normalizeMailLocale } from './i18n/mail-locale';
+import {
+  verificationEmailBody,
+  verificationEmailHtml,
+  verificationEmailSubject,
+} from './i18n/verification-email';
+import { welcomeEmailBody, welcomeEmailSubject } from './i18n/welcome-email';
 
 /**
  * Transactional e-mail via Brevo (`transactionalEmails.sendTransacEmail` only — no marketing campaigns).
@@ -56,46 +63,46 @@ export class MailService {
     return brevoSenderFromAddress(raw);
   }
 
-  private async sendTransactional(to: string, subject: string, text: string) {
+  private async sendTransactional(to: string, subject: string, text: string, htmlOverride?: string) {
     if (!this.brevo) return;
     const sender = this.fromSender();
+    const htmlContent =
+      htmlOverride ?? `<div style="font-family:sans-serif">${plainTextToHtml(text)}</div>`;
     await this.brevo.transactionalEmails.sendTransacEmail({
       sender,
       to: [{ email: to }],
       subject,
       textContent: text,
-      htmlContent: `<div style="font-family:sans-serif">${plainTextToHtml(text)}</div>`,
+      htmlContent,
     });
   }
 
-  async sendEmailVerification(to: string, verifyUrl: string) {
+  async sendEmailVerification(to: string, verifyUrl: string, localeRaw?: string | null) {
     if (!this.brevo) {
       this.log.debug('BREVO_API_KEY not set; skipping verification email');
       return;
     }
-    const text =
-      'Please confirm your e-mail address to activate your Pricefly account.\n\n' +
-      'Open this link (valid 48 hours):\n' +
-      verifyUrl +
-      '\n\nIf you did not sign up, you can ignore this message.';
+    const locale = normalizeMailLocale(localeRaw);
+    const subject = verificationEmailSubject(locale);
+    const text = verificationEmailBody(locale, verifyUrl);
+    const html = verificationEmailHtml(locale, verifyUrl);
     try {
-      await this.sendTransactional(to, 'Confirm your Pricefly e-mail', text);
+      await this.sendTransactional(to, subject, text, html);
     } catch (e) {
       this.log.warn(`Verification e-mail failed: ${(e as Error).message}`);
     }
   }
 
-  async sendWelcome(to: string) {
+  async sendWelcome(to: string, localeRaw?: string | null) {
     if (!this.brevo) {
       this.log.debug('BREVO_API_KEY not set; skipping welcome email');
       return;
     }
-    const text =
-      'Thanks for signing up. On the free plan you can track up to 5 active products. ' +
-      'Email price alerts are optional and limited to 2 products (10 on Pro); push and in-app alerts are unlimited. ' +
-      'See our Fair Use Policy on the website.';
+    const locale = normalizeMailLocale(localeRaw);
+    const subject = welcomeEmailSubject(locale);
+    const text = welcomeEmailBody(locale);
     try {
-      await this.sendTransactional(to, 'Welcome to Pricefly', text);
+      await this.sendTransactional(to, subject, text);
     } catch (e) {
       this.log.warn(`Welcome email failed: ${(e as Error).message}`);
     }

@@ -26,6 +26,8 @@ model User {
   /// SHA-256 hex of the raw token sent by e-mail; cleared after successful verification.
   emailVerificationTokenHash String?
   emailVerificationExpiresAt DateTime?
+  /// UI / transactional mail language (e.g. `de`, `en`); set at registration, used for verification & welcome e-mails.
+  preferredLocale      String?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   trackings            PriceTracking[]

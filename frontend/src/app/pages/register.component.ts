@@ -12,6 +12,10 @@ import { AuthService } from '../core/auth.service';
   template: `
     <div class="card">
       @if (pendingEmail(); as pe) {
+        <div class="verify-callout" role="alert" aria-live="assertive">
+          <strong>{{ 'register.verifyAlertTitle' | translate }}</strong>
+          <p>{{ 'register.verifyAlertBody' | translate }}</p>
+        </div>
         <h1>{{ 'register.verifyPendingTitle' | translate }}</h1>
         <p class="info">{{ 'register.verifyPendingBody' | translate: { email: pe } }}</p>
         @if (resendHint()) {
@@ -23,7 +27,9 @@ import { AuthService } from '../core/auth.service';
         <button type="button" class="secondary" [disabled]="resendBusy()" (click)="resend(pe)">
           {{ 'register.resend' | translate }}
         </button>
-        <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
+        <p class="muted">
+          <a routerLink="/login" [queryParams]="{ pendingVerification: '1' }">{{ 'register.hasAccount' | translate }}</a>
+        </p>
       } @else {
         <h1>{{ 'register.title' | translate }}</h1>
         <form [formGroup]="form" (ngSubmit)="submit()">
@@ -65,6 +71,25 @@ import { AuthService } from '../core/auth.service';
         border-radius: 12px;
         padding: 2rem;
         box-shadow: var(--shadow);
+      }
+      .verify-callout {
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.1rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--accent);
+        background: color-mix(in srgb, var(--accent) 14%, var(--card));
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .verify-callout strong {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-size: 1rem;
+        color: var(--text);
+      }
+      .verify-callout p {
+        margin: 0;
+        color: var(--muted);
       }
       h1 {
         margin: 0 0 1.5rem;
@@ -171,7 +196,7 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set(null);
     const { email, password, acceptTerms } = this.form.getRawValue();
-    this.auth.register(email, password, acceptTerms).subscribe({
+    this.auth.register(email, password, acceptTerms, this.translate.getCurrentLang() || 'en').subscribe({
       next: (r) => {
         this.loading.set(false);
         if ('verificationRequired' in r && r.verificationRequired) {
@@ -202,7 +227,7 @@ export class RegisterComponent {
     this.resendBusy.set(true);
     this.resendErr.set(null);
     this.resendHint.set(false);
-    this.auth.resendVerification(email).subscribe({
+    this.auth.resendVerification(email, this.translate.getCurrentLang() || 'en').subscribe({
       next: () => {
         this.resendBusy.set(false);
         this.resendHint.set(true);

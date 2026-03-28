@@ -1,4 +1,5 @@
-import { Equals, IsBoolean, IsEmail, IsString, MinLength } from 'class-validator';
+import { Equals, IsBoolean, IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { MAIL_LOCALES } from '../../mail/i18n/mail-locale';
 
 export class RegisterDto {
   @IsEmail()
@@ -12,4 +13,10 @@ export class RegisterDto {
   @IsBoolean()
   @Equals(true)
   acceptTerms!: boolean;
+
+  /** Active UI language for verification e-mail (ngx-translate code, e.g. `de`, `en`). */
+  @IsOptional()
+  @IsString()
+  @IsIn([...MAIL_LOCALES])
+  locale?: string;
 }

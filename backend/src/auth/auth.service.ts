@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   ServiceUnavailableException,
@@ -16,6 +18,8 @@ import { MailService } from '../mail/mail.service';
 import { ADMIN_EMAIL } from '../common/constants';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { normalizeMailLocale } from '../mail/i18n/mail-locale';
 import { PaypalService } from '../paypal/paypal.service';
 import { TrackingsService } from '../trackings/trackings.service';
 
@@ -34,6 +38,7 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const email = dto.email.toLowerCase();
+    const mailLocale = normalizeMailLocale(dto.locale);
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const state = this.prepareVerificationState();
 
@@ -48,6 +53,7 @@ export class AuthService {
         data: {
           passwordHash,
           termsAcceptedAt: new Date(),
+          preferredLocale: mailLocale,
           ...(state.verifiedNow
             ? {
                 emailVerifiedAt: new Date(),
@@ -62,10 +68,10 @@ export class AuthService {
         },
       });
       if (state.pendingEmail && state.rawToken) {
-        void this.mail.sendEmailVerification(email, this.buildVerifyUrl(state.rawToken));
+        void this.mail.sendEmailVerification(email, this.buildVerifyUrl(state.rawToken), mailLocale);
       }
       if (state.verifiedNow) {
-        void this.mail.sendWelcome(email);
+        void this.mail.sendWelcome(email, mailLocale);
         return this.issueTokens(existing.id, email);
       }
       return { verificationRequired: true as const, email };
@@ -77,6 +83,7 @@ export class AuthService {
         passwordHash,
         planTier: PlanTier.FREE,
         termsAcceptedAt: new Date(),
+        preferredLocale: mailLocale,
         ...(state.verifiedNow
           ? { emailVerifiedAt: new Date() }
           : {
@@ -87,10 +94,10 @@ export class AuthService {
     });
 
     if (state.pendingEmail && state.rawToken) {
-      void this.mail.sendEmailVerification(email, this.buildVerifyUrl(state.rawToken));
+      void this.mail.sendEmailVerification(email, this.buildVerifyUrl(state.rawToken), mailLocale);
     }
     if (state.verifiedNow) {
-      void this.mail.sendWelcome(user.email);
+      void this.mail.sendWelcome(user.email, mailLocale);
       return this.issueTokens(user.id, user.email);
     }
     return { verificationRequired: true as const, email: user.email };
@@ -118,12 +125,12 @@ export class AuthService {
         emailVerificationExpiresAt: null,
       },
     });
-    void this.mail.sendWelcome(user.email);
+    void this.mail.sendWelcome(user.email, user.preferredLocale);
     return this.issueTokens(user.id, user.email);
   }
 
-  async resendVerification(emailRaw: string) {
-    const email = emailRaw.toLowerCase();
+  async resendVerification(dto: ResendVerificationDto) {
+    const email = dto.email.toLowerCase();
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || user.emailVerifiedAt) {
       return { ok: true as const };
@@ -133,14 +140,21 @@ export class AuthService {
       this.log.warn('resendVerification: BREVO_API_KEY missing; cannot send');
       return { ok: true as const };
     }
+    const mailLocale = normalizeMailLocale(dto.locale ?? user.preferredLocale);
     const raw = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(raw, 'utf8').digest('hex');
     const expiresAt = new Date(Date.now() + 48 * 3600 * 1000);
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { emailVerificationTokenHash: tokenHash, emailVerificationExpiresAt: expiresAt },
+      data: {
+        emailVerificationTokenHash: tokenHash,
+        emailVerificationExpiresAt: expiresAt,
+        ...(dto.locale != null && String(dto.locale).trim() !== ''
+          ? { preferredLocale: normalizeMailLocale(dto.locale) }
+          : {}),
+      },
     });
-    void this.mail.sendEmailVerification(email, this.buildVerifyUrl(raw));
+    void this.mail.sendEmailVerification(email, this.buildVerifyUrl(raw), mailLocale);
     return { ok: true as const };
   }
 
@@ -152,10 +166,15 @@ export class AuthService {
     if (!ok) throw new UnauthorizedException('Invalid credentials');
 
     if (!user.emailVerifiedAt) {
-      throw new UnauthorizedException({
-        code: 'EMAIL_NOT_VERIFIED',
-        message: 'Please confirm your e-mail before signing in.',
-      });
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.UNAUTHORIZED,
+          error: 'Unauthorized',
+          code: 'EMAIL_NOT_VERIFIED',
+          message: 'Please confirm your e-mail before signing in.',
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
 
     return this.issueTokens(user.id, user.email);
@@ -223,13 +242,55 @@ export class AuthService {
     return { verifiedNow: false, pendingEmail: true, rawToken: raw, tokenHash, expiresAt };
   }
 
+  /**
+   * Link target for the SPA `/verify-email` route. Must be the user-facing site, not the API.
+   * Order: APP_PUBLIC_URL → UI_URL → first public origin in CORS_ORIGIN (skips localhost in production)
+   * → else first CORS entry → dev fallback localhost:4200.
+   */
   private buildVerifyUrl(rawToken: string): string {
-    const base =
+    const base = this.resolvePublicAppBaseUrl();
+    return `${base}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  }
+
+  private stripTrailingSlash(url: string): string {
+    return url.replace(/\/+$/, '');
+  }
+
+  private isLoopbackOrigin(url: string): boolean {
+    try {
+      const u = new URL(url);
+      const h = u.hostname.toLowerCase();
+      return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+    } catch {
+      return true;
+    }
+  }
+
+  private resolvePublicAppBaseUrl(): string {
+    const explicit =
       this.config.get<string>('APP_PUBLIC_URL')?.trim() ||
-      this.config.get<string>('UI_URL')?.trim() ||
-      'http://localhost:4200';
-    const u = base.replace(/\/$/, '');
-    return `${u}/verify-email?token=${encodeURIComponent(rawToken)}`;
+      this.config.get<string>('UI_URL')?.trim();
+    if (explicit) return this.stripTrailingSlash(explicit);
+
+    const cors = this.config.get<string>('CORS_ORIGIN')?.trim();
+    const origins = cors ? cors.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    const isProd = process.env.NODE_ENV === 'production';
+
+    if (origins.length > 0) {
+      if (isProd) {
+        const publicHttps = origins.find((o) => /^https:\/\//i.test(o) && !this.isLoopbackOrigin(o));
+        if (publicHttps) return this.stripTrailingSlash(publicHttps);
+        const publicHttp = origins.find((o) => /^http:\/\//i.test(o) && !this.isLoopbackOrigin(o));
+        if (publicHttp) return this.stripTrailingSlash(publicHttp);
+        this.log.error(
+          'Production: APP_PUBLIC_URL is unset and CORS_ORIGIN has no public (non-localhost) origin. ' +
+            'Verification e-mails will use the first CORS entry — set APP_PUBLIC_URL explicitly.',
+        );
+      }
+      return this.stripTrailingSlash(origins[0]!);
+    }
+
+    return 'http://localhost:4200';
   }
 
   private issueTokens(userId: string, email: string) {

@@ -92,6 +92,7 @@ If you prefer TLS on the host instead of the **`edge`** service, use `deploy/ngi
 
    - `BREVO_API_KEY` — the API key from step 2.
    - `EMAIL_FROM` — must match a verified sender in Brevo, e.g. `Reikalabs <noreply@reikalabs.com>`.
+   - `APP_PUBLIC_URL` — **exact** public SPA URL (no trailing slash), e.g. `https://pricefly.reikalabs.com`. Used in registration verification e-mails; if omitted in production, the API tries the first non-localhost `https` origin from `CORS_ORIGIN`.
 
 4. Redeploy the `api` container after changing env.
 

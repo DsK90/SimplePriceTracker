@@ -7,6 +7,11 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p nginx/certbot_conf nginx/certbot_www
 
+# Strip CRLF from .env (common if edited on Windows); a trailing \r on values can break API keys at runtime.
+if [ -f .env ]; then
+  sed -i 's/\r$//' .env 2>/dev/null || true
+fi
+
 # Non-interactive SSH (e.g. GitHub Actions) often has a minimal PATH; Docker may live outside it.
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:${PATH:-}"
 if ! command -v docker >/dev/null 2>&1; then

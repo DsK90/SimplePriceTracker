@@ -23,6 +23,11 @@ import { normalizeMailLocale } from '../mail/i18n/mail-locale';
 import { PaypalService } from '../paypal/paypal.service';
 import { TrackingsService } from '../trackings/trackings.service';
 
+/** Sign-up e-mail + resends while unverified (abuse cap). */
+const VERIFICATION_EMAIL_MAX_SENDS = 6;
+/** Minimum seconds between confirmation e-mails for the same account. */
+const VERIFICATION_RESEND_MIN_INTERVAL_MS = 60_000;
+
 @Injectable()
 export class AuthService {
   private readonly log = new Logger(AuthService.name);
@@ -43,38 +48,12 @@ export class AuthService {
     const state = this.prepareVerificationState();
 
     const existing = await this.prisma.user.findUnique({ where: { email } });
-    if (existing?.emailVerifiedAt) {
-      throw new ConflictException('Email already registered');
-    }
-
     if (existing) {
-      await this.prisma.user.update({
-        where: { id: existing.id },
-        data: {
-          passwordHash,
-          termsAcceptedAt: new Date(),
-          preferredLocale: mailLocale,
-          ...(state.verifiedNow
-            ? {
-                emailVerifiedAt: new Date(),
-                emailVerificationTokenHash: null,
-                emailVerificationExpiresAt: null,
-              }
-            : {
-                emailVerifiedAt: null,
-                emailVerificationTokenHash: state.tokenHash!,
-                emailVerificationExpiresAt: state.expiresAt!,
-              }),
-        },
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        code: 'EMAIL_ALREADY_REGISTERED',
+        message: 'An account with this email already exists.',
       });
-      if (state.pendingEmail && state.rawToken) {
-        void this.mail.sendEmailVerification(email, this.buildVerifyUrl(state.rawToken), mailLocale);
-      }
-      if (state.verifiedNow) {
-        void this.mail.sendWelcome(email, mailLocale);
-        return this.issueTokens(existing.id, email);
-      }
-      return { verificationRequired: true as const, email };
     }
 
     const user = await this.prisma.user.create({
@@ -89,6 +68,8 @@ export class AuthService {
           : {
               emailVerificationTokenHash: state.tokenHash!,
               emailVerificationExpiresAt: state.expiresAt!,
+              emailVerificationEmailsSent: 1,
+              emailVerificationLastSentAt: new Date(),
             }),
       },
     });
@@ -112,6 +93,7 @@ export class AuthService {
       },
     });
     if (!user) {
+      this.log.warn('verifyEmail: invalid or expired token (no matching pending verification).');
       throw new BadRequestException({
         code: 'INVALID_OR_EXPIRED_TOKEN',
         message: 'Invalid or expired verification link.',
@@ -123,6 +105,8 @@ export class AuthService {
         emailVerifiedAt: new Date(),
         emailVerificationTokenHash: null,
         emailVerificationExpiresAt: null,
+        emailVerificationEmailsSent: 0,
+        emailVerificationLastSentAt: null,
       },
     });
     void this.mail.sendWelcome(user.email, user.preferredLocale);
@@ -140,6 +124,38 @@ export class AuthService {
       this.log.warn('resendVerification: BREVO_API_KEY missing; cannot send');
       return { ok: true as const };
     }
+
+    if (user.emailVerificationEmailsSent >= VERIFICATION_EMAIL_MAX_SENDS) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          code: 'RESEND_LIMIT_REACHED',
+          message: 'Too many confirmation emails were sent. Try again later or contact support.',
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const lastSent = user.emailVerificationLastSentAt;
+    if (lastSent != null) {
+      const elapsed = Date.now() - lastSent.getTime();
+      if (elapsed < VERIFICATION_RESEND_MIN_INTERVAL_MS) {
+        const retryAfterSeconds = Math.max(
+          1,
+          Math.ceil((VERIFICATION_RESEND_MIN_INTERVAL_MS - elapsed) / 1000),
+        );
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.TOO_MANY_REQUESTS,
+            code: 'RESEND_COOLDOWN',
+            message: 'Please wait before requesting another confirmation email.',
+            retryAfterSeconds,
+          },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+    }
+
     const mailLocale = normalizeMailLocale(dto.locale ?? user.preferredLocale);
     const raw = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(raw, 'utf8').digest('hex');
@@ -149,6 +165,8 @@ export class AuthService {
       data: {
         emailVerificationTokenHash: tokenHash,
         emailVerificationExpiresAt: expiresAt,
+        emailVerificationEmailsSent: { increment: 1 },
+        emailVerificationLastSentAt: new Date(),
         ...(dto.locale != null && String(dto.locale).trim() !== ''
           ? { preferredLocale: normalizeMailLocale(dto.locale) }
           : {}),
@@ -228,6 +246,9 @@ export class AuthService {
     }
     if (!hasBrevo) {
       if (isProd) {
+        this.log.warn(
+          'Registration blocked: BREVO_API_KEY is missing in production (double opt-in unavailable).',
+        );
         throw new ServiceUnavailableException({
           code: 'EMAIL_VERIFICATION_UNAVAILABLE',
           message: 'Registration is temporarily unavailable (e-mail not configured).',
@@ -298,6 +319,11 @@ export class AuthService {
       return this.stripTrailingSlash(origins[0]!);
     }
 
+    if (isProd) {
+      this.log.warn(
+        'Verification e-mail links use http://localhost:4200 — set APP_PUBLIC_URL or SSL_PRIMARY_DOMAIN (or a public HTTPS origin in CORS_ORIGIN).',
+      );
+    }
     return 'http://localhost:4200';
   }
 

@@ -51,7 +51,9 @@
     "verificationBannerBody": "Open the link in your confirmation e-mail first. Then sign in with your e-mail and password.",
     "resendVerification": "Resend confirmation email",
     "resendSent": "If an account exists, we sent a new link.",
-    "resendFailed": "Could not send email. Please try again later."
+    "resendFailed": "Could not send email. Please try again later.",
+    "resendCooldown": "Please wait {{seconds}} seconds before requesting another email.",
+    "resendLimit": "Too many confirmation emails were sent. Try again later or contact support."
   },
   "register": {
     "title": "创建账户",
@@ -60,6 +62,7 @@
     "submit": "注册",
     "hasAccount": "已有账户？",
     "failed": "注册失败",
+    "emailAlreadyRegistered": "This email is already registered. Sign in instead, or use “Resend confirmation” if you have not verified yet.",
     "acceptTermsStart": "I have read and accept the ",
     "acceptTermsMiddle": " and the ",
     "acceptTermsEnd": ".",
@@ -73,6 +76,8 @@
     "resend": "Resend confirmation email",
     "resendSent": "If an account exists, we sent a new link.",
     "resendFailed": "Could not send email.",
+    "resendCooldown": "Please wait {{seconds}} seconds before requesting another email.",
+    "resendLimit": "Too many confirmation emails were sent. Try again later or contact support.",
     "serviceUnavailable": "Registration is temporarily unavailable (email not configured).",
     "verificationModalTitle": "请查看您的收件箱",
     "verificationModalBody": "我们已向 {{email}} 发送了确认邮件。请点击邮件中的链接以激活您的账户。",

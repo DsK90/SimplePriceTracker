@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../core/auth.service';
+import { resendVerificationErrorMessage } from '../core/resend-verification-error';
 
 @Component({
   selector: 'app-register',
@@ -340,6 +341,14 @@ export class RegisterComponent {
           this.error.set(this.translate.instant('register.serviceUnavailable'));
           return;
         }
+        if (e.status === 409 && e.error?.code === 'EMAIL_ALREADY_REGISTERED') {
+          this.error.set(this.translate.instant('register.emailAlreadyRegistered'));
+          return;
+        }
+        if (e.status === 429) {
+          this.error.set(resendVerificationErrorMessage(e, this.translate, 'register'));
+          return;
+        }
         this.error.set(
           Array.isArray(e.error?.message)
             ? e.error.message[0]
@@ -362,9 +371,9 @@ export class RegisterComponent {
         this.resendBusy.set(false);
         this.resendHint.set(true);
       },
-      error: () => {
+      error: (e) => {
         this.resendBusy.set(false);
-        this.resendErr.set(this.translate.instant('register.resendFailed'));
+        this.resendErr.set(resendVerificationErrorMessage(e, this.translate, 'register'));
       },
     });
   }

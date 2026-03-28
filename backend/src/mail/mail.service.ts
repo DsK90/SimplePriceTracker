@@ -46,6 +46,40 @@ function envAllowsPriceAlertEmails(raw: string | undefined): boolean {
   return !['0', 'false', 'no', 'off'].includes(String(raw).trim().toLowerCase());
 }
 
+/** For logs only — not a security measure. */
+function maskEmailForLog(email: string): string {
+  const at = email.indexOf('@');
+  if (at <= 0) return '[invalid]';
+  const local = email.slice(0, at);
+  const domain = email.slice(at + 1);
+  const head = local.slice(0, Math.min(2, local.length));
+  return `${head}***@${domain}`;
+}
+
+/** Brevo SDK throws `BrevoError` with `statusCode` and `body`; keep logs useful for support. */
+function describeOutboundMailError(err: unknown): string {
+  if (err instanceof Error) {
+    const any = err as Error & { statusCode?: number; body?: unknown };
+    const parts: string[] = [err.message];
+    if (any.statusCode != null) parts.push(`statusCode=${any.statusCode}`);
+    if (any.body != null) {
+      const raw =
+        typeof any.body === 'string'
+          ? any.body
+          : (() => {
+              try {
+                return JSON.stringify(any.body);
+              } catch {
+                return String(any.body);
+              }
+            })();
+      parts.push(`body=${raw.length > 600 ? `${raw.slice(0, 600)}…` : raw}`);
+    }
+    return parts.join(' | ');
+  }
+  return String(err);
+}
+
 @Injectable()
 export class MailService {
   private readonly log = new Logger(MailService.name);
@@ -79,7 +113,9 @@ export class MailService {
 
   async sendEmailVerification(to: string, verifyUrl: string, localeRaw?: string | null) {
     if (!this.brevo) {
-      this.log.debug('BREVO_API_KEY not set; skipping verification email');
+      this.log.warn(
+        `Verification e-mail not sent (BREVO_API_KEY missing) — recipient=${maskEmailForLog(to)}`,
+      );
       return;
     }
     const locale = normalizeMailLocale(localeRaw);
@@ -89,13 +125,15 @@ export class MailService {
     try {
       await this.sendTransactional(to, subject, text, html);
     } catch (e) {
-      this.log.warn(`Verification e-mail failed: ${(e as Error).message}`);
+      this.log.warn(
+        `Verification e-mail failed — recipient=${maskEmailForLog(to)}: ${describeOutboundMailError(e)}`,
+      );
     }
   }
 
   async sendWelcome(to: string, localeRaw?: string | null) {
     if (!this.brevo) {
-      this.log.debug('BREVO_API_KEY not set; skipping welcome email');
+      this.log.warn(`Welcome e-mail not sent (BREVO_API_KEY missing) — recipient=${maskEmailForLog(to)}`);
       return;
     }
     const locale = normalizeMailLocale(localeRaw);
@@ -104,7 +142,9 @@ export class MailService {
     try {
       await this.sendTransactional(to, subject, text);
     } catch (e) {
-      this.log.warn(`Welcome email failed: ${(e as Error).message}`);
+      this.log.warn(
+        `Welcome e-mail failed — recipient=${maskEmailForLog(to)}: ${describeOutboundMailError(e)}`,
+      );
     }
   }
 
@@ -120,7 +160,9 @@ export class MailService {
     try {
       await this.sendTransactional(to, subject, text);
     } catch (e) {
-      this.log.warn(`Price alert email failed: ${(e as Error).message}`);
+      this.log.warn(
+        `Price alert e-mail failed — recipient=${maskEmailForLog(to)}: ${describeOutboundMailError(e)}`,
+      );
     }
   }
 }

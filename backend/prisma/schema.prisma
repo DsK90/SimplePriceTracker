@@ -26,6 +26,10 @@ model User {
   /// SHA-256 hex of the raw token sent by e-mail; cleared after successful verification.
   emailVerificationTokenHash String?
   emailVerificationExpiresAt DateTime?
+  /// Last time a confirmation e-mail was sent (sign-up or resend); used for resend cooldown.
+  emailVerificationLastSentAt DateTime?
+  /// Count of confirmation e-mails sent while unverified (sign-up + resends); reset when verified. Capped server-side.
+  emailVerificationEmailsSent Int @default(0)
   /// UI / transactional mail language (e.g. `de`, `en`); set at registration, used for verification & welcome e-mails.
   preferredLocale      String?
   createdAt            DateTime           @default(now())

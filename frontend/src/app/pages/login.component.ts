@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { take } from 'rxjs/operators';
 import { AuthService } from '../core/auth.service';
+import { resendVerificationErrorMessage } from '../core/resend-verification-error';
 
 function apiErrorCode(e: unknown): string | undefined {
   const err = e as { error?: Record<string, unknown> };
@@ -325,9 +326,9 @@ export class LoginComponent implements OnInit {
         this.resendBusy.set(false);
         this.error.set(this.translate.instant('login.resendSent'));
       },
-      error: () => {
+      error: (e) => {
         this.resendBusy.set(false);
-        this.error.set(this.translate.instant('login.resendFailed'));
+        this.error.set(resendVerificationErrorMessage(e, this.translate, 'login'));
       },
     });
   }

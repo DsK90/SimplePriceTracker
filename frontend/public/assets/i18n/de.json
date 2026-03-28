@@ -57,7 +57,9 @@
     "verificationBannerBody": "Öffnen Sie den Link in der Bestätigungsmail. Danach funktioniert die Anmeldung mit E-Mail und Passwort.",
     "resendVerification": "Bestätigungsmail erneut senden",
     "resendSent": "Wenn ein Konto existiert, haben wir einen neuen Link gesendet.",
-    "resendFailed": "E-Mail konnte nicht gesendet werden. Bitte später erneut versuchen."
+    "resendFailed": "E-Mail konnte nicht gesendet werden. Bitte später erneut versuchen.",
+    "resendCooldown": "Bitte {{seconds}} Sekunden warten, bevor du eine weitere E-Mail anforderst.",
+    "resendLimit": "Es wurden zu viele Bestätigungs-E-Mails gesendet. Versuche es später erneut oder kontaktiere den Support."
   },
   "register": {
     "title": "Konto erstellen",
@@ -66,6 +68,7 @@
     "submit": "Registrieren",
     "hasAccount": "Bereits ein Konto?",
     "failed": "Registrierung fehlgeschlagen",
+    "emailAlreadyRegistered": "Diese E-Mail ist bereits registriert. Bitte anmelden oder „Bestätigungsmail erneut senden“ nutzen, falls du noch nicht bestätigt hast.",
     "acceptTermsStart": "Ich habe die ",
     "acceptTermsMiddle": " und die ",
     "acceptTermsEnd": " gelesen und akzeptiere sie.",
@@ -79,6 +82,8 @@
     "resend": "Bestätigungsmail erneut senden",
     "resendSent": "Wenn ein Konto existiert, haben wir einen neuen Link gesendet.",
     "resendFailed": "E-Mail konnte nicht gesendet werden.",
+    "resendCooldown": "Bitte {{seconds}} Sekunden warten, bevor du eine weitere E-Mail anforderst.",
+    "resendLimit": "Es wurden zu viele Bestätigungs-E-Mails gesendet. Versuche es später erneut oder kontaktiere den Support.",
     "serviceUnavailable": "Registrierung ist vorübergehend nicht möglich (E-Mail-Versand nicht konfiguriert).",
     "verificationModalTitle": "Prüfen Sie Ihren Posteingang",
     "verificationModalBody": "Wir haben eine Bestätigungsmail an {{email}} gesendet. Klicken Sie auf den Link in der Nachricht, um Ihr Konto zu aktivieren.",

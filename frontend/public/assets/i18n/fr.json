@@ -51,7 +51,9 @@
     "verificationBannerBody": "Ouvrez d’abord le lien dans l’e-mail de confirmation, puis connectez-vous.",
     "resendVerification": "Renvoyer l’e-mail de confirmation",
     "resendSent": "Si un compte existe, nous avons envoyé un nouveau lien.",
-    "resendFailed": "Impossible d’envoyer l’e-mail. Réessayez plus tard."
+    "resendFailed": "Impossible d’envoyer l’e-mail. Réessayez plus tard.",
+    "resendCooldown": "Veuillez attendre {{seconds}} secondes avant de demander un autre e-mail.",
+    "resendLimit": "Trop d’e-mails de confirmation ont été envoyés. Réessayez plus tard ou contactez le support."
   },
   "register": {
     "title": "Créer un compte",
@@ -60,6 +62,7 @@
     "submit": "S’inscrire",
     "hasAccount": "Vous avez déjà un compte ?",
     "failed": "Échec de l’inscription",
+    "emailAlreadyRegistered": "Cette adresse e-mail est déjà enregistrée. Connectez-vous ou utilisez « Renvoyer l’e-mail de confirmation » si vous n’avez pas encore confirmé.",
     "acceptTermsStart": "I have read and accept the ",
     "acceptTermsMiddle": " and the ",
     "acceptTermsEnd": ".",
@@ -73,6 +76,8 @@
     "resend": "Renvoyer l’e-mail de confirmation",
     "resendSent": "Si un compte existe, nous avons envoyé un nouveau lien.",
     "resendFailed": "Impossible d’envoyer l’e-mail.",
+    "resendCooldown": "Veuillez attendre {{seconds}} secondes avant de demander un autre e-mail.",
+    "resendLimit": "Trop d’e-mails de confirmation ont été envoyés. Réessayez plus tard ou contactez le support.",
     "serviceUnavailable": "Inscription temporairement indisponible (e-mail non configuré).",
     "verificationModalTitle": "Vérifiez votre boîte de réception",
     "verificationModalBody": "Nous avons envoyé un e-mail de confirmation à {{email}}. Cliquez sur le lien pour activer votre compte.",

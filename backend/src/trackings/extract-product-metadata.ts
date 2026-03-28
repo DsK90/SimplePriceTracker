@@ -19,16 +19,46 @@ function splitTitleAndSite(s: string): { product: string; company: string | null
   return { product: t, company: null };
 }
 
+const TITLE_SUFFIXES = [
+  ' | ikea',
+  ' - ikea',
+  ' | zalando',
+  ' | amazon',
+  ' | ebay',
+  ' | mediamarkt',
+  ' | saturn',
+  ' | otto',
+  ' | kaufland',
+  ' | conrad',
+  ' | euronics',
+  ' | hornbach',
+  ' | obi',
+  ' | lidl',
+  ' | thomann',
+  ' | decathlon',
+  ' | cyberport',
+  ' | alternate',
+  ' | notebooksbilliger',
+  ' | mindfactory',
+  ' | caseking',
+  ' | about you',
+  ' | aboutyou',
+  ' | h&m',
+  ' | geizhals',
+  ' | idealo',
+  ' | alza',
+  ' - kaufen',
+  ' kaufen',
+  ' online kaufen',
+  ' günstig kaufen',
+  ' günstig online kaufen',
+  ' bei obi kaufen',
+];
+
 function cleanDocumentTitle(t: string): string {
   let s = t.replace(/\s+/g, ' ').trim();
   const lower = s.toLowerCase();
-  for (const suf of [
-    ' | ikea',
-    ' - ikea',
-    ' | zalando',
-    ' | amazon',
-    ' | ebay',
-  ]) {
+  for (const suf of TITLE_SUFFIXES) {
     if (lower.endsWith(suf)) {
       s = s.slice(0, -suf.length).trim();
       break;
@@ -75,6 +105,9 @@ function expandJsonLdNodes(data: unknown): unknown[] {
     }
     if (Array.isArray(o['hasVariant'])) {
       nested.push(...o['hasVariant'].flatMap(expandJsonLdNodes));
+    }
+    if (o['object'] && typeof o['object'] === 'object') {
+      nested.push(...expandJsonLdNodes(o['object']));
     }
     return [...nested, data];
   }

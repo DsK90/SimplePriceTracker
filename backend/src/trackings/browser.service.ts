@@ -73,16 +73,41 @@ export class BrowserService implements OnModuleDestroy {
     });
   }
 
-  /** Try to click away common cookie/consent overlays. */
+  /** Try to click away common cookie/consent overlays (German + international). */
   private async dismissConsentDialogs(page: Page) {
     const selectors = [
+      // Usercentrics (MediaMarkt, Saturn, Hornbach, etc.)
       '[data-testid="uc-accept-all-button"]',
+      '#uc-btn-accept-banner',
+      // OneTrust (many large retailers)
       '#onetrust-accept-btn-handler',
+      // Cookiebot
+      '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
+      '#CybotCookiebotDialogBodyButtonAccept',
+      // Didomi (Zalando, etc.)
+      '#didomi-notice-agree-button',
+      // Quantcast / TCF
+      '.qc-cmp2-summary-buttons button[mode="primary"]',
+      // Generic German patterns
+      'button[data-cookie-accept]',
+      '[data-action="accept-all"]',
+      '[data-action="save-accept-all"]',
       'button[id*="accept"]',
       'button[class*="consent"]',
       'button[class*="cookie"]',
-      '[data-action="accept-all"]',
+      'button[class*="Cookie"]',
       '.js-accept-cookies',
+      '.cookie-accept-all',
+      '.cc-accept',
+      '.cc-btn.cc-allow',
+      // "Alle akzeptieren" / "Alles akzeptieren" text-based fallback
+      'button:has-text("Alle akzeptieren")',
+      'button:has-text("Alles akzeptieren")',
+      'button:has-text("Alle Cookies akzeptieren")',
+      'button:has-text("Accept all")',
+      'button:has-text("Akzeptieren")',
+      // Shadow DOM consent banners (Truendo, etc.)
+      '.cmp-accept-all',
     ];
     for (const sel of selectors) {
       try {

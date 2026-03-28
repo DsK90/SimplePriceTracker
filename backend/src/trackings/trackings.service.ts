@@ -801,31 +801,47 @@ export class TrackingsService {
     });
   }
 
+  /** HTTP statuses where a plain fetch often fails bot checks but Playwright may succeed. */
+  private static readonly FETCH_RETRY_WITH_BROWSER_STATUSES = new Set([403, 429, 502, 503]);
+
   private async fetchHtml(url: string): Promise<string> {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Ch-Ua':
-          '"Chromium";v="120", "Not_A Brand";v="8", "Google Chrome";v="120"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-      },
-      redirect: 'follow',
-    });
-    if (!res.ok) {
-      this.log.error(`HTTP ${res.status} fetching ${url}`);
-      throw new BadRequestException({ code: 'HTTP_FETCH_ERROR' });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1',
+          'Sec-Ch-Ua':
+            '"Chromium";v="120", "Not_A Brand";v="8", "Google Chrome";v="120"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+        },
+        redirect: 'follow',
+      });
+    } catch (e) {
+      this.log.warn(`Fetch failed for ${url}: ${e instanceof Error ? e.message : String(e)}`);
+      return '';
     }
-    return res.text();
+
+    if (res.ok) return res.text();
+
+    if (TrackingsService.FETCH_RETRY_WITH_BROWSER_STATUSES.has(res.status)) {
+      await res.text().catch(() => {});
+      this.log.warn(`HTTP ${res.status} fetching ${url} — will try headless browser`);
+      return '';
+    }
+
+    await res.text().catch(() => {});
+    this.log.error(`HTTP ${res.status} fetching ${url}`);
+    throw new BadRequestException({ code: 'HTTP_FETCH_ERROR' });
   }
 
   /**

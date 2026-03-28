@@ -60,7 +60,7 @@ if (!umamiScriptUrl && umamiHost) {
 }
 
 const umamiWebsiteId =
-  envResolve('UMAMI_WEBSITE_ID') || '14cabb5c-7310-487f-96a6-05ce09f6005e';
+  envResolve('UMAMI_WEBSITE_ID') || '8ef58fb8-8291-40c4-904c-77850d9558fa';
 
 const rawSandbox = envResolve('PAYPAL_USE_SANDBOX');
 const useSandbox =

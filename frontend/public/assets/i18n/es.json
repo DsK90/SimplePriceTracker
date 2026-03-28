@@ -73,7 +73,12 @@
     "resend": "Resend confirmation email",
     "resendSent": "If an account exists, we sent a new link.",
     "resendFailed": "Could not send email.",
-    "serviceUnavailable": "Registration is temporarily unavailable (email not configured)."
+    "serviceUnavailable": "Registration is temporarily unavailable (email not configured).",
+    "verificationModalTitle": "Revisa tu bandeja de entrada",
+    "verificationModalBody": "Hemos enviado un correo de confirmación a {{email}}. Haz clic en el enlace para activar tu cuenta.",
+    "verificationModalHint": "El enlace es válido durante 48 horas. ¿No lo recibes? Revisa la carpeta de spam o solicita uno nuevo.",
+    "verificationModalResend": "Reenviar correo de confirmación",
+    "verificationModalClose": "Entendido"
   },
   "verify": {
     "title": "Confirm email",

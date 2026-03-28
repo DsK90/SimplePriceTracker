@@ -73,7 +73,12 @@
     "resend": "Renvoyer l’e-mail de confirmation",
     "resendSent": "Si un compte existe, nous avons envoyé un nouveau lien.",
     "resendFailed": "Impossible d’envoyer l’e-mail.",
-    "serviceUnavailable": "Inscription temporairement indisponible (e-mail non configuré)."
+    "serviceUnavailable": "Inscription temporairement indisponible (e-mail non configuré).",
+    "verificationModalTitle": "Vérifiez votre boîte de réception",
+    "verificationModalBody": "Nous avons envoyé un e-mail de confirmation à {{email}}. Cliquez sur le lien pour activer votre compte.",
+    "verificationModalHint": "Le lien est valable 48 heures. Pas de message ? Vérifiez vos spams ou demandez un nouveau lien.",
+    "verificationModalResend": "Renvoyer l’e-mail de confirmation",
+    "verificationModalClose": "Compris"
   },
   "verify": {
     "title": "Confirmer l’e-mail",

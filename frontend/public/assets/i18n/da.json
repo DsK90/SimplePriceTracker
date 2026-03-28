@@ -73,7 +73,12 @@
     "resend": "Resend confirmation email",
     "resendSent": "If an account exists, we sent a new link.",
     "resendFailed": "Could not send email.",
-    "serviceUnavailable": "Registration is temporarily unavailable (email not configured)."
+    "serviceUnavailable": "Registration is temporarily unavailable (email not configured).",
+    "verificationModalTitle": "Tjek din indbakke",
+    "verificationModalBody": "Vi har sendt en bekræftelses-e-mail til {{email}}. Klik på linket for at aktivere din konto.",
+    "verificationModalHint": "Linket er gyldigt i 48 timer. Ingen besked? Tjek din spam-mappe eller anmod om et nyt link.",
+    "verificationModalResend": "Gensend bekræftelses-e-mail",
+    "verificationModalClose": "Forstået"
   },
   "verify": {
     "title": "Confirm email",

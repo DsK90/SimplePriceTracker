@@ -79,7 +79,12 @@
     "resend": "Bestätigungsmail erneut senden",
     "resendSent": "Wenn ein Konto existiert, haben wir einen neuen Link gesendet.",
     "resendFailed": "E-Mail konnte nicht gesendet werden.",
-    "serviceUnavailable": "Registrierung ist vorübergehend nicht möglich (E-Mail-Versand nicht konfiguriert)."
+    "serviceUnavailable": "Registrierung ist vorübergehend nicht möglich (E-Mail-Versand nicht konfiguriert).",
+    "verificationModalTitle": "Prüfen Sie Ihren Posteingang",
+    "verificationModalBody": "Wir haben eine Bestätigungsmail an {{email}} gesendet. Klicken Sie auf den Link in der Nachricht, um Ihr Konto zu aktivieren.",
+    "verificationModalHint": "Der Link ist 48 Stunden gültig. Keine Nachricht? Prüfen Sie den Spam-Ordner oder fordern Sie einen neuen Link an.",
+    "verificationModalResend": "Bestätigungsmail erneut senden",
+    "verificationModalClose": "Verstanden"
   },
   "verify": {
     "title": "E-Mail bestätigen",

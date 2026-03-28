@@ -26,6 +26,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
+      NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:-postgresql://pricetracker:pricetracker@postgres:5432/pricetracker?schema=public}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       JWT_EXPIRES_SEC: ${JWT_EXPIRES_SEC:-604800}

@@ -73,7 +73,12 @@
     "resend": "Resend confirmation email",
     "resendSent": "If an account exists, we sent a new link.",
     "resendFailed": "Could not send email.",
-    "serviceUnavailable": "Registration is temporarily unavailable (email not configured)."
+    "serviceUnavailable": "Registration is temporarily unavailable (email not configured).",
+    "verificationModalTitle": "Проверьте почту",
+    "verificationModalBody": "Мы отправили письмо с подтверждением на {{email}}. Перейдите по ссылке, чтобы активировать аккаунт.",
+    "verificationModalHint": "Ссылка действительна 48 часов. Нет письма? Проверьте папку «Спам» или запросите новое.",
+    "verificationModalResend": "Отправить письмо повторно",
+    "verificationModalClose": "Понятно"
   },
   "verify": {
     "title": "Confirm email",

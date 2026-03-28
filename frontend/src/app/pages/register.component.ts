@@ -10,29 +10,49 @@ import { AuthService } from '../core/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
-    <div class="card">
-      @if (pendingEmail(); as pe) {
-        <div class="verify-callout" role="alert" aria-live="assertive">
-          <strong>{{ 'register.verifyAlertTitle' | translate }}</strong>
-          <p>{{ 'register.verifyAlertBody' | translate }}</p>
-        </div>
-        <h1>{{ 'register.verifyPendingTitle' | translate }}</h1>
-        <p class="info">{{ 'register.verifyPendingBody' | translate: { email: pe } }}</p>
+    @if (verificationModalOpen()) {
+      <div
+        class="verify-overlay"
+        role="presentation"
+        (click)="closeVerificationModal()"
+      ></div>
+      <div
+        class="verify-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="verify-modal-title"
+        aria-describedby="verify-modal-desc"
+      >
+        <h2 id="verify-modal-title" class="verify-modal-title">
+          {{ 'register.verificationModalTitle' | translate }}
+        </h2>
+        <p id="verify-modal-desc" class="verify-modal-body">
+          {{ 'register.verificationModalBody' | translate: { email: pendingEmail() } }}
+        </p>
+        <p class="verify-modal-hint">{{ 'register.verificationModalHint' | translate }}</p>
         @if (resendHint()) {
-          <p class="muted">{{ 'register.resendSent' | translate }}</p>
+          <p class="verify-modal-sent">{{ 'register.resendSent' | translate }}</p>
         }
         @if (resendErr()) {
           <p class="err">{{ resendErr() }}</p>
         }
-        <button type="button" class="secondary" [disabled]="resendBusy()" (click)="resend(pe)">
-          {{ 'register.resend' | translate }}
+        <button
+          type="button"
+          class="verify-modal-primary"
+          [disabled]="resendBusy()"
+          (click)="resend(pendingEmail()!)"
+        >
+          {{ 'register.verificationModalResend' | translate }}
         </button>
-        <p class="muted">
-          <a routerLink="/login" [queryParams]="{ pendingVerification: '1' }">{{ 'register.hasAccount' | translate }}</a>
-        </p>
-      } @else {
-        <h1>{{ 'register.title' | translate }}</h1>
-        <form [formGroup]="form" (ngSubmit)="submit()">
+        <button type="button" class="verify-modal-close" (click)="closeVerificationModal()">
+          {{ 'register.verificationModalClose' | translate }}
+        </button>
+      </div>
+    }
+
+    <div class="card">
+      <h1>{{ 'register.title' | translate }}</h1>
+      <form [formGroup]="form" (ngSubmit)="submit()">
         <label>{{ 'register.email' | translate }}</label>
         <input type="email" formControlName="email" autocomplete="email" />
         <label>{{ 'register.password' | translate }}</label>
@@ -54,9 +74,8 @@ import { AuthService } from '../core/auth.service';
           <p class="err">{{ error() }}</p>
         }
         <button type="submit" [disabled]="form.invalid || loading()">{{ 'register.submit' | translate }}</button>
-        </form>
-        <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
-      }
+      </form>
+      <p class="muted"><a routerLink="/login">{{ 'register.hasAccount' | translate }}</a></p>
     </div>
   `,
   styles: [
@@ -65,31 +84,82 @@ import { AuthService } from '../core/auth.service';
         display: block;
         max-width: 400px;
         margin: 3rem auto;
+        position: relative;
+      }
+      .verify-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(2px);
+      }
+      .verify-modal {
+        position: fixed;
+        z-index: 1001;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: calc(100vw - 2rem);
+        max-width: 420px;
+        background: var(--card);
+        border-radius: 16px;
+        padding: 1.5rem 1.35rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border);
+      }
+      .verify-modal-title {
+        margin: 0 0 0.75rem;
+        font-size: 1.2rem;
+        line-height: 1.35;
+        color: var(--text);
+      }
+      .verify-modal-body,
+      .verify-modal-hint {
+        margin: 0 0 0.65rem;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .verify-modal-hint {
+        font-size: 0.85rem;
+        opacity: 0.95;
+      }
+      .verify-modal-sent {
+        margin: 0 0 0.5rem;
+        font-size: 0.85rem;
+        color: var(--accent);
+      }
+      .verify-modal-primary {
+        margin-top: 0.5rem;
+        width: 100%;
+        padding: 0.7rem;
+        border: none;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .verify-modal-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .verify-modal-close {
+        margin-top: 0.65rem;
+        width: 100%;
+        padding: 0.55rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 500;
+        cursor: pointer;
       }
       .card {
         background: var(--card);
         border-radius: 12px;
         padding: 2rem;
         box-shadow: var(--shadow);
-      }
-      .verify-callout {
-        margin-bottom: 1.25rem;
-        padding: 1rem 1.1rem;
-        border-radius: 12px;
-        border-left: 4px solid var(--accent);
-        background: color-mix(in srgb, var(--accent) 14%, var(--card));
-        font-size: 0.9rem;
-        line-height: 1.45;
-      }
-      .verify-callout strong {
-        display: block;
-        margin-bottom: 0.4rem;
-        font-size: 1rem;
-        color: var(--text);
-      }
-      .verify-callout p {
-        margin: 0;
-        color: var(--muted);
       }
       h1 {
         margin: 0 0 1.5rem;
@@ -138,16 +208,6 @@ import { AuthService } from '../core/auth.service';
       a {
         color: var(--accent);
       }
-      .info {
-        line-height: 1.5;
-        color: var(--text);
-        margin-top: 0.5rem;
-      }
-      button.secondary {
-        margin-top: 1rem;
-        background: var(--border);
-        color: var(--text);
-      }
       .terms-row {
         display: flex;
         gap: 0.6rem;
@@ -178,6 +238,7 @@ export class RegisterComponent {
   loading = signal(false);
   error = signal<string | null>(null);
   pendingEmail = signal<string | null>(null);
+  verificationModalOpen = signal(false);
   resendBusy = signal(false);
   resendHint = signal(false);
   resendErr = signal<string | null>(null);
@@ -201,6 +262,7 @@ export class RegisterComponent {
         this.loading.set(false);
         if ('verificationRequired' in r && r.verificationRequired) {
           this.pendingEmail.set(r.email);
+          this.verificationModalOpen.set(true);
           return;
         }
         void this.auth.loadProfile().subscribe({
@@ -221,6 +283,10 @@ export class RegisterComponent {
         );
       },
     });
+  }
+
+  closeVerificationModal() {
+    this.verificationModalOpen.set(false);
   }
 
   resend(email: string) {

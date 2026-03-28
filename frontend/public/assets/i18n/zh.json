@@ -73,7 +73,12 @@
     "resend": "Resend confirmation email",
     "resendSent": "If an account exists, we sent a new link.",
     "resendFailed": "Could not send email.",
-    "serviceUnavailable": "Registration is temporarily unavailable (email not configured)."
+    "serviceUnavailable": "Registration is temporarily unavailable (email not configured).",
+    "verificationModalTitle": "请查看您的收件箱",
+    "verificationModalBody": "我们已向 {{email}} 发送了确认邮件。请点击邮件中的链接以激活您的账户。",
+    "verificationModalHint": "链接有效期 48 小时。没有收到？请检查垃圾邮件或重新发送。",
+    "verificationModalResend": "重新发送确认邮件",
+    "verificationModalClose": "知道了"
   },
   "verify": {
     "title": "Confirm email",

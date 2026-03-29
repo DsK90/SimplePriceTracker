@@ -145,7 +145,6 @@
   },
   "dashboard": {
     "title": "Overvågninger",
-    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "Pro — ubegrænset aktive elementer",
     "freeLine": "Gratis — {{current}} af {{max}} pladser. ",
     "upgrade": "Opgrader",

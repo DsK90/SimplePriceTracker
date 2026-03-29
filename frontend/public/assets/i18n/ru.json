@@ -145,7 +145,6 @@
   },
   "dashboard": {
     "title": "Отслеживания",
-    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "Pro — неограниченно активных позиций",
     "freeLine": "Бесплатно — {{current}} из {{max}} слотов. ",
     "upgrade": "Улучшить",

@@ -145,7 +145,6 @@
   },
   "dashboard": {
     "title": "追踪列表",
-    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "专业版 — 无限活跃条目",
     "freeLine": "免费 — 已用 {{current}} / {{max}} 个名额。",
     "upgrade": "升级",

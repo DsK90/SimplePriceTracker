@@ -202,7 +202,6 @@
   },
   "dashboard": {
     "title": "Trackings",
-    "nicheSubtitleAwin": "Kamera & Technik über Awin: Suche in deinem importierten Produktfeed — Preise nur aus dem Feed (kein Shop-Scraping).",
     "proSubtitle": "Pro — unbegrenzt aktive Einträge",
     "freeLine": "Kostenlos — {{current}} von {{max}} Plätzen. ",
     "upgrade": "Upgrade",

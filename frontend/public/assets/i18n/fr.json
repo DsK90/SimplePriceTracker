@@ -145,7 +145,6 @@
   },
   "dashboard": {
     "title": "Suivis",
-    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "Pro — éléments actifs illimités",
     "freeLine": "Gratuit — {{current}} sur {{max}} emplacements. ",
     "upgrade": "Mettre à niveau",

@@ -145,7 +145,6 @@
   },
   "dashboard": {
     "title": "Monitoraggi",
-    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "Pro — elementi attivi illimitati",
     "freeLine": "Gratis — {{current}} di {{max}} slot. ",
     "upgrade": "Upgrade",

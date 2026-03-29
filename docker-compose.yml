@@ -25,7 +25,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:8
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@localhost}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-change-me}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_WTF_CSRF_TIME_LIMIT: 'None'

@@ -184,6 +184,14 @@
     "colPrice": "Aktuel pris",
     "colUpdated": "Seneste opdatering",
     "colFrequency": "Frekvens",
+    "colDailyCheck": "Auto check",
+    "dailyCheckScheduleTitle": "Daily price check",
+    "dailyCheckBanner": "All products are updated once per day at {{time}} (time zone {{zone}}) from the partner catalog. Email and push alerts follow that run. You can still refresh any item manually at any time.",
+    "dailyCheckTimeLabel": "Local time",
+    "dailyCheckZoneLabel": "Time zone",
+    "dailyCheckSave": "Save schedule",
+    "dailyCheckSaved": "Saved",
+    "dailyCheckBadge": "Once daily",
     "colActions": "Handlinger",
     "reorderHandle": "Træk for at omarrangere",
     "showing": "Viser {{count}} resultat",
@@ -236,7 +244,10 @@
       "priceNotFound9": "Retsregnskabet har forladt chatten; siden deler ikke. (På denne side er automatiseret scraping blokeret eller forbudt.)",
       "emailAlertLimit": "E-mail-prisalarmer er begrænset til {{max}} produkter på din plan. Deaktiver e-mail på et andet produkt eller opgrader til Pro.",
       "httpFetchError": "Siden loadede ikke — nede, rate limit eller blokering af automatiske klienter. (På denne side kan scraping være blokeret eller forbudt.)",
-      "robotsTxtDisallows": "Butikkens robots.txt beder automatiske værktøjer om ikke at hente denne URL — vi stopper. Brug officiel feed/API fra forhandleren, hvis muligt."
+      "robotsTxtDisallows": "Butikkens robots.txt beder automatiske værktøjer om ikke at hente denne URL — vi stopper. Brug officiel feed/API fra forhandleren, hvis muligt.",
+      "scheduleSaveFailed": "Could not save schedule",
+      "invalidTime": "Invalid time (use 24h format HH:mm).",
+      "invalidTimezone": "Invalid or unknown time zone."
     },
     "history": {
       "title": "Prishistorik",

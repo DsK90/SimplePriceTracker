@@ -16,9 +16,15 @@ import { PlanTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { ADMIN_EMAIL } from '../common/constants';
+import {
+  isValidIanaTimeZone,
+  normalizeLocalTimeHHmm,
+  parseLocalTimeHHmm,
+} from '../common/daily-check-time';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { UpdateDailyCheckDto } from './dto/update-daily-check.dto';
 import { normalizeMailLocale } from '../mail/i18n/mail-locale';
 import { PaypalService } from '../paypal/paypal.service';
 import { TrackingsService } from '../trackings/trackings.service';
@@ -56,6 +62,9 @@ export class AuthService {
       });
     }
 
+    const tzRaw = dto.timeZone?.trim();
+    const tzOk = tzRaw && isValidIanaTimeZone(tzRaw) ? tzRaw : undefined;
+
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -63,6 +72,7 @@ export class AuthService {
         planTier: PlanTier.FREE,
         termsAcceptedAt: new Date(),
         preferredLocale: mailLocale,
+        ...(tzOk ? { dailyCheckTimeZone: tzOk } : {}),
         ...(state.verifiedNow
           ? { emailVerifiedAt: new Date() }
           : {
@@ -198,6 +208,32 @@ export class AuthService {
     return this.issueTokens(user.id, user.email);
   }
 
+  async updateDailyCheckSchedule(userId: string, dto: UpdateDailyCheckDto) {
+    const tz = dto.dailyCheckTimeZone.trim();
+    if (!isValidIanaTimeZone(tz)) {
+      throw new BadRequestException({
+        code: 'INVALID_TIMEZONE',
+        message: 'Unknown or invalid time zone.',
+      });
+    }
+    const normalized = normalizeLocalTimeHHmm(dto.dailyCheckLocalTime);
+    if (!normalized || !parseLocalTimeHHmm(normalized)) {
+      throw new BadRequestException({
+        code: 'INVALID_TIME',
+        message: 'Invalid daily check time (use HH:mm, 24h).',
+      });
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        dailyCheckTimeZone: tz,
+        dailyCheckLocalTime: normalized,
+        dailyCheckLastRunDate: null,
+      },
+    });
+    return this.getProfile(userId);
+  }
+
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
@@ -207,6 +243,8 @@ export class AuthService {
         planTier: true,
         paypalSubscriptionId: true,
         createdAt: true,
+        dailyCheckTimeZone: true,
+        dailyCheckLocalTime: true,
       },
     });
 

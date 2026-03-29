@@ -10,12 +10,11 @@ import { PlanTier, Prisma, PriceTracking } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { buildPriceAlertMessages } from '../notifications/price-alert-messages';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ADMIN_EMAIL, emailAlertSlotsForPlan, FREE_TRACKING_LIMIT } from '../common/constants';
 import {
-  ADMIN_EMAIL,
-  emailAlertSlotsForPlan,
-  FREE_TRACKING_LIMIT,
-  minRecheckIntervalMinutes,
-} from '../common/constants';
+  getZonedCalendarDateAndClock,
+  shouldRunUserDailyCheck,
+} from '../common/daily-check-time';
 import { CreateTrackingDto } from './dto/create-tracking.dto';
 import { UpdateTrackingDto } from './dto/update-tracking.dto';
 import { AwinCatalogService } from './awin-catalog.service';
@@ -47,11 +46,6 @@ export class TrackingsService {
 
   searchCatalog(q: string, limit: number) {
     return this.awinCatalog.search(q, limit);
-  }
-
-  private clampIntervalMinutes(n: number): number {
-    const min = minRecheckIntervalMinutes(this.config.get<string>('NODE_ENV'));
-    return Math.min(10080, Math.max(min, Math.round(n)));
   }
 
   /** Dev/staging only unless ENABLE_DEMO_PRICE=true (never in production by default). */
@@ -173,9 +167,6 @@ export class TrackingsService {
       await this.assertEmailAlertSlotsAvailable(userId);
     }
     const currency = dto.currency ?? 'EUR';
-    const interval = dto.recheckIntervalMinutes
-      ? this.clampIntervalMinutes(dto.recheckIntervalMinutes)
-      : 360;
     const alertBelow =
       dto.alertBelowPrice !== undefined && dto.alertBelowPrice !== null
         ? new Prisma.Decimal(dto.alertBelowPrice)
@@ -203,7 +194,6 @@ export class TrackingsService {
       price,
       currency: product.currency || currency,
       active,
-      recheckIntervalMinutes: interval,
       alertBelowPrice: alertBelow,
       alertAbovePrice: alertAbove,
       emailAlertsEnabled: dto.emailAlertsEnabled === true,
@@ -261,7 +251,6 @@ export class TrackingsService {
       price: number;
       currency: string;
       active: boolean;
-      recheckIntervalMinutes: number;
       alertBelowPrice: Prisma.Decimal | null;
       alertAbovePrice: Prisma.Decimal | null;
       emailAlertsEnabled?: boolean;
@@ -276,7 +265,6 @@ export class TrackingsService {
         url: args.url,
         productName: args.productName,
         companyName: args.companyName,
-        recheckIntervalMinutes: args.recheckIntervalMinutes,
         alertBelowPrice: args.alertBelowPrice,
         alertAbovePrice: args.alertAbovePrice,
         emailAlertsEnabled: args.emailAlertsEnabled ?? false,
@@ -336,7 +324,6 @@ export class TrackingsService {
       const hasMore =
         rest.currency !== undefined ||
         rest.active !== undefined ||
-        rest.recheckIntervalMinutes !== undefined ||
         rest.productNameOverride !== undefined ||
         rest.companyNameOverride !== undefined ||
         rest.alertBelowPrice !== undefined ||
@@ -356,9 +343,6 @@ export class TrackingsService {
     if (dto.currency !== undefined) data.currency = dto.currency;
     if (dto.active !== undefined) data.active = dto.active;
     if (dto.emailAlertsEnabled !== undefined) data.emailAlertsEnabled = dto.emailAlertsEnabled;
-    if (dto.recheckIntervalMinutes !== undefined) {
-      data.recheckIntervalMinutes = this.clampIntervalMinutes(dto.recheckIntervalMinutes);
-    }
     if (dto.productNameOverride !== undefined) {
       const v = dto.productNameOverride;
       data.productNameOverride = v === null || (typeof v === 'string' && v.trim() === '') ? null : v.trim();
@@ -423,7 +407,6 @@ export class TrackingsService {
         url: DEMO_URL,
         productName: 'Demo product',
         companyName: 'Pricefly',
-        recheckIntervalMinutes: 60,
         lastPrice: dec50,
         currency: 'EUR',
         lastCheckedAt: new Date(),
@@ -530,7 +513,6 @@ export class TrackingsService {
           url: s.url,
           productName: s.productName,
           companyName: s.companyName,
-          recheckIntervalMinutes: 1440,
           lastPrice: new Prisma.Decimal(lastPrice),
           currency: 'EUR',
           lastCheckedAt: now,
@@ -560,19 +542,60 @@ export class TrackingsService {
     return this.toPublicTracking(row);
   }
 
-  /** Cron: refresh every active tracking whose interval has elapsed */
-  async refreshDueTrackings() {
-    const due = await this.prisma.$queryRaw<{ id: string }[]>`
-      SELECT id FROM "PriceTracking"
-      WHERE "active" = true
-      AND "awinFeedKey" IS NOT NULL
-      AND url NOT LIKE 'demo://%'
-      AND (
-        "lastCheckedAt" IS NULL OR
-        "lastCheckedAt" <= NOW() - ("recheckIntervalMinutes" * INTERVAL '1 minute')
-      )
-    `;
-    for (const { id } of due) {
+  /**
+   * Cron (every minute): for each account whose local clock matches `dailyCheckLocalTime`
+   * and that has not run yet on that local calendar day, refresh all active Awin catalog trackings.
+   */
+  async runScheduledDailyPriceChecks() {
+    const users = await this.prisma.user.findMany({
+      where: {
+        trackings: {
+          some: {
+            active: true,
+            awinFeedKey: { not: null },
+            NOT: { url: { startsWith: 'demo://' } },
+          },
+        },
+      },
+      select: {
+        id: true,
+        dailyCheckTimeZone: true,
+        dailyCheckLocalTime: true,
+        dailyCheckLastRunDate: true,
+      },
+    });
+    const now = new Date();
+    for (const u of users) {
+      if (
+        !shouldRunUserDailyCheck(
+          now,
+          u.dailyCheckLocalTime,
+          u.dailyCheckTimeZone,
+          u.dailyCheckLastRunDate,
+        )
+      ) {
+        continue;
+      }
+      await this.refreshAllActiveAwinTrackingsForUser(u.id);
+      const { dateStr } = getZonedCalendarDateAndClock(now, u.dailyCheckTimeZone);
+      await this.prisma.user.update({
+        where: { id: u.id },
+        data: { dailyCheckLastRunDate: dateStr },
+      });
+    }
+  }
+
+  async refreshAllActiveAwinTrackingsForUser(userId: string): Promise<void> {
+    const rows = await this.prisma.priceTracking.findMany({
+      where: {
+        userId,
+        active: true,
+        awinFeedKey: { not: null },
+        NOT: { url: { startsWith: 'demo://' } },
+      },
+      select: { id: true },
+    });
+    for (const { id } of rows) {
       try {
         await this.refreshOneInternal(id);
       } catch {
@@ -581,7 +604,7 @@ export class TrackingsService {
     }
   }
 
-  /** Legacy: refresh all active (heavy); prefer refreshDueTrackings */
+  /** Legacy: refresh all active Awin rows (admin / manual); scheduled path uses runScheduledDailyPriceChecks */
   async refreshAllActive() {
     const ids = await this.prisma.priceTracking.findMany({
       where: {

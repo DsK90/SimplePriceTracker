@@ -13,6 +13,10 @@ export type UserProfile = {
   isAdmin: boolean;
   paypalSubscriptionId: string | null;
   createdAt: string;
+  /** Local wall time (HH:mm) for the once-daily catalog refresh (user's `dailyCheckTimeZone`). */
+  dailyCheckLocalTime: string;
+  /** IANA timezone for interpreting `dailyCheckLocalTime`. */
+  dailyCheckTimeZone: string;
 };
 
 export type RegisterResponse =
@@ -37,13 +41,20 @@ export class AuthService {
     );
   }
 
-  register(email: string, password: string, acceptTerms: boolean, locale?: string) {
+  register(
+    email: string,
+    password: string,
+    acceptTerms: boolean,
+    locale?: string,
+    timeZone?: string,
+  ) {
     return this.http
       .post<RegisterResponse>(`${environment.apiUrl}/auth/register`, {
         email,
         password,
         acceptTerms,
         ...(locale ? { locale } : {}),
+        ...(timeZone ? { timeZone } : {}),
       })
       .pipe(
         tap((r) => {

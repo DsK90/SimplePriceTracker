@@ -1,11 +1,9 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
-  IsInt,
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,
@@ -28,12 +26,6 @@ export class UpdateTrackingDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(10080)
-  recheckIntervalMinutes?: number;
 
   /** Omit to leave unchanged; send null or "" to clear */
   @IsOptional()

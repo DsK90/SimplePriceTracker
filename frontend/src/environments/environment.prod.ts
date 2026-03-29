@@ -8,7 +8,5 @@ export const environment = {
   umamiScriptUrl: envGenerated.umamiScriptUrl,
   umamiWebsiteId: envGenerated.umamiWebsiteId,
   paypalClientId: envGenerated.paypalClientId,
-  /** Must match backend min recheck when NODE_ENV=production */
-  minRecheckIntervalMinutes: 30,
   enableDemoProduct: false,
 };

@@ -323,7 +323,13 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set(null);
     const { email, password, acceptTerms } = this.form.getRawValue();
-    this.auth.register(email, password, acceptTerms, this.translate.getCurrentLang() || 'en').subscribe({
+    const timeZone =
+      typeof Intl !== 'undefined'
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : undefined;
+    this.auth
+      .register(email, password, acceptTerms, this.translate.getCurrentLang() || 'en', timeZone)
+      .subscribe({
       next: (r) => {
         this.loading.set(false);
         if ('verificationRequired' in r && r.verificationRequired) {

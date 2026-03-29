@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { UpdateDailyCheckDto } from './dto/update-daily-check.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser, RequestUser } from './decorators/current-user.decorator';
 
@@ -35,5 +36,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: RequestUser) {
     return this.auth.getProfile(user.userId);
+  }
+
+  @Patch('me/daily-check')
+  @UseGuards(JwtAuthGuard)
+  updateDailyCheck(@CurrentUser() user: RequestUser, @Body() dto: UpdateDailyCheckDto) {
+    return this.auth.updateDailyCheckSchedule(user.userId, dto);
   }
 }

@@ -184,6 +184,14 @@
     "colPrice": "Precio actual",
     "colUpdated": "Última actualización",
     "colFrequency": "Frecuencia",
+    "colDailyCheck": "Auto check",
+    "dailyCheckScheduleTitle": "Daily price check",
+    "dailyCheckBanner": "All products are updated once per day at {{time}} (time zone {{zone}}) from the partner catalog. Email and push alerts follow that run. You can still refresh any item manually at any time.",
+    "dailyCheckTimeLabel": "Local time",
+    "dailyCheckZoneLabel": "Time zone",
+    "dailyCheckSave": "Save schedule",
+    "dailyCheckSaved": "Saved",
+    "dailyCheckBadge": "Once daily",
     "colActions": "Acciones",
     "reorderHandle": "Arrastrar para reordenar",
     "showing": "Mostrando {{count}} resultado",
@@ -236,7 +244,10 @@
       "priceNotFound9": "La contabilidad forense abandonó el chat; esta página no comparte. (En esta página el scraping automatizado está bloqueado o prohibido.)",
       "emailAlertLimit": "Las alertas por e-mail están limitadas a {{max}} productos en tu plan. Desactiva el e-mail en otro producto o mejora a Pro.",
       "httpFetchError": "No se cargó la página: caída, límite de velocidad o bloqueo a clientes automáticos. (En esta página el scraping automatizado puede estar bloqueado o prohibido.)",
-      "robotsTxtDisallows": "El robots.txt de la tienda pide a las herramientas automáticas no obtener esta URL — paramos. Mejor un feed/API oficial del comercio si existe."
+      "robotsTxtDisallows": "El robots.txt de la tienda pide a las herramientas automáticas no obtener esta URL — paramos. Mejor un feed/API oficial del comercio si existe.",
+      "scheduleSaveFailed": "Could not save schedule",
+      "invalidTime": "Invalid time (use 24h format HH:mm).",
+      "invalidTimezone": "Invalid or unknown time zone."
     },
     "history": {
       "title": "Historial de precios",

@@ -184,6 +184,14 @@
     "colPrice": "当前价格",
     "colUpdated": "上次更新",
     "colFrequency": "频率",
+    "colDailyCheck": "Auto check",
+    "dailyCheckScheduleTitle": "Daily price check",
+    "dailyCheckBanner": "All products are updated once per day at {{time}} (time zone {{zone}}) from the partner catalog. Email and push alerts follow that run. You can still refresh any item manually at any time.",
+    "dailyCheckTimeLabel": "Local time",
+    "dailyCheckZoneLabel": "Time zone",
+    "dailyCheckSave": "Save schedule",
+    "dailyCheckSaved": "Saved",
+    "dailyCheckBadge": "Once daily",
     "colActions": "操作",
     "reorderHandle": "拖动以排序",
     "showing": "显示 {{count}} 条结果",
@@ -236,7 +244,10 @@
       "priceNotFound9": "法务会计已退群；这页就是不分享。（此页面禁止或阻止了自动化抓取。）",
       "emailAlertLimit": "您的计划中电子邮件价格提醒最多支持 {{max}} 个产品。请关闭其他产品的邮件提醒或升级到 Pro。",
       "httpFetchError": "页面加载失败——可能宕机、限流或拦截自动化客户端。（此页面可能禁止或阻止自动化抓取。）",
-      "robotsTxtDisallows": "该网站的 robots.txt 要求自动化工具不要抓取此 URL，我们已停止。请尽量使用官方接口或允许的链接。"
+      "robotsTxtDisallows": "该网站的 robots.txt 要求自动化工具不要抓取此 URL，我们已停止。请尽量使用官方接口或允许的链接。",
+      "scheduleSaveFailed": "Could not save schedule",
+      "invalidTime": "Invalid time (use 24h format HH:mm).",
+      "invalidTimezone": "Invalid or unknown time zone."
     },
     "history": {
       "title": "价格历史",

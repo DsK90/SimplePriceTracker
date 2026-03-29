@@ -1,4 +1,4 @@
-import { Equals, IsBoolean, IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { Equals, IsBoolean, IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { MAIL_LOCALES } from '../../mail/i18n/mail-locale';
 
 export class RegisterDto {
@@ -19,4 +19,10 @@ export class RegisterDto {
   @IsString()
   @IsIn([...MAIL_LOCALES])
   locale?: string;
+
+  /** Browser IANA timezone for default daily price-check schedule (optional). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  timeZone?: string;
 }

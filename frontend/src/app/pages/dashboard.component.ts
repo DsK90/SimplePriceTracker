@@ -8,6 +8,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService, UserProfile } from '../core/auth.service';
+import { COMMON_TIME_ZONES } from '../core/common-time-zones';
 import { DashboardUiService } from '../core/dashboard-ui.service';
 import { parseDecimalInput } from '../core/parse-decimal-input';
 import { PushNotificationService } from '../core/push-notification.service';
@@ -36,7 +37,6 @@ type Tracking = {
   displayCompanyName: string | null;
   productNameOverride: string | null;
   companyNameOverride: string | null;
-  recheckIntervalMinutes: number;
   alertBelowPrice: string | null;
   alertAbovePrice: string | null;
   emailAlertsEnabled: boolean;
@@ -67,17 +67,11 @@ type AppNotification = {
   payload?: PriceAlertI18nPayload | null;
 };
 
-const INTERVAL_MINUTES = [1, 15, 30, 60, 360, 720, 1440, 10080] as const;
-
 type ApiErrorBody = {
   code?: string;
   limit?: number;
   message?: string | string[];
 };
-
-function intervalOptionsForMin(minMinutes: number) {
-  return INTERVAL_MINUTES.filter((m) => m >= minMinutes);
-}
 
 @Component({
   selector: 'app-dashboard',
@@ -86,7 +80,6 @@ function intervalOptionsForMin(minMinutes: number) {
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  protected readonly intervalOptions = intervalOptionsForMin(environment.minRecheckIntervalMinutes);
   /** Only true in non-production Angular environment (see `environment.prod.ts`). */
   protected readonly demoPriceEnabled = environment.enableDemoProduct;
 
@@ -118,10 +111,15 @@ export class DashboardComponent implements OnInit {
   editForm = this.fb.nonNullable.group({
     productNameOverride: [''],
     companyNameOverride: [''],
-    recheckIntervalMinutes: [360],
     alertBelowPrice: [''],
     alertAbovePrice: [''],
     emailAlertsEnabled: [false],
+  });
+
+  /** Global once-daily check time (all products); persisted via PATCH /auth/me/daily-check. */
+  scheduleForm = this.fb.nonNullable.group({
+    dailyCheckLocalTime: ['08:00'],
+    dailyCheckTimeZone: ['Europe/Berlin'],
   });
 
   items = signal<Tracking[]>([]);
@@ -129,6 +127,9 @@ export class DashboardComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
   savingEdit = signal(false);
+  scheduleSaving = signal(false);
+  scheduleSaved = signal(false);
+  scheduleError = signal<string | null>(null);
   refreshingId = signal<string | null>(null);
   formError = signal<string | null>(null);
   refreshError = signal<string | null>(null);
@@ -144,6 +145,7 @@ export class DashboardComponent implements OnInit {
   demoAdding = signal(false);
 
   scrapeMessage = signal('');
+  private scheduleSavedTimer: ReturnType<typeof setTimeout> | null = null;
   private scrapeInterval: ReturnType<typeof setInterval> | null = null;
   private scrapeIdx = 0;
   private static readonly CATALOG_BUSY_MSG_COUNT = 4;
@@ -221,6 +223,7 @@ export class DashboardComponent implements OnInit {
     this.destroyRef.onDestroy(() => {
       if (this.scrapeInterval) clearInterval(this.scrapeInterval);
       if (this.pushReminderTimer) clearTimeout(this.pushReminderTimer);
+      if (this.scheduleSavedTimer) clearTimeout(this.scheduleSavedTimer);
     });
     this.dashboardUi.toggleNotifications.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.toggleNotifs());
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((q: Params) => {
@@ -237,6 +240,7 @@ export class DashboardComponent implements OnInit {
     this.auth.loadProfile().subscribe({
       next: (p) => {
         this.profile.set(p);
+        this.patchScheduleFromProfile(p);
       },
       error: () => {},
     });
@@ -382,18 +386,53 @@ export class DashboardComponent implements OnInit {
     return this.emailAlertsUsedExcluding(t.id) < this.emailAlertMax();
   }
 
-  intervalShort(minutes: number): string {
-    if (minutes < 60) return `${minutes}m`;
-    if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
-    if (minutes === 1440) return '1d';
-    return `${Math.round(minutes / 1440)}d`;
+  protected timeZoneSelectOptions(): string[] {
+    const tz = (
+      this.scheduleForm.getRawValue().dailyCheckTimeZone ||
+      this.profile()?.dailyCheckTimeZone ||
+      'Europe/Berlin'
+    ).trim();
+    const list = [...COMMON_TIME_ZONES];
+    if (tz && !list.includes(tz)) return [tz, ...list];
+    return list;
   }
 
-  protected intervalLabel(minutes: number): string {
-    const key = `dashboard.interval.m${minutes}`;
-    const t = this.translate.instant(key);
-    if (t !== key) return t;
-    return this.translate.instant('dashboard.interval.unknown', { minutes });
+  private patchScheduleFromProfile(p: UserProfile): void {
+    this.scheduleForm.patchValue({
+      dailyCheckLocalTime: p.dailyCheckLocalTime ?? '08:00',
+      dailyCheckTimeZone: p.dailyCheckTimeZone ?? 'Europe/Berlin',
+    });
+  }
+
+  saveDailyCheck(): void {
+    this.scheduleError.set(null);
+    let time = this.scheduleForm.getRawValue().dailyCheckLocalTime.trim();
+    if (/^\d:\d{2}$/.test(time)) time = `0${time}`;
+    const tz = this.scheduleForm.getRawValue().dailyCheckTimeZone.trim();
+    this.scheduleSaving.set(true);
+    this.http
+      .patch<UserProfile>(`${environment.apiUrl}/auth/me/daily-check`, {
+        dailyCheckLocalTime: time,
+        dailyCheckTimeZone: tz,
+      })
+      .subscribe({
+        next: (u) => {
+          this.auth.user.set(u);
+          this.profile.set(u);
+          this.patchScheduleFromProfile(u);
+          this.scheduleSaving.set(false);
+          if (this.scheduleSavedTimer) clearTimeout(this.scheduleSavedTimer);
+          this.scheduleSaved.set(true);
+          this.scheduleSavedTimer = setTimeout(() => {
+            this.scheduleSaved.set(false);
+            this.scheduleSavedTimer = null;
+          }, 4000);
+        },
+        error: (e) => {
+          this.scheduleSaving.set(false);
+          this.scheduleError.set(this.messageFromApiError(e, 'dashboard.errors.scheduleSaveFailed'));
+        },
+      });
   }
 
   protected isPro(): boolean {
@@ -607,10 +646,6 @@ export class DashboardComponent implements OnInit {
     this.editForm.patchValue({
       productNameOverride: t.productNameOverride ?? '',
       companyNameOverride: t.companyNameOverride ?? '',
-      recheckIntervalMinutes: Math.max(
-        environment.minRecheckIntervalMinutes,
-        t.recheckIntervalMinutes,
-      ),
       alertBelowPrice: t.alertBelowPrice != null ? String(t.alertBelowPrice) : '',
       alertAbovePrice: t.alertAbovePrice != null ? String(t.alertAbovePrice) : '',
       emailAlertsEnabled: t.emailAlertsEnabled ?? false,
@@ -646,7 +681,6 @@ export class DashboardComponent implements OnInit {
 
     this.savingEdit.set(true);
     const body: Record<string, unknown> = {
-      recheckIntervalMinutes: v.recheckIntervalMinutes,
       productNameOverride: v.productNameOverride.trim() === '' ? null : v.productNameOverride.trim(),
       companyNameOverride: v.companyNameOverride.trim() === '' ? null : v.companyNameOverride.trim(),
       alertBelowPrice,

@@ -184,6 +184,14 @@
     "colPrice": "Текущая цена",
     "colUpdated": "Последнее обновление",
     "colFrequency": "Интервал",
+    "colDailyCheck": "Auto check",
+    "dailyCheckScheduleTitle": "Daily price check",
+    "dailyCheckBanner": "All products are updated once per day at {{time}} (time zone {{zone}}) from the partner catalog. Email and push alerts follow that run. You can still refresh any item manually at any time.",
+    "dailyCheckTimeLabel": "Local time",
+    "dailyCheckZoneLabel": "Time zone",
+    "dailyCheckSave": "Save schedule",
+    "dailyCheckSaved": "Saved",
+    "dailyCheckBadge": "Once daily",
     "colActions": "Действия",
     "reorderHandle": "Перетащите, чтобы изменить порядок",
     "showing": "Показано {{count}} результат",
@@ -236,7 +244,10 @@
       "priceNotFound9": "Судебная бухгалтерия вышла из чата; страница не делится. (На этой странице автоматический скрапинг заблокирован или запрещён.)",
       "emailAlertLimit": "Оповещения по e-mail ограничены {{max}} товарами на вашем тарифе. Отключите e-mail у другого товара или перейдите на Pro.",
       "httpFetchError": "Страница не загрузилась — сайт недоступен, лимит или блок автоклиентов. (На этой странице скрапинг может быть запрещён или заблокирован.)",
-      "robotsTxtDisallows": "robots.txt магазина просит автоматические инструменты не запрашивать этот URL — мы останавливаемся. Лучше официальный API/фид продавца, если есть."
+      "robotsTxtDisallows": "robots.txt магазина просит автоматические инструменты не запрашивать этот URL — мы останавливаемся. Лучше официальный API/фид продавца, если есть.",
+      "scheduleSaveFailed": "Could not save schedule",
+      "invalidTime": "Invalid time (use 24h format HH:mm).",
+      "invalidTimezone": "Invalid or unknown time zone."
     },
     "history": {
       "title": "История цен",

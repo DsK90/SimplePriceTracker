@@ -32,6 +32,12 @@ model User {
   emailVerificationEmailsSent Int @default(0)
   /// UI / transactional mail language (e.g. `de`, `en`); set at registration, used for verification & welcome e-mails.
   preferredLocale      String?
+  /// IANA timezone for the daily price check (e.g. Europe/Berlin).
+  dailyCheckTimeZone   String             @default("Europe/Berlin")
+  /// Local wall time HH:mm (24h) when all catalog trackings are refreshed once per day.
+  dailyCheckLocalTime  String             @default("08:00")
+  /// Local calendar date (YYYY-MM-DD in `dailyCheckTimeZone`) when the last automated daily run completed.
+  dailyCheckLastRunDate String?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   trackings            PriceTracking[]
@@ -102,8 +108,6 @@ model PriceTracking {
   productNameOverride   String?
   /// User-facing label; when set, shown instead of scraped companyName
   companyNameOverride   String?
-  /// How often automatic price checks run (minutes). Min 15, max 10080 (7d).
-  recheckIntervalMinutes Int      @default(360)
   /// Notify once when price crosses down to this level or below (optional)
   alertBelowPrice Decimal? @db.Decimal(12, 4)
   /// Notify once when price crosses up to this level or above (optional)

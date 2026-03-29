@@ -1,6 +1,6 @@
 {
   "app": {
-    "pageTitle": "Pricefly | Beobachtung & Vergleich",
+    "pageTitle": "Pricefly",
     "brand": "Pricefly",
     "tagline": "Die besten Kamera- & Tech-Deals — im richtigen Moment zuschlagen."
   },
@@ -20,7 +20,7 @@
     "acceptAll": "Alle akzeptieren"
   },
   "nav": {
-    "dashboard": "Beobachtung & Vergleich",
+    "dashboard": "Übersicht",
     "pricing": "Preise",
     "fairUse": "Fair Use",
     "signOut": "Abmelden",
@@ -201,7 +201,7 @@
     "activateTermsError": "Für dein Konto liegt keine Akzeptanz der AGB vor. Bitte erneut registrieren oder den Support kontaktieren."
   },
   "dashboard": {
-    "title": "Beobachtung & Vergleich",
+    "title": "Übersicht",
     "proSubtitle": "Pro — unbegrenzt viele Beobachtungen",
     "freeLine": "Kostenlos — {{current}} von {{max}} Plätzen. ",
     "upgrade": "Upgrade",
@@ -241,6 +241,14 @@
     "colPrice": "Aktueller Preis",
     "colUpdated": "Letzte Aktualisierung",
     "colFrequency": "Intervall",
+    "colDailyCheck": "Automatik",
+    "dailyCheckScheduleTitle": "Tägliche Preisprüfung",
+    "dailyCheckBanner": "Alle Produkte werden einmal täglich um {{time}} Uhr (Zeitzone {{zone}}) aus dem Partnerkatalog aktualisiert. E-Mail- und Push-Benachrichtigungen beziehen sich auf diese Prüfung. Du kannst einzelne Einträge jederzeit manuell aktualisieren.",
+    "dailyCheckTimeLabel": "Uhrzeit",
+    "dailyCheckZoneLabel": "Zeitzone",
+    "dailyCheckSave": "Zeit speichern",
+    "dailyCheckSaved": "Gespeichert",
+    "dailyCheckBadge": "1× täglich",
     "colActions": "Aktionen",
     "reorderHandle": "Zum Sortieren ziehen",
     "showing": "{{count}} Ergebnis",
@@ -292,7 +300,10 @@
       "priceNotFound9": "Die forensische Buchhaltung hat den Raum verlassen; diese Seite teilt nicht. (Auf dieser Seite ist automatisiertes Scraping blockiert oder untersagt.)",
       "emailAlertLimit": "E-Mail-Preisalarme sind auf {{max}} Produkte in deinem Tarif begrenzt. Deaktiviere E-Mail bei einem anderen Produkt oder upgrade auf Pro.",
       "httpFetchError": "Die Seite ließ sich nicht laden — sie ist evtl. offline, drosselt uns oder blockiert automatisierte Clients. (Auf dieser Seite kann automatisiertes Scraping blockiert oder untersagt sein.)",
-      "robotsTxtDisallows": "Die robots.txt dieses Shops verbietet automatisierten Zugriff auf diese URL — wir brechen ab. Nutze nach Möglichkeit ein offizielles Händler-Feed/API oder eine erlaubte URL."
+      "robotsTxtDisallows": "Die robots.txt dieses Shops verbietet automatisierten Zugriff auf diese URL — wir brechen ab. Nutze nach Möglichkeit ein offizielles Händler-Feed/API oder eine erlaubte URL.",
+      "scheduleSaveFailed": "Zeitplan konnte nicht gespeichert werden",
+      "invalidTime": "Ungültige Uhrzeit (24h-Format HH:mm).",
+      "invalidTimezone": "Ungültige oder unbekannte Zeitzone."
     },
     "history": {
       "title": "Preisverlauf",
@@ -311,7 +322,7 @@
       "alertBelow": "Alarm wenn Preis ≤",
       "alertAbove": "Alarm wenn Preis ≥",
       "placeholderPrice": "z. B. {{n}}",
-      "hint": "Alarmfelder leeren und speichern, um Schwellen zu entfernen. Alarme, wenn der Preis Ihr Ziel überschreitet oder unterschreitet.",
+      "hint": "Die automatische Prüfung gilt für alle Produkte gemeinsam (siehe oben). Alarmfelder leeren und speichern, um Schwellen zu entfernen. Alarme, wenn der Preis Ihr Ziel überschreitet oder unterschreitet.",
       "emailAlerts": "E-Mail-Preisalarme für dieses Produkt",
       "emailAlertsHint": "{{used}} von {{max}} E-Mail-Slots auf Ihrem Tarif genutzt. Push und In-App sind unbegrenzt.",
       "fairUseLink": "Fair-Use-Richtlinie",

@@ -1,15 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateTrackingDto {
   /** Key from Awin catalog search / feed (`advertiser_id:aw_product_id` or custom feed_key column). */
@@ -26,12 +16,6 @@ export class CreateTrackingDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(10080)
-  recheckIntervalMinutes?: number;
 
   @IsOptional()
   @Type(() => Number)

@@ -11,8 +11,6 @@ export const environment = {
   umamiWebsiteId: envGenerated.umamiWebsiteId,
   /** PayPal: PAYPAL_CLIENT_ID or PAYPAL_SANDBOX_CLIENT_ID per PAYPAL_USE_SANDBOX */
   paypalClientId: envGenerated.paypalClientId,
-  /** Must match backend min recheck interval (dev: 1 min, prod build: 30 min) */
-  minRecheckIntervalMinutes: 1,
   /** Demo product + price nudge (notifications testing). Off in environment.prod.ts. */
   enableDemoProduct: true,
 };

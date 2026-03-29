@@ -9,12 +9,11 @@ export class TrackingsScheduler {
   constructor(private trackings: TrackingsService) {}
 
   /**
-   * Every minute: only items whose recheck interval has elapsed (1 min minimum in dev;
-   * production enforces 30 min minimum per item in TrackingsService).
+   * Every minute: run the once-per-day (per user) catalog refresh when local time matches.
    */
   @Cron('* * * * *')
   async refreshPrices() {
-    this.log.debug('Scheduled due price checks tick');
-    await this.trackings.refreshDueTrackings();
+    this.log.debug('Scheduled daily price check tick');
+    await this.trackings.runScheduledDailyPriceChecks();
   }
 }

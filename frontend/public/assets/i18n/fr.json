@@ -184,6 +184,14 @@
     "colPrice": "Prix actuel",
     "colUpdated": "Dernière mise à jour",
     "colFrequency": "Fréquence",
+    "colDailyCheck": "Auto check",
+    "dailyCheckScheduleTitle": "Daily price check",
+    "dailyCheckBanner": "All products are updated once per day at {{time}} (time zone {{zone}}) from the partner catalog. Email and push alerts follow that run. You can still refresh any item manually at any time.",
+    "dailyCheckTimeLabel": "Local time",
+    "dailyCheckZoneLabel": "Time zone",
+    "dailyCheckSave": "Save schedule",
+    "dailyCheckSaved": "Saved",
+    "dailyCheckBadge": "Once daily",
     "colActions": "Actions",
     "reorderHandle": "Glisser pour réorganiser",
     "showing": "Affichage de {{count}} résultat",
@@ -236,7 +244,10 @@
       "emailAlertLimit": "Les alertes e-mail sont limitées à {{max}} produits sur votre forfait. Désactivez l'e-mail pour un autre produit ou passez à Pro.",
       "httpFetchError": "La page ne s’est pas chargée — site HS, limitation ou blocage des clients automatisés. (Sur cette page, le scraping automatisé peut être bloqué ou interdit.)",
       "robotsTxtDisallows": "Le robots.txt de ce site demande aux outils automatisés de ne pas récupérer cette URL — nous nous arrêtons. Préférez un flux/API officiel du marchand si possible.",
-      "freeTrackingLimit": "L’offre gratuite autorise jusqu’à {{max}} suivis actifs. Passez à une offre supérieure pour en avoir plus."
+      "freeTrackingLimit": "L’offre gratuite autorise jusqu’à {{max}} suivis actifs. Passez à une offre supérieure pour en avoir plus.",
+      "scheduleSaveFailed": "Could not save schedule",
+      "invalidTime": "Invalid time (use 24h format HH:mm).",
+      "invalidTimezone": "Invalid or unknown time zone."
     },
     "history": {
       "title": "Historique des prix",

@@ -197,6 +197,64 @@
       }
     </header>
 
+    <section
+      class="mb-4 rounded-xl border border-outline-variant/25 bg-surface-container-low/80 px-3 py-3 shadow-sm shadow-black/10 md:px-4 md:py-3.5"
+    >
+      <h2 class="mb-1 font-headline text-sm font-bold text-on-surface">
+        {{ 'dashboard.dailyCheckScheduleTitle' | translate }}
+      </h2>
+      <p class="mb-3 text-[11px] leading-relaxed text-on-surface-variant/90 md:text-xs">
+        {{
+          'dashboard.dailyCheckBanner'
+            | translate
+              : {
+                  time: profile()?.dailyCheckLocalTime ?? scheduleForm.getRawValue().dailyCheckLocalTime,
+                  zone: profile()?.dailyCheckTimeZone ?? scheduleForm.getRawValue().dailyCheckTimeZone,
+                }
+        }}
+      </p>
+      <form [formGroup]="scheduleForm" (ngSubmit)="saveDailyCheck()" class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div class="min-w-0 flex-1 sm:max-w-[11rem]">
+          <label class="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-on-surface-variant">{{
+            'dashboard.dailyCheckTimeLabel' | translate
+          }}</label>
+          <input
+            formControlName="dailyCheckLocalTime"
+            type="time"
+            class="w-full rounded-lg border border-outline-variant/35 bg-surface-container-highest px-3 py-2 text-sm text-on-surface focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/25"
+          />
+        </div>
+        <div class="min-w-0 flex-1 sm:max-w-xs">
+          <label class="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-on-surface-variant">{{
+            'dashboard.dailyCheckZoneLabel' | translate
+          }}</label>
+          <select
+            formControlName="dailyCheckTimeZone"
+            class="w-full rounded-lg border border-outline-variant/35 bg-surface-container-highest px-3 py-2 text-sm text-on-surface focus:border-primary/50 focus:outline-none"
+          >
+            @for (z of timeZoneSelectOptions(); track z) {
+              <option [value]="z">{{ z }}</option>
+            }
+          </select>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="submit"
+            [disabled]="scheduleSaving()"
+            class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm transition hover:brightness-105 disabled:opacity-50"
+          >
+            {{ 'dashboard.dailyCheckSave' | translate }}
+          </button>
+          @if (scheduleSaved()) {
+            <span class="text-[11px] font-medium text-tertiary">{{ 'dashboard.dailyCheckSaved' | translate }}</span>
+          }
+        </div>
+      </form>
+      @if (scheduleError()) {
+        <p class="mt-2 text-xs text-error">{{ scheduleError() }}</p>
+      }
+    </section>
+
     @if (formError()) {
       <p class="mb-3 text-sm text-error">{{ formError() }}</p>
     }
@@ -464,7 +522,7 @@
                   <th class="px-6 py-3">{{ 'dashboard.colStore' | translate }}</th>
                   <th class="w-[20%] px-6 py-3">{{ 'dashboard.colPrice' | translate }}</th>
                   <th class="px-6 py-3 text-center">{{ 'dashboard.colUpdated' | translate }}</th>
-                  <th class="px-6 py-3 text-center">{{ 'dashboard.colFrequency' | translate }}</th>
+                  <th class="px-6 py-3 text-center">{{ 'dashboard.colDailyCheck' | translate }}</th>
                   <th class="px-6 py-3 text-right">{{ 'dashboard.colActions' | translate }}</th>
                 </tr>
               </thead>
@@ -566,7 +624,7 @@
                     <td class="px-6 py-4 text-center">
                       <span
                         class="inline-block rounded bg-secondary-container/50 px-2.5 py-0.5 text-[10px] font-bold text-on-secondary-container"
-                        >{{ intervalShort(t.recheckIntervalMinutes) }}</span
+                        >{{ 'dashboard.dailyCheckBadge' | translate }}</span
                       >
                     </td>
                     <td class="px-6 py-4 text-right">
@@ -719,7 +777,7 @@
 
 <ng-template #editFormTpl let-t>
   <form [formGroup]="editForm" (ngSubmit)="saveEdit(t.id)" class="space-y-3">
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-3 sm:grid-cols-2">
       <div>
         <label class="mb-1 block text-[11px] font-medium text-on-surface-variant">{{
           'dashboard.edit.productOptional' | translate
@@ -747,19 +805,6 @@
         <p class="mt-0.5 text-[10px] text-outline">
           {{ 'dashboard.edit.detected' | translate }} {{ t.companyName ?? '—' }}
         </p>
-      </div>
-      <div>
-        <label class="mb-1 block text-[11px] font-medium text-on-surface-variant">{{
-          'dashboard.edit.recheckEvery' | translate
-        }}</label>
-        <select
-          formControlName="recheckIntervalMinutes"
-          class="w-full rounded border border-outline-variant/30 bg-surface-container-highest px-3 py-2 text-sm text-on-surface focus:border-primary/50 focus:outline-none"
-        >
-          @for (opt of intervalOptions; track opt) {
-            <option [ngValue]="opt">{{ intervalLabel(opt) }}</option>
-          }
-        </select>
       </div>
       <div>
         <label class="mb-1 block text-[11px] font-medium text-on-surface-variant">{{

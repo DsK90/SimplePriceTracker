@@ -22,11 +22,12 @@ services:
       - pricefly_net
 
   # pgAdmin: local dev → http://localhost:5050 (no subpath). With docker-compose.ssl.yml, host port is closed; use Nginx path from .env.
+  # Login values come only from .env (PGADMIN_EMAIL / PGADMIN_PASSWORD) — no compose defaults, so you never see a “wrong” address here.
   pgadmin:
     image: dpage/pgadmin4:8
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-change-me}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_WTF_CSRF_TIME_LIMIT: 'None'
     volumes:
@@ -65,6 +66,8 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:noreply@example.com}
+      # false = no automatic daily catalog refresh (cron still ticks but does nothing). Manual refresh in app unchanged.
+      PRICE_SCHEDULER_ENABLED: ${PRICE_SCHEDULER_ENABLED:-true}
     ports:
       - '3000:3000'
     depends_on:

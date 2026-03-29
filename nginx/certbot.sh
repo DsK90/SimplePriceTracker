@@ -46,4 +46,4 @@ chmod 600 /etc/crontabs/root
 
 echo "Cron: daily certbot renew + nginx reload; weekly cert check (Sun 03:00)."
 
-exec crond -f -l 8
+exec crond -f

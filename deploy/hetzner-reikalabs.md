@@ -92,7 +92,7 @@ If you prefer TLS on the host instead of the **`edge`** service, use `deploy/ngi
 3. In this app’s `.env` / Compose:
 
    - `BREVO_API_KEY` — the API key from step 2.
-   - `EMAIL_FROM` — must match a verified sender in Brevo, e.g. `Reikalabs <noreply@reikalabs.com>`.
+   - `EMAIL_FROM` — must match a verified sender in Brevo, e.g. `Pricefly <noreply@reikalabs.com>` (not `mail.showbk.com` unless that domain is authenticated for this Brevo account).
    - `APP_PUBLIC_URL` — **exact** public SPA URL (no trailing slash), e.g. `https://pricefly.reikalabs.com`. CI merges this from `SSL_PRIMARY_DOMAIN` on deploy. If both are unset, the API builds `https://<SSL_PRIMARY_DOMAIN>` when that variable is passed into the `api` container (see `docker-compose.yml`). Otherwise it uses the first non-localhost `https` entry from `CORS_ORIGIN` — do **not** leave `CORS_ORIGIN` as localhost-only in production or verification links will be wrong.
 
 4. Redeploy the `api` container after changing env.

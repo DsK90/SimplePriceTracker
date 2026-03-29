@@ -58,7 +58,7 @@ Set `PAYPAL_SANDBOX_CLIENT_ID` / `PAYPAL_SANDBOX_SECRET` for sandbox; the web im
 
 ### Env alignment with ShowBK
 
-You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core` for **PayPal** and **`JWT_SECRET`**. For **email**, this app uses **Brevo** (`BREVO_API_KEY` + **`EMAIL_FROM`** / **`MAIL_FROM`**), not Resend. Copy values into this project’s `.env` files only on your machine — do not commit secrets.
+You can reuse the same names as `ShowBK Photographer Gallery` / `packages/core` for **PayPal** and **`JWT_SECRET`**. For **email**, this app uses **Brevo** (`BREVO_API_KEY` + **`EMAIL_FROM`** / **`MAIL_FROM`**), not Resend. Copy values into this project’s `.env` files only on your machine — do not commit secrets. **`EMAIL_FROM` must use an address verified in your Brevo account** (e.g. `Pricefly <noreply@reikalabs.com>`); reusing ShowBK’s `noreply@mail.showbk.com` causes Brevo to reject sends if that sender is not valid for the same API key.
 
 - **Database host in Docker**: ShowBK uses `db` as the Postgres service name; this stack uses **`postgres`**. Set `DATABASE_URL` with host `postgres` when running via Compose, or use the default in `docker-compose.yml`.
 - **Umami**: optional analytics — set `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in `.env` and rebuild the `web` image (see `deploy/hetzner-reikalabs.md`). If the tracker host (e.g. `umami.showbk.com`) differs from the app domain and views stay at zero, see `deploy/umami-cors-and-troubleshooting.md`.  

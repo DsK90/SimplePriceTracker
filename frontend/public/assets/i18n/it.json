@@ -145,12 +145,18 @@
   },
   "dashboard": {
     "title": "Monitoraggi",
+    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "Pro — elementi attivi illimitati",
     "freeLine": "Gratis — {{current}} di {{max}} slot. ",
     "upgrade": "Upgrade",
     "activeAlerts": "{{count}} avviso prezzo attivo",
     "activeAlertsPlural": "{{count}} avvisi prezzo attivi",
     "placeholderUrl": "Incolla URL prodotto…",
+    "searchCatalogPlaceholder": "Search camera & tech… (min. 2 characters)",
+    "catalogBusyMsg0": "Saving…",
+    "catalogBusyMsg1": "Syncing feed…",
+    "catalogBusyMsg2": "Almost there…",
+    "catalogBusyMsg3": "Done soon…",
     "add": "Aggiungi",
     "adding": "Aggiunta in corso…",
     "scrapeMsg0": "Interrogazione del database…",
@@ -211,6 +217,9 @@
       "enable": "Attiva"
     },
     "errors": {
+      "pickProduct": "Choose a product from the search results first.",
+      "awinNotInCatalog": "Product not in catalog. Import or update your Awin feed on the server.",
+      "legacyRefresh": "This item used the old URL tracker. Delete it and add again from the catalog.",
       "addFailed": "Impossibile aggiungere il monitoraggio",
       "saveFailed": "Impossibile salvare",
       "refreshFailed": "Aggiornamento non riuscito",

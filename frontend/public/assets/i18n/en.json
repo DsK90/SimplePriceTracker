@@ -202,12 +202,18 @@
   },
   "dashboard": {
     "title": "Trackings",
+    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported product feed — prices come from the feed only (no shop scraping).",
     "proSubtitle": "Pro — unlimited active items",
     "freeLine": "Free — {{current}} of {{max}} slots. ",
     "upgrade": "Upgrade",
     "activeAlerts": "{{count}} active price alert",
     "activeAlertsPlural": "{{count}} active price alerts",
     "placeholderUrl": "Paste product URL…",
+    "searchCatalogPlaceholder": "Search camera & tech… (min. 2 characters)",
+    "catalogBusyMsg0": "Reserving a shelf in the watchlist…",
+    "catalogBusyMsg1": "Syncing with your Awin feed…",
+    "catalogBusyMsg2": "Polishing price tags…",
+    "catalogBusyMsg3": "Almost done…",
     "add": "Add",
     "adding": "Adding…",
     "scrapeMsg0": "Interrogating the database…",
@@ -268,6 +274,9 @@
       "enable": "Enable"
     },
     "errors": {
+      "pickProduct": "Pick a product from the search results first.",
+      "awinNotInCatalog": "That product is not in the catalog. Import or update your Awin feed on the server, then try again.",
+      "legacyRefresh": "This item used the old URL-based tracker. Delete it and add the product again from the catalog.",
       "addFailed": "Could not add tracking",
       "saveFailed": "Could not save",
       "refreshFailed": "Refresh failed",

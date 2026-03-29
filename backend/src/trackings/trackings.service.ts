@@ -18,14 +18,7 @@ import {
 } from '../common/constants';
 import { CreateTrackingDto } from './dto/create-tracking.dto';
 import { UpdateTrackingDto } from './dto/update-tracking.dto';
-import { parsePriceFromText } from './price-parse';
-import { extractListedPriceWithSource } from './extract-price-from-html';
-import {
-  extractProductAndCompany,
-  fallbackProductNameFromUrl,
-} from './extract-product-metadata';
-import { fetchSteamProduct, parseSteamAppIdFromUrl } from './steam-store';
-import { BrowserService } from './browser.service';
+import { AwinCatalogService } from './awin-catalog.service';
 
 /** Synthetic URL for dev-only demo tracking (price adjusted via API, not scraped). */
 const DEMO_URL = 'demo://price-test';
@@ -49,8 +42,12 @@ export class TrackingsService {
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private config: ConfigService,
-    private browser: BrowserService,
+    private awinCatalog: AwinCatalogService,
   ) {}
+
+  searchCatalog(q: string, limit: number) {
+    return this.awinCatalog.search(q, limit);
+  }
 
   private clampIntervalMinutes(n: number): number {
     const min = minRecheckIntervalMinutes(this.config.get<string>('NODE_ENV'));
@@ -188,40 +185,23 @@ export class TrackingsService {
         ? new Prisma.Decimal(dto.alertAbovePrice)
         : null;
 
-    const steamAppId = parseSteamAppIdFromUrl(dto.url);
-    if (steamAppId) {
-      const steam = await fetchSteamProduct(steamAppId, currency);
-      if (!steam) {
-        throw new BadRequestException('Could not load this Steam product or price.');
-      }
-      return this.createWithInitialPrice(userId, {
-        url: dto.url,
-        productName: steam.name,
-        companyName: 'Steam',
-        price: steam.price,
-        currency: steam.currency,
-        active,
-        recheckIntervalMinutes: interval,
-        alertBelowPrice: alertBelow,
-        alertAbovePrice: alertAbove,
-        emailAlertsEnabled: dto.emailAlertsEnabled === true,
+    const key = dto.awinFeedKey.trim();
+    const product = await this.awinCatalog.getByFeedKey(key);
+    if (!product) {
+      throw new BadRequestException({
+        code: 'AWIN_PRODUCT_NOT_IN_CATALOG',
+        message:
+          'Product not in catalog. Import an Awin feed (camera/tech niche) and try again, or pick from search results.',
       });
     }
-
-    const httpHtml = await this.fetchHtml(dto.url);
-
-    const result = await this.extractPriceWithBrowserFallback(dto.url, httpHtml);
-    const num = result.price;
-    const html = result.html;
-
-    const meta = extractProductAndCompany(html, dto.url);
-    const productName = meta.productName ?? fallbackProductNameFromUrl(dto.url);
+    const price = Number(product.price);
     return this.createWithInitialPrice(userId, {
-      url: dto.url,
-      productName,
-      companyName: meta.companyName ?? null,
-      price: num,
-      currency,
+      awinFeedKey: product.feedKey,
+      url: product.merchantDeepLink,
+      productName: product.title,
+      companyName: product.advertiserName ?? null,
+      price,
+      currency: product.currency || currency,
       active,
       recheckIntervalMinutes: interval,
       alertBelowPrice: alertBelow,
@@ -274,6 +254,7 @@ export class TrackingsService {
   private async createWithInitialPrice(
     userId: string,
     args: {
+      awinFeedKey?: string | null;
       url: string;
       productName: string;
       companyName: string | null;
@@ -291,6 +272,7 @@ export class TrackingsService {
     const row = await this.prisma.priceTracking.create({
       data: {
         userId,
+        awinFeedKey: args.awinFeedKey ?? null,
         url: args.url,
         productName: args.productName,
         companyName: args.companyName,
@@ -320,9 +302,37 @@ export class TrackingsService {
       await this.assertCanAddActive(userId);
     }
 
-    if (dto.url !== undefined && dto.url !== existing.url) {
-      await this.resyncTracking(userId, id, dto.url, dto.currency ?? existing.currency, dto.active);
-      const { url: _url, ...rest } = dto;
+    if (
+      dto.awinFeedKey !== undefined &&
+      dto.awinFeedKey.trim() !== (existing.awinFeedKey ?? '').trim()
+    ) {
+      const nk = dto.awinFeedKey.trim();
+      const product = await this.awinCatalog.getByFeedKey(nk);
+      if (!product) {
+        throw new BadRequestException({
+          code: 'AWIN_PRODUCT_NOT_IN_CATALOG',
+          message: 'Product not in catalog.',
+        });
+      }
+      const price = Number(product.price);
+      const dec = new Prisma.Decimal(price);
+      const cur = dto.currency ?? existing.currency;
+      const row = await this.prisma.priceTracking.update({
+        where: { id },
+        data: {
+          awinFeedKey: product.feedKey,
+          url: product.merchantDeepLink,
+          productName: product.title,
+          companyName: product.advertiserName ?? null,
+          lastPrice: dec,
+          currency: product.currency || cur,
+          lastCheckedAt: new Date(),
+          ...(dto.active !== undefined ? { active: dto.active } : {}),
+          snapshots: { create: { price: dec, currency: product.currency || cur } },
+        },
+        ...TRACKING_LIST,
+      });
+      const { awinFeedKey: _a, ...rest } = dto;
       const hasMore =
         rest.currency !== undefined ||
         rest.active !== undefined ||
@@ -330,15 +340,11 @@ export class TrackingsService {
         rest.productNameOverride !== undefined ||
         rest.companyNameOverride !== undefined ||
         rest.alertBelowPrice !== undefined ||
-        rest.alertAbovePrice !== undefined;
+        rest.alertAbovePrice !== undefined ||
+        rest.emailAlertsEnabled !== undefined;
       if (hasMore) {
         return this.update(userId, id, rest);
       }
-      const row = await this.prisma.priceTracking.findFirst({
-        where: { id, userId },
-        ...TRACKING_LIST,
-      });
-      if (!row) throw new NotFoundException();
       return this.toPublicTracking(row);
     }
 
@@ -384,66 +390,6 @@ export class TrackingsService {
       await this.maybeNotifyImmediateThresholdsAfterPatch(existing, afterWithUser, dto);
     }
 
-    return this.toPublicTracking(row);
-  }
-
-  /** Re-fetch URL: same logic as create (new product metadata + price). */
-  private async resyncTracking(
-    userId: string,
-    id: string,
-    url: string,
-    currency: string,
-    active?: boolean,
-  ) {
-    const existing = await this.prisma.priceTracking.findFirst({ where: { id, userId } });
-    if (!existing) throw new NotFoundException();
-    if (active === true && !existing.active) await this.assertCanAddActive(userId);
-
-    const steamAppId = parseSteamAppIdFromUrl(url);
-    if (steamAppId) {
-      const steam = await fetchSteamProduct(steamAppId, currency);
-      if (!steam) throw new BadRequestException('Could not load this Steam product or price.');
-      const dec = new Prisma.Decimal(steam.price);
-      const row = await this.prisma.priceTracking.update({
-        where: { id },
-        data: {
-          url,
-          productName: steam.name,
-          companyName: 'Steam',
-          lastPrice: dec,
-          currency: steam.currency,
-          lastCheckedAt: new Date(),
-          ...(active !== undefined ? { active } : {}),
-          snapshots: { create: { price: dec, currency: steam.currency } },
-        },
-        ...TRACKING_LIST,
-      });
-      return this.toPublicTracking(row);
-    }
-
-    const httpHtml = await this.fetchHtml(url);
-
-    const result = await this.extractPriceWithBrowserFallback(url, httpHtml);
-    const num = result.price;
-    const html = result.html;
-
-    const meta = extractProductAndCompany(html, url);
-    const dec = new Prisma.Decimal(num);
-    const productName = meta.productName ?? fallbackProductNameFromUrl(url);
-    const row = await this.prisma.priceTracking.update({
-      where: { id },
-      data: {
-        url,
-        productName,
-        companyName: meta.companyName ?? null,
-        lastPrice: dec,
-        currency,
-        lastCheckedAt: new Date(),
-        ...(active !== undefined ? { active } : {}),
-        snapshots: { create: { price: dec, currency } },
-      },
-      ...TRACKING_LIST,
-    });
     return this.toPublicTracking(row);
   }
 
@@ -537,33 +483,33 @@ export class TrackingsService {
     }[] = [
       {
         url: 'demo://showcase-1',
-        productName: 'Sony WH-1000XM5 Kopfhörer',
-        companyName: 'Amazon',
-        prices: [379, 359, 339, 319, 299, 279],
+        productName: 'Sony Alpha 7 IV Gehäuse',
+        companyName: 'Fachhändler (Beispiel)',
+        prices: [2199, 2149, 2099, 2049, 1999, 1949],
       },
       {
         url: 'demo://showcase-2',
-        productName: 'Samsung Galaxy S24 Ultra 256GB',
-        companyName: 'Saturn',
-        prices: [1449, 1399, 1349, 1329, 1299, 1249],
+        productName: 'Canon EOS R6 Mark II',
+        companyName: 'Calumet (Beispiel)',
+        prices: [2499, 2449, 2399, 2399, 2349, 2299],
       },
       {
         url: 'demo://showcase-3',
-        productName: 'Nike Air Max 90',
-        companyName: 'Nike',
-        prices: [129, 135, 139, 145, 155, 169],
+        productName: 'Fujifilm X-T5 Body',
+        companyName: 'Foto Erhardt (Beispiel)',
+        prices: [1699, 1729, 1749, 1699, 1649, 1599],
       },
       {
         url: 'demo://showcase-4',
-        productName: 'Nintendo Switch OLED',
-        companyName: 'MediaMarkt',
-        prices: [319, 329, 335, 339, 349, 359],
+        productName: 'DJI Mini 4 Pro Fly More',
+        companyName: 'Cyberport (Beispiel)',
+        prices: [999, 979, 959, 949, 929, 899],
       },
       {
         url: 'demo://showcase-5',
-        productName: 'Apple AirPods Pro 2',
-        companyName: 'Apple',
-        prices: [279, 279, 279, 279, 279, 279],
+        productName: 'Sigma 24-70mm F2.8 DG DN',
+        companyName: 'Alternate (Beispiel)',
+        prices: [1099, 1099, 1099, 1099, 1099, 1099],
       },
     ];
 
@@ -603,6 +549,13 @@ export class TrackingsService {
   async refresh(userId: string, id: string) {
     const t = await this.prisma.priceTracking.findFirst({ where: { id, userId } });
     if (!t) throw new NotFoundException();
+    if (!t.url.startsWith('demo://') && !t.awinFeedKey) {
+      throw new BadRequestException({
+        code: 'LEGACY_NO_AWINSYNC',
+        message:
+          'This item is from the old URL-based tracker. Remove it and add the product again from the Awin catalog.',
+      });
+    }
     const row = await this.refreshOneInternal(t.id);
     return this.toPublicTracking(row);
   }
@@ -612,6 +565,7 @@ export class TrackingsService {
     const due = await this.prisma.$queryRaw<{ id: string }[]>`
       SELECT id FROM "PriceTracking"
       WHERE "active" = true
+      AND "awinFeedKey" IS NOT NULL
       AND url NOT LIKE 'demo://%'
       AND (
         "lastCheckedAt" IS NULL OR
@@ -630,7 +584,11 @@ export class TrackingsService {
   /** Legacy: refresh all active (heavy); prefer refreshDueTrackings */
   async refreshAllActive() {
     const ids = await this.prisma.priceTracking.findMany({
-      where: { active: true, NOT: { url: { startsWith: 'demo://' } } },
+      where: {
+        active: true,
+        awinFeedKey: { not: null },
+        NOT: { url: { startsWith: 'demo://' } },
+      },
       select: { id: true },
     });
     for (const { id } of ids) {
@@ -652,24 +610,33 @@ export class TrackingsService {
       });
     }
 
-    const steamAppId = parseSteamAppIdFromUrl(t.url);
-    if (steamAppId) {
-      const steam = await fetchSteamProduct(steamAppId, t.currency);
-      if (steam) {
-        return this.persistPrice(id, steam.price, steam.currency, {
-          productName: steam.name,
-          companyName: 'Steam',
+    if (t.awinFeedKey) {
+      const p = await this.awinCatalog.getByFeedKey(t.awinFeedKey);
+      if (!p) {
+        this.log.warn(`Awin catalog miss for tracking ${id} (${t.awinFeedKey}) — re-import feed`);
+        await this.prisma.priceTracking.update({
+          where: { id },
+          data: { lastCheckedAt: new Date() },
+        });
+        return this.prisma.priceTracking.findUniqueOrThrow({
+          where: { id },
+          ...TRACKING_LIST,
         });
       }
+      const cur = p.currency || t.currency;
+      return this.persistPrice(id, Number(p.price), cur, {
+        productName: p.title,
+        companyName: p.advertiserName,
+      });
     }
 
-    const httpHtml = await this.fetchHtml(t.url);
-    const { html, price } = await this.extractPriceWithBrowserFallback(t.url, httpHtml);
-    const meta = extractProductAndCompany(html, t.url);
-
-    return this.persistPrice(id, price, t.currency, {
-      productName: meta.productName ?? undefined,
-      companyName: meta.companyName,
+    await this.prisma.priceTracking.update({
+      where: { id },
+      data: { lastCheckedAt: new Date() },
+    });
+    return this.prisma.priceTracking.findUniqueOrThrow({
+      where: { id },
+      ...TRACKING_LIST,
     });
   }
 
@@ -765,95 +732,6 @@ export class TrackingsService {
     return this.prisma.priceTracking.findUniqueOrThrow({
       where: { id },
       ...TRACKING_LIST,
-    });
-  }
-
-  /** HTTP statuses where a plain fetch often fails bot checks but Playwright may succeed. */
-  private static readonly FETCH_RETRY_WITH_BROWSER_STATUSES = new Set([403, 429, 502, 503]);
-
-  private static isNotebooksbilligerHost(url: string): boolean {
-    try {
-      const h = new URL(url).hostname.toLowerCase();
-      return h === 'notebooksbilliger.de' || h === 'www.notebooksbilliger.de';
-    } catch {
-      return false;
-    }
-  }
-
-  private async fetchHtml(url: string): Promise<string> {
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          Accept:
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Sec-Fetch-User': '?1',
-          'Upgrade-Insecure-Requests': '1',
-          'Sec-Ch-Ua':
-            '"Chromium";v="120", "Not_A Brand";v="8", "Google Chrome";v="120"',
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
-        },
-        redirect: 'follow',
-      });
-    } catch (e) {
-      this.log.warn(`Fetch failed for ${url}: ${e instanceof Error ? e.message : String(e)}`);
-      return '';
-    }
-
-    if (res.ok) return res.text();
-
-    if (TrackingsService.FETCH_RETRY_WITH_BROWSER_STATUSES.has(res.status)) {
-      await res.text().catch(() => {});
-      this.log.warn(`HTTP ${res.status} fetching ${url} — will try headless browser`);
-      return '';
-    }
-
-    // Notebooksbilliger sometimes answers bots with 404 while the PDP exists; Playwright can load it.
-    if (res.status === 404 && TrackingsService.isNotebooksbilligerHost(url)) {
-      await res.text().catch(() => {});
-      this.log.warn(`HTTP 404 fetching ${url} (notebooksbilliger) — will try headless browser`);
-      return '';
-    }
-
-    await res.text().catch(() => {});
-    this.log.error(`HTTP ${res.status} fetching ${url}`);
-    throw new BadRequestException({ code: 'HTTP_FETCH_ERROR' });
-  }
-
-  /**
-   * Try extracting a price from HTML. If the fast HTTP fetch yields nothing
-   * (e.g. JS-rendered page or bot challenge), retry once with headless Chromium.
-   */
-  private async extractPriceWithBrowserFallback(
-    url: string,
-    httpHtml: string,
-  ): Promise<{ html: string; price: number }> {
-    const first = extractListedPriceWithSource(httpHtml);
-    if (first.raw) {
-      const num = parsePriceFromText(first.raw);
-      if (num !== null) return { html: httpHtml, price: num };
-    }
-
-    try {
-      const rendered = await this.browser.fetchRenderedHtml(url);
-      const second = extractListedPriceWithSource(rendered);
-      if (second.raw) {
-        const num = parsePriceFromText(second.raw);
-        if (num !== null) return { html: rendered, price: num };
-      }
-    } catch {
-      /* browser unavailable or page failed — fall through */
-    }
-
-    throw new BadRequestException({
-      code: 'PRICE_NOT_FOUND',
     });
   }
 

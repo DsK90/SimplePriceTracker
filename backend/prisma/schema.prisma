@@ -53,6 +53,26 @@ model PushSubscription {
 }
 
 /// Published pricing / PayPal subscription product (seeded + configurable via env)
+/// Normalized row from an Awin publisher product feed (CSV). Prices refresh from here — no shop scraping.
+model AwinCatalogProduct {
+  id                 String   @id @default(uuid())
+  /// Stable key, usually `advertiser_id:aw_product_id` from the Awin feed
+  feedKey            String   @unique
+  advertiserId       String?
+  advertiserName     String?
+  title              String
+  description        String?  @db.Text
+  price              Decimal  @db.Decimal(12, 4)
+  currency           String   @default("EUR")
+  merchantDeepLink   String   @db.Text
+  imageUrl           String?  @db.Text
+  category           String?
+  brand              String?
+  updatedFromFeedAt  DateTime @default(now()) @updatedAt
+
+  @@index([title])
+}
+
 model Plan {
   id           String  @id @default(uuid())
   name         String
@@ -71,6 +91,8 @@ model PriceTracking {
   id            String   @id @default(uuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// When set, price checks use `AwinCatalogProduct` only (no HTML scraping).
+  awinFeedKey   String?
   url           String
   /// Scraped product name (refreshed with price)
   productName   String
@@ -101,6 +123,7 @@ model PriceTracking {
 
   @@index([userId])
   @@index([userId, sortOrder])
+  @@index([awinFeedKey])
 }
 
 model Notification {

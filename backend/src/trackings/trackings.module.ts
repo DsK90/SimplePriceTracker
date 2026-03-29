@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { BrowserService } from './browser.service';
+import { AwinCatalogService } from './awin-catalog.service';
 import { TrackingsController } from './trackings.controller';
 import { TrackingsScheduler } from './trackings.scheduler';
 import { TrackingsService } from './trackings.service';
@@ -8,7 +8,7 @@ import { TrackingsService } from './trackings.service';
 @Module({
   imports: [NotificationsModule],
   controllers: [TrackingsController],
-  providers: [TrackingsService, TrackingsScheduler, BrowserService],
+  providers: [TrackingsService, TrackingsScheduler, AwinCatalogService],
   exports: [TrackingsService],
 })
 export class TrackingsModule {}

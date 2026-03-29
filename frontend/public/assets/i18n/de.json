@@ -202,12 +202,18 @@
   },
   "dashboard": {
     "title": "Trackings",
+    "nicheSubtitleAwin": "Kamera & Technik über Awin: Suche in deinem importierten Produktfeed — Preise nur aus dem Feed (kein Shop-Scraping).",
     "proSubtitle": "Pro — unbegrenzt aktive Einträge",
     "freeLine": "Kostenlos — {{current}} von {{max}} Plätzen. ",
     "upgrade": "Upgrade",
     "activeAlerts": "{{count}} aktiver Preisalarm",
     "activeAlertsPlural": "{{count}} aktive Preisalarme",
     "placeholderUrl": "Produkt-URL einfügen…",
+    "searchCatalogPlaceholder": "Kamera & Technik suchen… (mind. 2 Zeichen)",
+    "catalogBusyMsg0": "Eintrag wird vorbereitet…",
+    "catalogBusyMsg1": "Abgleich mit Awin-Feed…",
+    "catalogBusyMsg2": "Preise werden gesichert…",
+    "catalogBusyMsg3": "Gleich fertig…",
     "add": "Hinzufügen",
     "adding": "Wird hinzugefügt…",
     "scrapeMsg0": "Datenbank wird verhört…",
@@ -267,6 +273,9 @@
       "enable": "Aktivieren"
     },
     "errors": {
+      "pickProduct": "Bitte zuerst ein Produkt aus den Suchergebnissen wählen.",
+      "awinNotInCatalog": "Produkt nicht im Katalog. Awin-Feed auf dem Server importieren oder aktualisieren, dann erneut suchen.",
+      "legacyRefresh": "Dieser Eintrag stammt noch vom alten URL-Tracker. Löschen und Produkt erneut aus dem Katalog hinzufügen.",
       "addFailed": "Tracking konnte nicht hinzugefügt werden",
       "saveFailed": "Speichern fehlgeschlagen",
       "refreshFailed": "Aktualisierung fehlgeschlagen",

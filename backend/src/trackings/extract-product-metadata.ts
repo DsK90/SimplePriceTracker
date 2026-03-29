@@ -23,7 +23,6 @@ const TITLE_SUFFIXES = [
   ' | ikea',
   ' - ikea',
   ' | zalando',
-  ' | amazon',
   ' | ebay',
   ' | mediamarkt',
   ' | saturn',
@@ -210,12 +209,6 @@ export function extractProductAndCompany(
     const ip = $('[itemprop="name"]').first();
     const txt = ip.text().trim();
     if (txt) productName = txt;
-  }
-
-  // Amazon: dedicated #productTitle element
-  if (!productName) {
-    const amzTitle = $('#productTitle').first().text().trim();
-    if (amzTitle) productName = amzTitle;
   }
 
   const brandContent = $('meta[itemprop="brand"][content]').attr('content')?.trim();

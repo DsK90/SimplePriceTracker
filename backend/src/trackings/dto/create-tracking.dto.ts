@@ -5,15 +5,18 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 
 export class CreateTrackingDto {
-  @IsUrl({ require_tld: false })
-  url: string;
+  /** Key from Awin catalog search / feed (`advertiser_id:aw_product_id` or custom feed_key column). */
+  @IsString()
+  @MinLength(3)
+  @MaxLength(512)
+  awinFeedKey: string;
 
   @IsOptional()
   @IsString()

@@ -4,7 +4,7 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, DestroyRef, HostListener, OnInit, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService, UserProfile } from '../core/auth.service';
@@ -12,11 +12,24 @@ import { DashboardUiService } from '../core/dashboard-ui.service';
 import { parseDecimalInput } from '../core/parse-decimal-input';
 import { PushNotificationService } from '../core/push-notification.service';
 import { environment } from '../../environments/environment';
-import { map } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, of } from 'rxjs';
+
+type CatalogHit = {
+  feedKey: string;
+  title: string;
+  price: string;
+  currency: string;
+  advertiserName: string | null;
+  brand: string | null;
+  imageUrl: string | null;
+  merchantDeepLink: string;
+  category: string | null;
+};
 
 type Tracking = {
   id: string;
   url: string;
+  awinFeedKey?: string | null;
   productName: string;
   companyName: string | null;
   displayProductName: string;
@@ -95,8 +108,12 @@ export class DashboardComponent implements OnInit {
   );
 
   form = this.fb.nonNullable.group({
-    url: ['', [Validators.required]],
+    search: [''],
   });
+
+  catalogHits = signal<CatalogHit[]>([]);
+  catalogLoading = signal(false);
+  selectedCatalogHit = signal<CatalogHit | null>(null);
 
   editForm = this.fb.nonNullable.group({
     productNameOverride: [''],
@@ -129,7 +146,7 @@ export class DashboardComponent implements OnInit {
   scrapeMessage = signal('');
   private scrapeInterval: ReturnType<typeof setInterval> | null = null;
   private scrapeIdx = 0;
-  private static readonly SCRAPE_MSG_COUNT = 7;
+  private static readonly CATALOG_BUSY_MSG_COUNT = 4;
   private static readonly PRICE_NOT_FOUND_MSG_COUNT = 10;
 
   /** Pro-only: overlay with price snapshots for one tracking. */
@@ -147,17 +164,17 @@ export class DashboardComponent implements OnInit {
   private static readonly PUSH_REMINDER_KEY = 'pricefly_push_reminder';
   private static readonly PUSH_REMINDER_DELAYS = [0, 5 * 60_000, 30 * 60_000, 2 * 3600_000, 12 * 3600_000];
 
-  private readonly scrapeMsgEffect = effect(() => {
+  private readonly addBusyMsgEffect = effect(() => {
     const active = this.saving();
     if (active) {
       this.scrapeIdx = 0;
-      this.scrapeMessage.set(this.translate.instant('dashboard.scrapeMsg0'));
+      this.scrapeMessage.set(this.translate.instant('dashboard.catalogBusyMsg0'));
       this.scrapeInterval = setInterval(() => {
-        this.scrapeIdx = (this.scrapeIdx + 1) % DashboardComponent.SCRAPE_MSG_COUNT;
+        this.scrapeIdx = (this.scrapeIdx + 1) % DashboardComponent.CATALOG_BUSY_MSG_COUNT;
         this.scrapeMessage.set(
-          this.translate.instant(`dashboard.scrapeMsg${this.scrapeIdx}`),
+          this.translate.instant(`dashboard.catalogBusyMsg${this.scrapeIdx}`),
         );
-      }, 2500);
+      }, 2200);
     } else {
       if (this.scrapeInterval) {
         clearInterval(this.scrapeInterval);
@@ -183,13 +200,16 @@ export class DashboardComponent implements OnInit {
       const i = Math.floor(Math.random() * DashboardComponent.PRICE_NOT_FOUND_MSG_COUNT);
       return this.translate.instant(`dashboard.errors.priceNotFound${i}`);
     }
+    if (body?.code === 'AWIN_PRODUCT_NOT_IN_CATALOG') {
+      return this.translate.instant('dashboard.errors.awinNotInCatalog');
+    }
+    if (body?.code === 'LEGACY_NO_AWINSYNC') {
+      return this.translate.instant('dashboard.errors.legacyRefresh');
+    }
     if (body?.code === 'EMAIL_ALERT_LIMIT') {
       return this.translate.instant('dashboard.errors.emailAlertLimit', {
         max: body.limit ?? 2,
       });
-    }
-    if (body?.code === 'HTTP_FETCH_ERROR') {
-      return this.translate.instant('dashboard.errors.httpFetchError');
     }
     const m = body?.message;
     if (Array.isArray(m)) return m[0] ?? this.translate.instant(fallbackKey);
@@ -223,6 +243,36 @@ export class DashboardComponent implements OnInit {
     this.load();
     this.loadNotifCount();
     void this.initPush();
+
+    this.form.controls.search.valueChanges
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((raw) => {
+        const q = (raw ?? '').trim();
+        const sel = this.selectedCatalogHit();
+        if (sel && q !== sel.title) this.selectedCatalogHit.set(null);
+        if (q.length < 2) {
+          this.catalogHits.set([]);
+          this.catalogLoading.set(false);
+          return;
+        }
+        this.catalogLoading.set(true);
+        this.http
+          .get<CatalogHit[]>(`${environment.apiUrl}/trackings/catalog/search`, {
+            params: { q, limit: '30' },
+          })
+          .pipe(
+            catchError(() => of([] as CatalogHit[])),
+            finalize(() => this.catalogLoading.set(false)),
+          )
+          .subscribe((hits) => this.catalogHits.set(hits));
+      });
+  }
+
+  selectCatalogHit(h: CatalogHit): void {
+    this.selectedCatalogHit.set(h);
+    this.form.patchValue({ search: h.title }, { emitEvent: false });
+    this.catalogHits.set([]);
+    this.formError.set(null);
   }
 
   private hasAlertThresholds(): boolean {
@@ -523,13 +573,18 @@ export class DashboardComponent implements OnInit {
   }
 
   create() {
-    if (this.form.invalid) return;
+    const hit = this.selectedCatalogHit();
+    if (!hit) {
+      this.formError.set(this.translate.instant('dashboard.errors.pickProduct'));
+      return;
+    }
     this.saving.set(true);
     this.formError.set(null);
-    const v = this.form.getRawValue();
-    this.http.post<Tracking>(`${environment.apiUrl}/trackings`, { url: v.url }).subscribe({
+    this.http.post<Tracking>(`${environment.apiUrl}/trackings`, { awinFeedKey: hit.feedKey }).subscribe({
       next: () => {
-        this.form.reset({ url: '' });
+        this.form.reset({ search: '' });
+        this.selectedCatalogHit.set(null);
+        this.catalogHits.set([]);
         this.saving.set(false);
         this.load();
       },

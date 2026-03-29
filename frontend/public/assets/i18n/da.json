@@ -145,12 +145,18 @@
   },
   "dashboard": {
     "title": "Overvågninger",
+    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "Pro — ubegrænset aktive elementer",
     "freeLine": "Gratis — {{current}} af {{max}} pladser. ",
     "upgrade": "Opgrader",
     "activeAlerts": "{{count}} aktiv prisalarm",
     "activeAlertsPlural": "{{count}} aktive prisalarmer",
     "placeholderUrl": "Indsæt produkt-URL…",
+    "searchCatalogPlaceholder": "Search camera & tech… (min. 2 characters)",
+    "catalogBusyMsg0": "Saving…",
+    "catalogBusyMsg1": "Syncing feed…",
+    "catalogBusyMsg2": "Almost there…",
+    "catalogBusyMsg3": "Done soon…",
     "add": "Tilføj",
     "adding": "Tilføjer…",
     "scrapeMsg0": "Forhører databasen…",
@@ -211,6 +217,9 @@
       "enable": "Aktivér"
     },
     "errors": {
+      "pickProduct": "Choose a product from the search results first.",
+      "awinNotInCatalog": "Product not in catalog. Import or update your Awin feed on the server.",
+      "legacyRefresh": "This item used the old URL tracker. Delete it and add again from the catalog.",
       "addFailed": "Kunne ikke tilføje overvågning",
       "saveFailed": "Kunne ikke gemme",
       "refreshFailed": "Opdatering mislykkedes",

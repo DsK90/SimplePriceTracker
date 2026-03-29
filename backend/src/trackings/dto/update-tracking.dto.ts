@@ -5,17 +5,20 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
+  MinLength,
   ValidateIf,
 } from 'class-validator';
 
 export class UpdateTrackingDto {
+  /** Switch to another catalog product; updates URL, title, shop name and price from feed. */
   @IsOptional()
-  @IsUrl({ require_tld: false })
-  url?: string;
+  @IsString()
+  @MinLength(3)
+  @MaxLength(512)
+  awinFeedKey?: string;
 
   @IsOptional()
   @IsString()

@@ -29,6 +29,9 @@
               >
             }
           </p>
+          <p class="mt-1 max-w-xl text-[10px] leading-snug text-on-surface-variant/75 md:text-xs">
+            {{ 'dashboard.nicheSubtitleAwin' | translate }}
+          </p>
           <p class="mt-0.5 text-[10px] text-on-surface-variant/70 md:hidden">
             @if (items().length === 1) {
               {{ 'dashboard.activeAlerts' | translate: { count: items().length } }}
@@ -78,24 +81,51 @@
       <form
         [formGroup]="form"
         (ngSubmit)="create()"
-        class="flex w-full max-w-full flex-col gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-low/90 p-2 shadow-md shadow-black/20 ring-1 ring-outline-variant/15 md:max-w-md md:flex-row md:items-center md:p-1.5"
+        class="relative flex w-full max-w-full flex-col gap-2 rounded-xl border border-outline-variant/40 bg-surface-container-low/90 p-2 shadow-md shadow-black/20 ring-1 ring-outline-variant/15 md:max-w-lg md:flex-row md:items-start md:p-1.5"
       >
         <div class="relative min-w-0 flex-1">
           <span
             class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 hidden -translate-y-1/2 text-lg text-on-surface-variant/80 md:block"
-            >link</span
+            >search</span
           >
           <input
-            formControlName="url"
-            type="url"
-            [attr.placeholder]="'dashboard.placeholderUrl' | translate"
+            formControlName="search"
+            type="search"
+            autocomplete="off"
+            [attr.placeholder]="'dashboard.searchCatalogPlaceholder' | translate"
             [disabled]="saving()"
             class="w-full rounded-lg border border-outline-variant/45 bg-surface-container-highest py-2 pl-3 pr-3 text-xs text-on-surface shadow-inner shadow-black/10 placeholder:text-on-surface-variant/65 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/35 disabled:opacity-60 disabled:cursor-not-allowed md:py-2 md:pl-9 md:text-sm md:placeholder:text-on-surface-variant/55"
           />
+          @if (catalogLoading()) {
+            <p class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant/70">
+              …
+            </p>
+          }
+          @if (catalogHits().length > 0 && !selectedCatalogHit()) {
+            <ul
+              class="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-auto rounded-lg border border-outline-variant/40 bg-surface-container-highest py-1 shadow-lg"
+              role="listbox"
+            >
+              @for (h of catalogHits(); track h.feedKey) {
+                <li role="option">
+                  <button
+                    type="button"
+                    (click)="selectCatalogHit(h)"
+                    class="flex w-full flex-col gap-0.5 px-3 py-2 text-left text-xs transition hover:bg-primary/10"
+                  >
+                    <span class="font-semibold text-on-surface">{{ h.title }}</span>
+                    <span class="text-[10px] text-on-surface-variant/85">
+                      {{ h.advertiserName || h.brand || '—' }} · {{ h.price }} {{ h.currency }}
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
         </div>
         <button
           type="submit"
-          [disabled]="form.invalid || saving()"
+          [disabled]="!selectedCatalogHit() || saving()"
           class="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/25 bg-primary px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-on-primary-container shadow-lg shadow-primary-container/45 ring-1 ring-white/20 transition active:scale-95 hover:brightness-110 disabled:opacity-70 md:rounded-lg md:px-4 md:text-sm md:normal-case md:tracking-normal"
         >
           @if (saving()) {

@@ -145,12 +145,18 @@
   },
   "dashboard": {
     "title": "追踪列表",
+    "nicheSubtitleAwin": "Camera & tech via Awin: search your imported feed — prices from the feed only (no shop scraping).",
     "proSubtitle": "专业版 — 无限活跃条目",
     "freeLine": "免费 — 已用 {{current}} / {{max}} 个名额。",
     "upgrade": "升级",
     "activeAlerts": "{{count}} 个活跃价格提醒",
     "activeAlertsPlural": "{{count}} 个活跃价格提醒",
     "placeholderUrl": "粘贴商品链接…",
+    "searchCatalogPlaceholder": "Search camera & tech… (min. 2 characters)",
+    "catalogBusyMsg0": "Saving…",
+    "catalogBusyMsg1": "Syncing feed…",
+    "catalogBusyMsg2": "Almost there…",
+    "catalogBusyMsg3": "Done soon…",
     "add": "添加",
     "adding": "添加中…",
     "scrapeMsg0": "正在审讯数据库…",
@@ -211,6 +217,9 @@
       "enable": "启用"
     },
     "errors": {
+      "pickProduct": "Choose a product from the search results first.",
+      "awinNotInCatalog": "Product not in catalog. Import or update your Awin feed on the server.",
+      "legacyRefresh": "This item used the old URL tracker. Delete it and add again from the catalog.",
       "addFailed": "无法添加追踪",
       "saveFailed": "无法保存",
       "refreshFailed": "刷新失败",

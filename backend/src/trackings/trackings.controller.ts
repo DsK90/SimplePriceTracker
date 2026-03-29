@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, RequestUser } from '../auth/decorators/current-user.decorator';
 import { DemoPriceDto } from './dto/demo-price.dto';
@@ -15,6 +25,13 @@ export class TrackingsController {
   @Get()
   list(@CurrentUser() user: RequestUser) {
     return this.trackings.list(user.userId);
+  }
+
+  /** Search Awin catalog (camera & tech products after you import a niche feed). */
+  @Get('catalog/search')
+  searchCatalog(@Query('q') q: string, @Query('limit') limit?: string) {
+    const n = limit ? Number.parseInt(limit, 10) : 20;
+    return this.trackings.searchCatalog(q ?? '', Number.isFinite(n) ? n : 20);
   }
 
   @Post()

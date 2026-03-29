@@ -1,0 +1,48 @@
+# Manual: stop the whole Pricefly stack on the deploy server (app unreachable until you deploy/start again).
+# Uses the same compose project as production TLS. Does not remove volumes (Postgres data kept).
+# Secrets: DEPLOY_SSH_KEY, DEPLOY_HOST (same as Deploy / Restart workflows).
+name: Take app offline
+
+on:
+  workflow_dispatch:
+    inputs:
+      remove_volumes:
+        description: 'Also remove named volumes (⚠️ deletes Postgres data in pgdata)'
+        required: true
+        type: boolean
+        default: false
+
+env:
+  DEPLOY_PATH: /usr/src/pricefly
+
+jobs:
+  stop-stack:
+    name: Stop Docker stack on server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Docker Compose down (stack offline)
+        env:
+          REMOVE_VOLUMES: ${{ inputs.remove_volumes }}
+        run: |
+          FLAGS="--remove-orphans"
+          if [ "$REMOVE_VOLUMES" = "true" ]; then
+            FLAGS="$FLAGS -v"
+          fi
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${{ secrets.DEPLOY_HOST }} \
+            "cd '${{ env.DEPLOY_PATH }}' && docker compose -f docker-compose.yml -f docker-compose.ssl.yml down $FLAGS"
+
+      - name: Summary
+        run: |
+          echo "Stack stopped on ${{ secrets.DEPLOY_HOST }} (path: ${{ env.DEPLOY_PATH }})."
+          if [ "${{ inputs.remove_volumes }}" = "true" ]; then
+            echo "::warning::Volumes were removed — database data in this compose project is gone unless you have backups."
+          else
+            echo "Volumes kept — \`docker compose ... up -d\` (e.g. via deploy) will reuse existing Postgres data."
+          fi

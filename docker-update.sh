@@ -62,3 +62,4 @@ else
 fi
 
 echo "Done."
+echo "PgAdmin: local = compose + docker-compose.dev.yml → :5050 | production = https://<domain>/<PGADMIN_WEB_PATH>/ — see .env.example"

@@ -21,6 +21,22 @@ services:
     networks:
       - pricefly_net
 
+  # pgAdmin: local dev → http://localhost:5050 (no subpath). With docker-compose.ssl.yml, host port is closed; use Nginx path from .env.
+  pgadmin:
+    image: dpage/pgadmin4:8
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@localhost}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-change-me}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_WTF_CSRF_TIME_LIMIT: 'None'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pricefly_net
+
   api:
     build:
       context: ./backend
@@ -78,3 +94,4 @@ services:
 
 volumes:
   pgdata:
+  pgadmin_data:

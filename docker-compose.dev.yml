@@ -1,0 +1,7 @@
+# Optional: publish pgAdmin on http://localhost:5050 (no TLS subpath).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# Do not merge this file with docker-compose.ssl.yml on production servers.
+services:
+  pgadmin:
+    ports:
+      - '5050:80'

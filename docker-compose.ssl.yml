@@ -2,7 +2,7 @@
 # Usage:
 #   1. mkdir -p nginx/certbot_conf nginx/certbot_www
 #   2. Set SSL_PRIMARY_DOMAIN, LETSENCRYPT_EMAIL, SSL_EXTRA_DOMAINS (optional) in .env
-#   3. docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d postgres api web
+#   3. docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d postgres api web pgadmin
 #   4. Ensure host port 80 is free, then obtain certs (one-time):
 #        docker compose -f docker-compose.yml -f docker-compose.ssl.yml --profile init run --rm certbot-init
 #   5. docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d edge certbot
@@ -19,6 +19,11 @@ services:
   web:
     ports: []
 
+  pgadmin:
+    environment:
+      PGADMIN_CONFIG_SCRIPT_NAME: '"/${PGADMIN_WEB_PATH:-pf-7m2xk9qn-dbadmin}"'
+      PGADMIN_CONFIG_SESSION_COOKIE_SECURE: 'True'
+
   edge:
     build:
       context: .
@@ -32,10 +37,13 @@ services:
       - ./nginx/certbot_www:/var/lib/letsencrypt
     environment:
       SSL_PRIMARY_DOMAIN: ${SSL_PRIMARY_DOMAIN}
+      PGADMIN_WEB_PATH: ${PGADMIN_WEB_PATH:-pf-7m2xk9qn-dbadmin}
     depends_on:
       web:
         condition: service_started
       api:
+        condition: service_started
+      pgadmin:
         condition: service_started
     networks:
       - pricefly_net

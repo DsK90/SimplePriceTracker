@@ -151,7 +151,7 @@
     "activeAlerts": "{{count}} aktiv prisalarm",
     "activeAlertsPlural": "{{count}} aktive prisalarmer",
     "placeholderUrl": "Indsæt produkt-URL…",
-    "searchCatalogPlaceholder": "Search camera & tech… (min. 2 characters)",
+    "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogBusyMsg0": "Saving…",
     "catalogBusyMsg1": "Syncing feed…",
     "catalogBusyMsg2": "Almost there…",

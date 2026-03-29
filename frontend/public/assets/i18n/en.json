@@ -208,7 +208,7 @@
     "activeAlerts": "{{count}} active price alert",
     "activeAlertsPlural": "{{count}} active price alerts",
     "placeholderUrl": "Paste product URL…",
-    "searchCatalogPlaceholder": "Search camera & tech… (min. 2 characters)",
+    "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogBusyMsg0": "Reserving a shelf in the watchlist…",
     "catalogBusyMsg1": "Syncing with your Awin feed…",
     "catalogBusyMsg2": "Polishing price tags…",

@@ -208,7 +208,7 @@
     "activeAlerts": "{{count}} aktiver Preisalarm",
     "activeAlertsPlural": "{{count}} aktive Preisalarme",
     "placeholderUrl": "Produkt-URL einfügen…",
-    "searchCatalogPlaceholder": "Kamera & Technik suchen… (mind. 2 Zeichen)",
+    "searchCatalogPlaceholder": "Produktname, Stichwort oder Shop-Link (URL)… (mind. 2 Zeichen)",
     "catalogBusyMsg0": "Eintrag wird vorbereitet…",
     "catalogBusyMsg1": "Abgleich mit Awin-Feed…",
     "catalogBusyMsg2": "Preise werden gesichert…",

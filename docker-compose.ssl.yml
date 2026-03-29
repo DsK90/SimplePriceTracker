@@ -21,7 +21,8 @@ services:
 
   pgadmin:
     environment:
-      PGADMIN_CONFIG_SCRIPT_NAME: '"/${PGADMIN_WEB_PATH:-pf-7m2xk9qn-dbadmin}"'
+      # Official subpath for the container (see pgAdmin container docs); must match edge X-Script-Name / nginx location.
+      SCRIPT_NAME: /${PGADMIN_WEB_PATH:-pf-7m2xk9qn-dbadmin}
       PGADMIN_CONFIG_SESSION_COOKIE_SECURE: 'True'
 
   edge:

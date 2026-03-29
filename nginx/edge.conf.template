@@ -69,7 +69,8 @@ http {
         }
 
         location ^~ /__PGADMIN_PATH__/ {
-            proxy_pass http://pgadmin:80/;
+            # No URI on proxy_pass: forward full path /__PGADMIN_PATH__/… so pgAdmin matches SCRIPT_NAME.
+            proxy_pass http://pgadmin:80;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;

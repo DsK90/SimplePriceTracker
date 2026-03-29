@@ -2,6 +2,9 @@
 # Rebuild and restart the Pricefly Docker stack with TLS (docker-compose.yml + docker-compose.ssl.yml).
 # Preserves named volumes (e.g. Postgres pgdata). Keeps nginx/certbot_conf on disk (rsync excludes it from CI).
 # Requires: .env with SSL_PRIMARY_DOMAIN, LETSENCRYPT_EMAIL, etc. Port 80 must be free when certbot-init runs.
+#
+# If you only edit .env (e.g. VAPID_*, JWT_SECRET) and do not run this script, reload env into the API container:
+#   docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d --force-recreate api
 set -euo pipefail
 
 cd "$(dirname "$0")"

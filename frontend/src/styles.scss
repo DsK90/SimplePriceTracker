@@ -35,6 +35,14 @@
   scrollbar-width: none;
 }
 
+/* Landing header/footer chrome (shared across routes) */
+.landing-nav-blur {
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+}
+.primary-gradient {
+  background: linear-gradient(135deg, #adc6ff 0%, #4d8eff 100%);
+}
+
 /* Angular CDK drag-drop (minimal — matches Material CDK behavior) */
 .cdk-drag-preview {
   box-sizing: border-box;

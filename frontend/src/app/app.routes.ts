@@ -17,7 +17,6 @@ export const routes: Routes = [
     pathMatch: 'full',
     component: HomeComponent,
     canActivate: [guestHomeGuard],
-    data: { layout: 'landing' },
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },

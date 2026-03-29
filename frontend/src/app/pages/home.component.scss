@@ -3,10 +3,6 @@
   backdrop-filter: blur(20px);
 }
 
-.primary-gradient {
-  background: linear-gradient(135deg, #adc6ff 0%, #4d8eff 100%);
-}
-
 .chart-line {
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
@@ -19,6 +15,3 @@
   }
 }
 
-.landing-nav-blur {
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-}

@@ -38,7 +38,7 @@
       "badge": "Updated once per day",
       "title": "Track camera & tech prices —",
       "titleAccent": " buy at the right time",
-      "sub": "Pricefly uses prices from a partner product catalog (Awin). Search for a product, add it, and optionally set price thresholds plus email or push notifications. Automatic checks run once per day for all products together; you can also refresh any item manually at any time.",
+      "sub": "Pricefly uses prices from a partner product catalog. Search for a product, add it, and optionally set price thresholds plus email or push notifications. Automatic checks run once per day for all products together; you can also refresh any item manually at any time.",
       "ctaPrimary": "Create account",
       "ctaSecondary": "Pricing & limits",
       "learnMore": "How it works ↓"
@@ -345,7 +345,7 @@
     },
     "errors": {
       "pickProduct": "Pick a product from the search results first.",
-      "awinNotInCatalog": "That product is not in the catalog. Import or update your Awin feed on the server, then try again.",
+      "awinNotInCatalog": "That product is not in the catalog. Import or update your feed on the server, then try again.",
       "legacyRefresh": "This item used the old URL-based tracker. Delete it and add the product again from the catalog.",
       "addFailed": "Could not add tracking",
       "saveFailed": "Could not save",

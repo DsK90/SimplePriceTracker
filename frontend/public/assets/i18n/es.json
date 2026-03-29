@@ -225,7 +225,7 @@
     },
     "errors": {
       "pickProduct": "Choose a product from the search results first.",
-      "awinNotInCatalog": "Product not in catalog. Import or update your Awin feed on the server.",
+      "awinNotInCatalog": "Product not in catalog. Import or update your feed on the server.",
       "legacyRefresh": "This item used the old URL tracker. Delete it and add again from the catalog.",
       "addFailed": "No se pudo añadir el seguimiento",
       "saveFailed": "No se pudo guardar",
@@ -294,7 +294,7 @@
       "badge": "Updated once per day",
       "title": "Track camera & tech prices —",
       "titleAccent": " buy at the right time",
-      "sub": "Pricefly uses prices from a partner product catalog (Awin). Search for a product, add it, and optionally set price thresholds plus email or push notifications. Automatic checks run once per day for all products together; you can also refresh any item manually at any time.",
+      "sub": "Pricefly uses prices from a partner product catalog. Search for a product, add it, and optionally set price thresholds plus email or push notifications. Automatic checks run once per day for all products together; you can also refresh any item manually at any time.",
       "ctaPrimary": "Create account",
       "ctaSecondary": "Pricing & limits",
       "learnMore": "How it works ↓"

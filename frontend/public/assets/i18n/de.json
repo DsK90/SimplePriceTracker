@@ -38,7 +38,7 @@
       "badge": "Einmal täglich aktualisiert",
       "title": "Kamera- & Tech-Preise im Blick –",
       "titleAccent": " zum richtigen Zeitpunkt kaufen",
-      "sub": "Pricefly nutzt Preise aus einem Partner-Produktkatalog (Awin). Du suchst ein Produkt, trägst es ein und kannst optional Preis-Schwellen sowie E-Mail- oder Push-Benachrichtigungen nutzen. Die automatische Abfrage läuft für alle Produkte gemeinsam einmal pro Tag; zusätzlich kannst du jederzeit manuell aktualisieren.",
+      "sub": "Pricefly nutzt Preise aus einem Partner-Produktkatalog. Du suchst ein Produkt, trägst es ein und kannst optional Preis-Schwellen sowie E-Mail- oder Push-Benachrichtigungen nutzen. Die automatische Abfrage läuft für alle Produkte gemeinsam einmal pro Tag; zusätzlich kannst du jederzeit manuell aktualisieren.",
       "ctaPrimary": "Konto anlegen",
       "ctaSecondary": "Preise & Limits",
       "learnMore": "So funktioniert's ↓"
@@ -344,7 +344,7 @@
     },
     "errors": {
       "pickProduct": "Bitte zuerst ein Produkt aus den Suchergebnissen wählen.",
-      "awinNotInCatalog": "Produkt nicht im Katalog. Awin-Feed auf dem Server importieren oder aktualisieren, dann erneut suchen.",
+      "awinNotInCatalog": "Produkt nicht im Katalog. Feed auf dem Server importieren oder aktualisieren, dann erneut suchen.",
       "legacyRefresh": "Dieser Eintrag stammt noch von der alten URL-basierten Variante. Löschen und Produkt erneut aus dem Katalog hinzufügen.",
       "addFailed": "Beobachtung konnte nicht hinzugefügt werden",
       "saveFailed": "Speichern fehlgeschlagen",

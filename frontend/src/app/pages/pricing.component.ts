@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -68,6 +68,27 @@ type Plan = {
                 </button>
               }
             } @else {
+              <label class="subscribe-terms-row">
+                <input
+                  type="checkbox"
+                  [checked]="proSubscribeTermsAccepted()"
+                  (change)="onProSubscribeTermsChange($any($event.target).checked)"
+                />
+                <span class="subscribe-terms-label">
+                  {{ 'pricing.subscribeTermsStart' | translate }}
+                  <a routerLink="/terms" target="_blank" rel="noopener noreferrer">{{
+                    'pricing.subscribeTermsTerms' | translate
+                  }}</a>
+                  {{ 'pricing.subscribeTermsMiddle' | translate }}
+                  <a routerLink="/fair-use" target="_blank" rel="noopener noreferrer">{{
+                    'pricing.subscribeTermsFairUse' | translate
+                  }}</a>
+                  {{ 'pricing.subscribeTermsEnd' | translate }}
+                </span>
+              </label>
+              @if (!proSubscribeTermsAccepted()) {
+                <p class="muted small subscribe-terms-hint">{{ 'pricing.subscribeTermsPayPalHint' | translate }}</p>
+              }
               <div #paypalHost class="paypal-host"></div>
             }
           </div>
@@ -296,9 +317,34 @@ type Plan = {
         margin: 0.25rem 0 0;
         font-weight: 600;
       }
+      .subscribe-terms-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-top: 0.35rem;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        color: var(--muted, #a8b4d4);
+      }
+      .subscribe-terms-row input {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+      }
+      .subscribe-terms-label a {
+        color: #9eb7ff;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .subscribe-terms-hint {
+        margin: 0.25rem 0 0;
+      }
       .paypal-host {
         min-height: 52px;
         margin-top: 0.35rem;
+      }
+      .paypal-host:empty {
+        min-height: 0;
+        margin-top: 0;
       }
       .paypal-skeleton {
         display: flex;
@@ -364,6 +410,8 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   paypalReady = signal(false);
   paypalError = signal('');
   cancelling = signal(false);
+  /** Gated PayPal widget until user confirms subscription-related terms. */
+  proSubscribeTermsAccepted = signal(false);
   private paypalClientId = signal('');
   private loadTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -380,11 +428,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     if (this.auth.isLoggedIn()) {
       this.auth.loadProfile().subscribe({ error: () => {} });
-    }
-
-    const u = this.auth.user();
-    if (this.auth.isLoggedIn() && u?.planTier !== 'PRO' && !u?.isAdmin) {
-      this.startLoadTimeout();
     }
 
     this.http.get<Plan[]>(`${environment.apiUrl}/plans`).subscribe({
@@ -446,6 +489,18 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     setTimeout(() => void this.tryRenderPaypal(), 0);
   }
 
+  onProSubscribeTermsChange(checked: boolean) {
+    this.proSubscribeTermsAccepted.set(checked);
+    if (!checked) {
+      this.clearLoadTimeout();
+      const host = this.paypalHost()?.nativeElement;
+      if (host) host.innerHTML = '';
+      this.paypalReady.set(false);
+      this.paypalError.set('');
+    }
+    this.scheduleRender();
+  }
+
   private async tryRenderPaypal() {
     const plan = this.proPlan();
     const paypal = this.paypalSdk;
@@ -453,12 +508,20 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
     if (!plan?.paypalPlanId || !paypal?.Buttons || !host) return;
     const cu = this.auth.user();
     if (!this.auth.isLoggedIn() || cu?.planTier === 'PRO' || cu?.isAdmin) return;
+    if (!this.proSubscribeTermsAccepted()) {
+      host.innerHTML = '';
+      this.paypalReady.set(false);
+      return;
+    }
 
     host.innerHTML = '';
     this.paypalReady.set(false);
 
     const hostId = `pp-sub-${Date.now()}`;
     host.id = hostId;
+
+    this.clearLoadTimeout();
+    this.startLoadTimeout();
 
     try {
       await paypal
@@ -481,17 +544,38 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
           },
           onApprove: async (data: { subscriptionID?: string }) => {
             if (!data.subscriptionID) return;
-            await new Promise<void>((resolve, reject) => {
-              this.http
-                .post(`${environment.apiUrl}/paypal/activate`, { subscriptionId: data.subscriptionID })
-                .subscribe({
-                  next: () => {
-                    this.auth.loadProfile().subscribe({ error: () => {} });
-                    resolve();
-                  },
-                  error: reject,
-                });
-            });
+            try {
+              await new Promise<void>((resolve, reject) => {
+                this.http
+                  .post(`${environment.apiUrl}/paypal/activate`, {
+                    subscriptionId: data.subscriptionID,
+                    acceptSubscriptionTerms: true,
+                  })
+                  .subscribe({
+                    next: () => {
+                      this.auth.loadProfile().subscribe({ error: () => {} });
+                      resolve();
+                    },
+                    error: reject,
+                  });
+              });
+            } catch (e) {
+              const err = e as HttpErrorResponse;
+              const nested = err.error?.message;
+              const code =
+                typeof nested === 'object' && nested && 'code' in nested
+                  ? (nested as { code: string }).code
+                  : err.error?.code;
+              if (err.status === 403 && code === 'TERMS_NOT_ACCEPTED') {
+                this.paypalError.set(this.translate.instant('pricing.activateTermsError'));
+              } else {
+                this.paypalError.set(
+                  err.error?.message && typeof err.error.message === 'string'
+                    ? err.error.message
+                    : this.translate.instant('pricing.paypalLoadError'),
+                );
+              }
+            }
           },
         })
         .render(`#${hostId}`);
@@ -512,7 +596,6 @@ export class PricingComponent implements AfterViewInit, OnDestroy {
           next: () => {
             this.paypalReady.set(false);
             this.paypalError.set('');
-            this.startLoadTimeout();
             // Small delay so Angular renders the #paypalHost div first
             setTimeout(() => this.scheduleRender(), 50);
           },

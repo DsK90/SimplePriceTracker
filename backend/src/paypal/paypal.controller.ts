@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { PlanTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -35,6 +35,17 @@ export class PaypalController {
     @CurrentUser() user: RequestUser,
     @Body() body: ActivateSubscriptionDto,
   ) {
+    const row = await this.prisma.user.findUniqueOrThrow({
+      where: { id: user.userId },
+      select: { termsAcceptedAt: true },
+    });
+    if (!row.termsAcceptedAt) {
+      throw new ForbiddenException({
+        code: 'TERMS_NOT_ACCEPTED',
+        message: 'Terms of Service must be accepted before subscribing.',
+      });
+    }
+
     const active = await this.paypal.checkSubscriptionStatus(body.subscriptionId);
     if (!active) {
       return { ok: false, message: 'Subscription is not active' };

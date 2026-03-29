@@ -79,7 +79,8 @@ http {
             proxy_set_header X-Script-Name /__PGADMIN_PATH__;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
-            proxy_cookie_path / /__PGADMIN_PATH__/;
+            # Do not use proxy_cookie_path here: pgAdmin already scopes cookies with SCRIPT_NAME;
+            # rewriting "/" would double the prefix (…/pf-xxx/pf-xxx) and break the session in the browser.
             proxy_redirect off;
         }
 

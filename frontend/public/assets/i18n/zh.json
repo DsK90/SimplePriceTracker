@@ -284,5 +284,68 @@
       "m10080": "每周",
       "unknown": "{{minutes}} 分钟"
     }
+  },
+  "home": {
+    "nav": {
+      "how": "How it works",
+      "cta": "Get started free"
+    },
+    "hero": {
+      "badge": "Updated once per day",
+      "title": "Track camera & tech prices —",
+      "titleAccent": " buy at the right time",
+      "sub": "Pricefly uses prices from a partner product catalog (Awin). Search for a product, add it, and optionally set price thresholds plus email or push notifications. Automatic checks run once per day for all products together; you can also refresh any item manually at any time.",
+      "ctaPrimary": "Create account",
+      "ctaSecondary": "Pricing & limits",
+      "learnMore": "How it works ↓"
+    },
+    "mock": {
+      "bestPrice": "Example: catalog price",
+      "exampleDrop": "Example",
+      "rrp": "Retailers vary",
+      "productLabel": "Product",
+      "threshold": "Alert below target",
+      "notifyLabel": "Notifications",
+      "notifyOn": "Push / email (plan & server)",
+      "catalog": "Partner catalog",
+      "catalogSub": "No shop scraping"
+    },
+    "steps": {
+      "title": "How Pricefly actually works",
+      "sub": "Three steps as in the app — no buzzwords."
+    },
+    "step1": {
+      "title": "1. Find a product in the catalog",
+      "body": "Search by name, keyword, or a shop URL from the feed, then pick a result. Data comes from your imported partner catalog — not arbitrary store URLs."
+    },
+    "step2": {
+      "title": "2. Set alerts (optional)",
+      "body": "Choose lower and/or upper price limits and enable email or system notifications (Web Push) where your plan and server configuration allow."
+    },
+    "step3": {
+      "title": "3. Follow the price and buy",
+      "body": "We refresh all active catalog trackings once per day. You can refresh manually anytime. Purchase via the merchant link shown in the app."
+    },
+    "facts": {
+      "title": "What the app really offers",
+      "a": "Prices from the imported partner catalog — not “paste any URL and scrape the page”.",
+      "b": "Automatic check once per day for all products; you choose the time of day and time zone in the app.",
+      "c": "Manual refresh per product anytime.",
+      "d": "Plan limits (e.g. number of trackings, email alerts) — see Pricing."
+    },
+    "cta": {
+      "title": "Ready?",
+      "sub": "Sign up free, search the catalog, and set price alerts.",
+      "button": "Register now",
+      "note": "No credit card required to get started. Terms and privacy policy apply."
+    },
+    "affiliate": {
+      "title": "Affiliate note: ",
+      "body": "Offers may use affiliate programs; that usually does not change the price you pay. The app uses your imported feed — we do not pick products by commission in the UI."
+    },
+    "footer": {
+      "copy": "© 2026 Pricefly"
+    },
+    "stickyCta": "Get started free"
   }
 }

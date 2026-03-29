@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth.guard';
+import { authGuard, guestHomeGuard } from './core/auth.guard';
 import { DashboardComponent } from './pages/dashboard.component';
+import { HomeComponent } from './pages/home.component';
 import { LoginComponent } from './pages/login.component';
 import { PricingComponent } from './pages/pricing.component';
 import { RegisterComponent } from './pages/register.component';
@@ -11,7 +12,13 @@ import { ImprintComponent } from './pages/imprint.component';
 import { TermsComponent } from './pages/terms.component';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'pricing' },
+  {
+    path: '',
+    pathMatch: 'full',
+    component: HomeComponent,
+    canActivate: [guestHomeGuard],
+    data: { layout: 'landing' },
+  },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'verify-email', component: VerifyEmailComponent },
@@ -22,5 +29,5 @@ export const routes: Routes = [
   { path: 'agb', redirectTo: 'terms', pathMatch: 'full' },
   { path: 'imprint', component: ImprintComponent },
   { path: 'gdpr', component: GdprComponent },
-  { path: '**', redirectTo: 'pricing' },
+  { path: '**', redirectTo: '' },
 ];

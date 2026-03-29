@@ -29,7 +29,7 @@ export class PageTopNavComponent {
   private auth = inject(AuthService);
 
   backPath(): string {
-    return this.auth.isLoggedIn() ? '/dashboard' : '/pricing';
+    return this.auth.isLoggedIn() ? '/dashboard' : '/';
   }
 
   /** Hide upsell when already on Pro. */

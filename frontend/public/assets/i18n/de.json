@@ -29,6 +29,69 @@
     "installApp": "App installieren",
     "installAppShort": "App"
   },
+  "home": {
+    "nav": {
+      "how": "So funktioniert's",
+      "cta": "Kostenlos starten"
+    },
+    "hero": {
+      "badge": "Einmal täglich aktualisiert",
+      "title": "Kamera- & Tech-Preise im Blick –",
+      "titleAccent": " zum richtigen Zeitpunkt kaufen",
+      "sub": "Pricefly nutzt Preise aus einem Partner-Produktkatalog (Awin). Du suchst ein Produkt, trägst es ein und kannst optional Preis-Schwellen sowie E-Mail- oder Push-Benachrichtigungen nutzen. Die automatische Abfrage läuft für alle Produkte gemeinsam einmal pro Tag; zusätzlich kannst du jederzeit manuell aktualisieren.",
+      "ctaPrimary": "Konto anlegen",
+      "ctaSecondary": "Preise & Limits",
+      "learnMore": "So funktioniert's ↓"
+    },
+    "mock": {
+      "bestPrice": "Beispiel: Katalogpreis",
+      "exampleDrop": "Beispiel",
+      "rrp": "Händler & Vergleich variieren",
+      "productLabel": "Produkt",
+      "threshold": "Alarm unter Zielpreis",
+      "notifyLabel": "Benachrichtigung",
+      "notifyOn": "Push / E-Mail (je nach Tarif)",
+      "catalog": "Partnerkatalog",
+      "catalogSub": "Kein Shop-Scraping"
+    },
+    "steps": {
+      "title": "So funktioniert Pricefly – wirklich",
+      "sub": "Drei Schritte, so wie in der App – ohne Marketing-Floskeln."
+    },
+    "step1": {
+      "title": "1. Produkt im Katalog finden",
+      "body": "Suche nach Name, Stichwort oder einem Shop-Link aus dem Feed. Wähle den passenden Treffer – die Daten stammen aus dem importierten Partnerkatalog, nicht von beliebigen Shop-URLs."
+    },
+    "step2": {
+      "title": "2. Optional Alarme einrichten",
+      "body": "Lege Unter- und/oder Obergrenzen fest und aktiviere E-Mail- oder System-Benachrichtigungen (Web Push), soweit der Server sie anbietet und dein Tarif es erlaubt."
+    },
+    "step3": {
+      "title": "3. Preis folgen und kaufen",
+      "body": "Einmal täglich aktualisieren wir alle aktiven Einträge aus dem Katalog. Du kannst jederzeit manuell aktualisieren. Zum Kauf nutzt du den Händler-Link wie in der App angezeigt."
+    },
+    "facts": {
+      "title": "Das bietet die App tatsächlich",
+      "a": "Preise aus dem importierten Partnerkatalog – kein klassisches „beliebige URL scrapen“.",
+      "b": "Automatische Prüfung einmal pro Tag für alle Produkte; Uhrzeit und Zeitzone stellst du in der App ein.",
+      "c": "Manuelles Aktualisieren pro Produkt jederzeit möglich.",
+      "d": "Tarifabhängige Limits (z. B. Anzahl Beobachtungen, E-Mail-Alarms) – siehe Preise."
+    },
+    "cta": {
+      "title": "Bereit?",
+      "sub": "Kostenlos registrieren, Katalog durchsuchen und Preisalarme setzen.",
+      "button": "Jetzt registrieren",
+      "note": "Keine Kreditkarte nötig für den Einstieg. Es gelten AGB und Datenschutz."
+    },
+    "affiliate": {
+      "title": "Hinweis zu Partnerlinks: ",
+      "body": "Angebote können über Affiliate-Programme vermittelt werden. Für dich ändert sich der Preis dadurch in der Regel nicht. Die App nutzt den eingespielten Feed – keine manuelle Auswahl nach Provisionshöhe."
+    },
+    "footer": {
+      "copy": "© 2026 Pricefly"
+    },
+    "stickyCta": "Jetzt kostenlos starten"
+  },
   "pwa": {
     "iosHint": "So installieren Sie Pricefly auf iPhone oder iPad:\n\n1. Tippen Sie auf Teilen \n2. Nach unten scrollen und „Zum Home-Bildschirm“ wählen\n3. Auf Hinzufügen tippen",
     "browserHint": "Zum Installieren der App das Browser-Menü öffnen (⋮ oder ⋯) und „App installieren“ oder „Zum Home-Bildschirm“ wählen. Auf dem Smartphone bieten meist Chrome oder Edge die Installation; auf iPhone/iPad: Teilen → Zum Home-Bildschirm."

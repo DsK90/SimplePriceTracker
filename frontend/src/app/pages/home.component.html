@@ -1,0 +1,293 @@
+<div class="min-h-[100dvh] bg-background text-on-surface">
+  <!-- Local nav (global app chrome hidden on this route) -->
+  <nav
+    class="landing-nav-blur fixed top-0 z-50 flex w-full items-center justify-between border-b border-outline-variant/10 bg-background/70 px-4 py-3 backdrop-blur-xl md:px-8 md:py-4"
+  >
+    <span class="font-headline text-xl font-extrabold tracking-tight text-primary md:text-2xl">{{
+      'app.brand' | translate
+    }}</span>
+    <div class="flex items-center gap-3 md:gap-5">
+      <a
+        routerLink="/"
+        fragment="how-it-works"
+        class="hidden text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface md:inline"
+        >{{ 'home.nav.how' | translate }}</a
+      >
+      <a
+        routerLink="/pricing"
+        class="hidden text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface md:inline"
+        >{{ 'nav.pricing' | translate }}</a
+      >
+      <a routerLink="/login" class="text-sm font-medium text-on-surface-variant hover:text-primary">{{
+        'nav.signIn' | translate
+      }}</a>
+      <a
+        routerLink="/register"
+        class="primary-gradient rounded-xl px-3 py-2 font-headline text-sm font-bold text-on-primary-container shadow-md transition hover:brightness-110 active:scale-[0.98] md:px-5 md:py-2.5"
+        >{{ 'home.nav.cta' | translate }}</a
+      >
+    </div>
+  </nav>
+
+  <main class="pb-28 pt-[4.5rem] md:pb-16 md:pt-24">
+    <!-- Hero -->
+    <section class="mx-auto max-w-7xl px-4 md:px-8">
+      <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div class="space-y-6 text-center lg:text-left">
+          <div
+            class="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary"
+          >
+            <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1"
+              >schedule</span
+            >
+            {{ 'home.hero.badge' | translate }}
+          </div>
+          <h1
+            class="font-headline text-3xl font-extrabold leading-[1.12] tracking-tight text-on-background md:text-5xl lg:text-6xl"
+          >
+            {{ 'home.hero.title' | translate }}
+            <span class="text-primary">{{ 'home.hero.titleAccent' | translate }}</span>
+          </h1>
+          <p class="mx-auto max-w-xl text-base leading-relaxed text-on-surface-variant md:text-lg lg:mx-0">
+            {{ 'home.hero.sub' | translate }}
+          </p>
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <a
+              routerLink="/register"
+              class="primary-gradient inline-flex items-center justify-center rounded-xl px-8 py-4 font-headline text-base font-bold text-on-primary-container shadow-lg transition hover:brightness-110 active:scale-[0.98]"
+              >{{ 'home.hero.ctaPrimary' | translate }}</a
+            >
+            <a
+              routerLink="/pricing"
+              class="inline-flex items-center justify-center rounded-xl border border-outline-variant/40 bg-surface-container-high px-8 py-4 font-headline text-base font-bold text-on-surface transition hover:bg-surface-bright active:scale-[0.98]"
+              >{{ 'home.hero.ctaSecondary' | translate }}</a
+            >
+          </div>
+          <a
+            routerLink="/"
+            fragment="how-it-works"
+            class="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline md:hidden"
+            >{{ 'home.hero.learnMore' | translate }}</a
+          >
+        </div>
+
+        <!-- Mock device / chart -->
+        <div class="relative mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
+          <div class="absolute -inset-4 rounded-full bg-primary/15 blur-3xl" aria-hidden="true"></div>
+          <div
+            class="glass-panel relative overflow-hidden rounded-2xl border border-outline-variant/20 shadow-2xl md:rounded-3xl"
+          >
+            <div class="flex h-9 items-center gap-2 border-b border-outline-variant/15 bg-surface-container-low px-4">
+              <span class="h-2.5 w-2.5 rounded-full bg-error/50"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-secondary-container/80"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-primary/50"></span>
+            </div>
+            <div class="space-y-5 p-5 md:p-7">
+              <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p class="text-xs font-medium text-outline">{{ 'home.mock.bestPrice' | translate }}</p>
+                  <p class="font-headline text-3xl font-extrabold text-tertiary md:text-4xl">1.499,00 €</p>
+                </div>
+                <div class="text-right">
+                  <span
+                    class="mb-1 inline-block rounded-md bg-secondary-container/40 px-2 py-0.5 text-xs font-bold text-secondary"
+                    >{{ 'home.mock.exampleDrop' | translate }}</span
+                  >
+                  <p class="text-xs text-outline">{{ 'home.mock.rrp' | translate }}</p>
+                </div>
+              </div>
+              <div
+                class="relative h-40 overflow-hidden rounded-xl bg-surface-container-lowest md:h-48"
+                aria-hidden="true"
+              >
+                <svg class="absolute inset-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 400 100">
+                  <defs>
+                    <linearGradient id="homeGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+                      <stop offset="0%" style="stop-color: #adc6ff; stop-opacity: 0.35" />
+                      <stop offset="100%" style="stop-color: #adc6ff; stop-opacity: 0" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M0,80 L50,75 L100,85 L150,60 L200,65 L250,40 L300,45 L350,20 L400,25 V100 H0 Z"
+                    fill="url(#homeGrad)"
+                  />
+                  <path
+                    class="chart-line fill-none stroke-primary"
+                    stroke-width="2.5"
+                    d="M0,80 L50,75 L100,85 L150,60 L200,65 L250,40 L300,45 L350,20 L400,25"
+                  />
+                </svg>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-xl bg-surface-container p-3 md:p-4">
+                  <p class="mb-1 text-[10px] text-outline md:text-xs">{{ 'home.mock.productLabel' | translate }}</p>
+                  <div class="flex items-center gap-1.5 text-xs font-bold md:text-sm">
+                    <span class="material-symbols-outlined text-sm text-primary">trending_down</span>
+                    {{ 'home.mock.threshold' | translate }}
+                  </div>
+                </div>
+                <div class="rounded-xl bg-surface-container p-3 md:p-4">
+                  <p class="mb-1 text-[10px] text-outline md:text-xs">{{ 'home.mock.notifyLabel' | translate }}</p>
+                  <div class="flex items-center gap-1.5 text-xs font-bold md:text-sm">
+                    <span class="material-symbols-outlined text-sm text-secondary">notifications_active</span>
+                    {{ 'home.mock.notifyOn' | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="absolute -bottom-2 -right-2 hidden max-w-[200px] rounded-xl border border-outline-variant/25 bg-surface-container-high p-3 shadow-xl md:block"
+          >
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1"
+                >inventory_2</span
+              >
+              <div>
+                <p class="text-[10px] text-outline">{{ 'home.mock.catalog' | translate }}</p>
+                <p class="text-sm font-headline font-bold">{{ 'home.mock.catalogSub' | translate }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Steps -->
+    <section id="how-it-works" class="mt-20 scroll-mt-24 bg-surface-container-low py-16 md:mt-28 md:py-24">
+      <div class="mx-auto max-w-7xl px-4 md:px-8">
+        <div class="mx-auto mb-12 max-w-2xl text-center md:mb-16">
+          <h2 class="font-headline text-2xl font-extrabold text-on-surface md:text-4xl lg:text-5xl">
+            {{ 'home.steps.title' | translate }}
+          </h2>
+          <p class="mt-4 text-on-surface-variant md:text-lg">{{ 'home.steps.sub' | translate }}</p>
+        </div>
+        <div class="grid gap-5 md:grid-cols-3 md:gap-8">
+          <article
+            class="rounded-xl border border-outline-variant/10 bg-surface-container p-6 transition hover:border-primary/20 hover:bg-surface-container-high md:p-8"
+          >
+            <div
+              class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary md:h-14 md:w-14"
+            >
+              <span class="material-symbols-outlined text-2xl md:text-3xl">search</span>
+            </div>
+            <h3 class="font-headline text-lg font-bold md:text-2xl">{{ 'home.step1.title' | translate }}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-on-surface-variant md:text-base">
+              {{ 'home.step1.body' | translate }}
+            </p>
+          </article>
+          <article
+            class="rounded-xl border border-outline-variant/10 bg-surface-container p-6 transition hover:border-secondary/30 hover:bg-surface-container-high md:p-8"
+          >
+            <div
+              class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary-container/30 text-secondary md:h-14 md:w-14"
+            >
+              <span class="material-symbols-outlined text-2xl md:text-3xl">notifications_active</span>
+            </div>
+            <h3 class="font-headline text-lg font-bold md:text-2xl">{{ 'home.step2.title' | translate }}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-on-surface-variant md:text-base">
+              {{ 'home.step2.body' | translate }}
+            </p>
+          </article>
+          <article
+            class="rounded-xl border border-outline-variant/10 bg-surface-container p-6 transition hover:border-outline-variant/25 hover:bg-surface-container-high md:p-8"
+          >
+            <div
+              class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-container/20 text-primary-container md:h-14 md:w-14"
+            >
+              <span class="material-symbols-outlined text-2xl md:text-3xl">shopping_cart</span>
+            </div>
+            <h3 class="font-headline text-lg font-bold md:text-2xl">{{ 'home.step3.title' | translate }}</h3>
+            <p class="mt-3 text-sm leading-relaxed text-on-surface-variant md:text-base">
+              {{ 'home.step3.body' | translate }}
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Honest highlights (no fake stats) -->
+    <section class="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
+      <div class="rounded-2xl border border-outline-variant/15 bg-surface-container p-6 md:p-10">
+        <h2 class="text-center font-headline text-xl font-bold md:text-2xl">{{ 'home.facts.title' | translate }}</h2>
+        <ul
+          class="mx-auto mt-6 max-w-2xl space-y-3 text-sm text-on-surface-variant md:mt-8 md:text-base [&>li]:flex [&>li]:gap-3"
+        >
+          <li>
+            <span class="material-symbols-outlined mt-0.5 shrink-0 text-primary text-xl">check_circle</span>
+            <span>{{ 'home.facts.a' | translate }}</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined mt-0.5 shrink-0 text-primary text-xl">check_circle</span>
+            <span>{{ 'home.facts.b' | translate }}</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined mt-0.5 shrink-0 text-primary text-xl">check_circle</span>
+            <span>{{ 'home.facts.c' | translate }}</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined mt-0.5 shrink-0 text-primary text-xl">check_circle</span>
+            <span>{{ 'home.facts.d' | translate }}</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="mx-auto max-w-3xl px-4 pb-8 text-center md:px-8 md:pb-16">
+      <div
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-high px-6 py-10 shadow-xl md:px-12 md:py-14"
+      >
+        <h2 class="font-headline text-2xl font-extrabold md:text-4xl">{{ 'home.cta.title' | translate }}</h2>
+        <p class="mx-auto mt-4 max-w-lg text-on-surface-variant md:mt-6 md:text-lg">
+          {{ 'home.cta.sub' | translate }}
+        </p>
+        <a
+          routerLink="/register"
+          class="primary-gradient mt-8 inline-flex rounded-xl px-10 py-4 font-headline text-lg font-bold text-on-primary-container shadow-lg transition hover:brightness-110 active:scale-[0.98] md:mt-10 md:px-12 md:py-5 md:text-xl"
+          >{{ 'home.cta.button' | translate }}</a
+        >
+        <p class="mt-4 text-xs text-outline md:mt-6 md:text-sm">{{ 'home.cta.note' | translate }}</p>
+      </div>
+    </section>
+
+    <!-- Affiliate -->
+    <section class="mx-auto max-w-7xl px-4 pb-12 md:px-8">
+      <div class="rounded-xl border-l-4 border-primary bg-surface-container-low p-5 md:p-6">
+        <p class="text-xs leading-relaxed text-on-surface-variant md:text-sm">
+          <strong class="text-on-surface">{{ 'home.affiliate.title' | translate }}</strong>
+          {{ 'home.affiliate.body' | translate }}
+        </p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-outline-variant/15 bg-background px-4 py-10 md:px-8">
+      <div
+        class="mx-auto flex max-w-7xl flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left"
+      >
+        <span class="font-headline text-lg font-bold text-primary">{{ 'app.brand' | translate }}</span>
+        <div class="flex flex-wrap justify-center gap-6 text-sm text-on-surface-variant md:justify-end">
+          <a routerLink="/imprint" class="transition hover:text-primary hover:underline">{{ 'common.imprint' | translate }}</a>
+          <a routerLink="/gdpr" class="transition hover:text-primary hover:underline">{{ 'common.gdpr' | translate }}</a>
+          <a routerLink="/terms" class="transition hover:text-primary hover:underline">{{ 'footerTerms' | translate }}</a>
+          <a routerLink="/pricing" class="transition hover:text-primary hover:underline">{{ 'nav.pricing' | translate }}</a>
+        </div>
+        <p class="text-xs text-outline md:shrink-0">{{ 'home.footer.copy' | translate }}</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Mobile sticky CTA -->
+  <div
+    class="fixed bottom-0 left-0 z-40 w-full bg-gradient-to-t from-background from-60% to-transparent p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
+  >
+    <a
+      routerLink="/register"
+      class="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/25 bg-surface-container-high py-3.5 font-headline text-sm font-semibold text-on-surface shadow-xl backdrop-blur-md active:scale-[0.99]"
+    >
+      <span class="material-symbols-outlined text-primary">bolt</span>
+      {{ 'home.stickyCta' | translate }}
+    </a>
+  </div>
+</div>

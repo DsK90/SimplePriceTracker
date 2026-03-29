@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { afterNextRender, Component, ElementRef, inject, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { filter, map, merge, of } from 'rxjs';
 import { CookieConsentComponent } from './components/cookie-consent.component';
 import { MobileBottomNavComponent } from './components/mobile-bottom-nav.component';
 import { AuthService } from './core/auth.service';
@@ -20,6 +22,7 @@ import { PwaInstallService } from './core/pwa-install.service';
   ],
   template: `
     <div class="min-h-screen flex flex-col bg-background text-on-background">
+      @if (!hideGlobalChrome()) {
       <nav
         class="fixed top-0 z-50 w-full border-b border-outline-variant/10 bg-background/80 backdrop-blur-md"
       >
@@ -85,10 +88,18 @@ import { PwaInstallService } from './core/pwa-install.service';
           </div>
         </div>
       </nav>
-      <!-- pt must clear fixed nav: brand + tagline is taller than old single-line bar -->
-      <main class="flex-1 pt-[5.75rem] sm:pt-24 md:pt-28">
+      }
+      <main
+        class="flex-1"
+        [ngClass]="
+          hideGlobalChrome()
+            ? 'pt-0'
+            : 'pt-[5.75rem] sm:pt-24 md:pt-28'
+        "
+      >
         <router-outlet />
       </main>
+      @if (!hideGlobalChrome()) {
       <footer
         class="border-t border-outline-variant/10 bg-surface-container-low/30 pt-px pb-12 md:pb-px"
       >
@@ -104,6 +115,7 @@ import { PwaInstallService } from './core/pwa-install.service';
           <a routerLink="/terms" class="hover:text-primary hover:underline">{{ 'footerTerms' | translate }}</a>
         </div>
       </footer>
+      }
       <app-mobile-bottom-nav />
       <app-cookie-consent />
     </div>
@@ -112,7 +124,23 @@ import { PwaInstallService } from './core/pwa-install.service';
 export class AppComponent implements OnInit {
   protected auth = inject(AuthService);
   protected pwa = inject(PwaInstallService);
+  private readonly router = inject(Router);
   private readonly host = inject(ElementRef<HTMLElement>);
+
+  /** Guest marketing home uses its own chrome (nav/footer in page). */
+  protected hideGlobalChrome = toSignal(
+    merge(
+      of(null),
+      this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)),
+    ).pipe(map(() => this.snapshotIsLanding())),
+    { initialValue: this.snapshotIsLanding() },
+  );
+
+  private snapshotIsLanding(): boolean {
+    let r = this.router.routerState.snapshot.root;
+    while (r.firstChild) r = r.firstChild;
+    return r.data['layout'] === 'landing';
+  }
 
   constructor() {
     afterNextRender(() => this.host.nativeElement.removeAttribute('ng-version'));

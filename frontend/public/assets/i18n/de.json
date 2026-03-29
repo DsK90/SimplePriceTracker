@@ -1,6 +1,6 @@
 {
   "app": {
-    "pageTitle": "Pricefly | Preis-Tracker",
+    "pageTitle": "Pricefly | Beobachtung & Vergleich",
     "brand": "Pricefly",
     "tagline": "Preise verfolgt. Sofort benachrichtigt."
   },
@@ -20,7 +20,7 @@
     "acceptAll": "Alle akzeptieren"
   },
   "nav": {
-    "dashboard": "Tracking",
+    "dashboard": "Beobachtung & Vergleich",
     "pricing": "Preise",
     "fairUse": "Fair Use",
     "signOut": "Abmelden",
@@ -172,10 +172,10 @@
     "perYear": "/ Jahr",
     "proPerMonth": "pro Monat (netto)",
     "proVatNote": "zzgl. 19 % USt · monatliche Abbuchung",
-    "free1": "5 aktive Preis-Trackings",
+    "free1": "5 aktive Beobachtungen",
     "free2": "Automatische Prüfungen alle 6 Stunden",
     "free4": "E-Mail-Preisalarme für bis zu 2 Produkte",
-    "pro1": "Unbegrenzte aktive Trackings",
+    "pro1": "Unbegrenzt viele aktive Beobachtungen",
     "pro2": "Gleiche Prüf- und Aktualisierungsfunktionen",
     "pro3": "Jederzeit in PayPal kündbar",
     "pro4": "E-Mail-Preisalarme für bis zu 10 Produkte",
@@ -201,8 +201,8 @@
     "activateTermsError": "Für dein Konto liegt keine Akzeptanz der AGB vor. Bitte erneut registrieren oder den Support kontaktieren."
   },
   "dashboard": {
-    "title": "Trackings",
-    "proSubtitle": "Pro — unbegrenzt aktive Einträge",
+    "title": "Beobachtung & Vergleich",
+    "proSubtitle": "Pro — unbegrenzt viele Beobachtungen",
     "freeLine": "Kostenlos — {{current}} von {{max}} Plätzen. ",
     "upgrade": "Upgrade",
     "activeAlerts": "{{count}} aktiver Preisalarm",
@@ -227,7 +227,7 @@
     "loading": "Laden…",
     "noNotifications": "Noch keine Benachrichtigungen. Preisalarme erscheinen hier.",
     "reorder": "Sortieren",
-    "watchlist": "Aktive Watchlist",
+    "watchlist": "Aktive Beobachtungen",
     "recent": "Aktuell",
     "store": "Shop",
     "stable": "Gleichbleibend",
@@ -245,12 +245,12 @@
     "reorderHandle": "Zum Sortieren ziehen",
     "showing": "{{count}} Ergebnis",
     "showingPlural": "{{count}} Ergebnisse",
-    "empty": "Noch keine Trackings.",
-    "bottomDash": "Tracking",
+    "empty": "Noch keine Beobachtungen.",
+    "bottomDash": "Beobachtung",
     "bottomPricing": "Preise",
     "bottomAlerts": "Alarme",
-    "addAria": "Tracking hinzufügen",
-    "deleteConfirm": "Dieses Tracking löschen?",
+    "addAria": "Beobachtung hinzufügen",
+    "deleteConfirm": "Diese Beobachtung löschen?",
     "demo": {
       "add": "Demo-Produkt hinzufügen",
       "hint": "Mit ±1 den Demo-Preis ändern und Benachrichtigungen testen (nur Entwicklung).",
@@ -274,12 +274,12 @@
     "errors": {
       "pickProduct": "Bitte zuerst ein Produkt aus den Suchergebnissen wählen.",
       "awinNotInCatalog": "Produkt nicht im Katalog. Awin-Feed auf dem Server importieren oder aktualisieren, dann erneut suchen.",
-      "legacyRefresh": "Dieser Eintrag stammt noch vom alten URL-Tracker. Löschen und Produkt erneut aus dem Katalog hinzufügen.",
-      "addFailed": "Tracking konnte nicht hinzugefügt werden",
+      "legacyRefresh": "Dieser Eintrag stammt noch von der alten URL-basierten Variante. Löschen und Produkt erneut aus dem Katalog hinzufügen.",
+      "addFailed": "Beobachtung konnte nicht hinzugefügt werden",
       "saveFailed": "Speichern fehlgeschlagen",
       "refreshFailed": "Aktualisierung fehlgeschlagen",
       "invalidDecimal": "Bitte einen gültigen Preis eingeben (z. B. 25,99 oder 25.99).",
-      "freeTrackingLimit": "Im Free-Tarif sind bis zu {{max}} aktive Trackings möglich. Upgrade für mehr.",
+      "freeTrackingLimit": "Im Free-Tarif sind bis zu {{max}} aktive Beobachtungen möglich. Upgrade für mehr.",
       "priceNotFound0": "Unser Praktikant im Trenchcoat starrt Minuten aufs HTML und flüstert: „Hier gibt es keinen Preis. Nur Stimmung.“ (Auf dieser Seite ist automatisiertes Scraping blockiert oder untersagt.)",
       "priceNotFound1": "Die Lupe fand nur Weltschmerz und einen Gutschein, der 2014 abgelaufen ist. (Auf dieser Seite ist automatisiertes Scraping blockiert oder untersagt.)",
       "priceNotFound2": "Elementar? Fehlanzeige. Der Shop will uns seine Preise nicht „elementar“ servieren — sehr unhöflich. (Auf dieser Seite ist automatisiertes Scraping blockiert oder untersagt.)",
@@ -417,7 +417,7 @@
     },
     "storage": {
       "title": "4. Speicherdauer",
-      "body": "Wir speichern Daten nur so lange, wie es für den jeweiligen Zweck erforderlich ist oder gesetzliche Aufbewahrungsfristen dies verlangen. Konten- und Trackingdaten bleiben bestehen, bis Sie Inhalte oder Ihr Konto löschen, vorbehaltlich gesetzlicher Aufbewahrung."
+      "body": "Wir speichern Daten nur so lange, wie es für den jeweiligen Zweck erforderlich ist oder gesetzliche Aufbewahrungsfristen dies verlangen. Kontodaten und Daten zu Ihren Beobachtungen bleiben bestehen, bis Sie Inhalte oder Ihr Konto löschen, vorbehaltlich gesetzlicher Aufbewahrung."
     },
     "recipients": {
       "title": "5. Empfänger",

@@ -36,8 +36,9 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/dist ./dist
 # One-off / cron: `NODE_OPTIONS=--max-old-space-size=8192 npx tsx scripts/sync-awin-feeds.ts` (large feeds need heap; mount config/awin-feeds.json)
-COPY --from=builder /app/scripts/sync-awin-feeds.ts ./scripts/sync-awin-feeds.ts
-COPY --from=builder /app/scripts/import-awin-feed.ts ./scripts/import-awin-feed.ts
-COPY --from=builder /app/src/trackings/awin-feed-csv.ts ./src/trackings/awin-feed-csv.ts
+# From build context (./backend), not builder — `scripts/` is not copied into the builder stage.
+COPY scripts/sync-awin-feeds.ts ./scripts/sync-awin-feeds.ts
+COPY scripts/import-awin-feed.ts ./scripts/import-awin-feed.ts
+COPY src/trackings/awin-feed-csv.ts ./src/trackings/awin-feed-csv.ts
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/main.js"]

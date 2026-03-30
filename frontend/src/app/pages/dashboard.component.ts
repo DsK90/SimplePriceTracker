@@ -494,6 +494,17 @@ export class DashboardComponent implements OnInit {
     this.dailySchedulePanelOpen.update((open) => !open);
   }
 
+  /**
+   * Tailwind classes with `/` cannot use `[class.foo/bar]` — Angular treats `/` as invalid in that binding.
+   */
+  protected schedulePanelOpenClasses(): Record<string, boolean> {
+    const on = this.dailySchedulePanelOpen();
+    return {
+      'border-primary/45': on,
+      'text-primary': on,
+    };
+  }
+
   protected isPro(): boolean {
     const p = this.profile();
     return p?.planTier === 'PRO' || p?.isAdmin === true;

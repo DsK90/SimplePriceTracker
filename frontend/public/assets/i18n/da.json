@@ -189,6 +189,7 @@
     "colFrequency": "Frekvens",
     "colDailyCheck": "Auto check",
     "dailyCheckScheduleTitle": "Daily price check",
+    "dailyCheckToggleAria": "Open or close daily price check schedule",
     "dailyCheckBanner": "All products are updated once per day at {{time}} (time zone {{zone}}) from the partner catalog. Email and push alerts follow that run. You can still refresh any item manually at any time.",
     "dailyCheckTimeLabel": "Local time",
     "dailyCheckZoneLabel": "Time zone",

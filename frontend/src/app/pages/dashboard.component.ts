@@ -144,6 +144,9 @@ export class DashboardComponent implements OnInit {
   scheduleSaving = signal(false);
   scheduleSaved = signal(false);
   scheduleError = signal<string | null>(null);
+  /** Daily schedule card: hidden after save until user opens via clock (persisted after first save). */
+  dailySchedulePanelOpen = signal(true);
+  private static readonly DAILY_SCHEDULE_PANEL_KEY = 'pricefly_daily_schedule_collapsed';
   refreshingId = signal<string | null>(null);
   formError = signal<string | null>(null);
   refreshError = signal<string | null>(null);
@@ -234,6 +237,17 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    try {
+      if (
+        typeof localStorage !== 'undefined' &&
+        localStorage.getItem(DashboardComponent.DAILY_SCHEDULE_PANEL_KEY) === '1'
+      ) {
+        this.dailySchedulePanelOpen.set(false);
+      }
+    } catch {
+      /* ignore */
+    }
+
     this.destroyRef.onDestroy(() => {
       if (this.scrapeInterval) clearInterval(this.scrapeInterval);
       if (this.pushReminderTimer) clearTimeout(this.pushReminderTimer);
@@ -456,6 +470,12 @@ export class DashboardComponent implements OnInit {
           this.profile.set(u);
           this.patchScheduleFromProfile(u);
           this.scheduleSaving.set(false);
+          try {
+            localStorage.setItem(DashboardComponent.DAILY_SCHEDULE_PANEL_KEY, '1');
+          } catch {
+            /* ignore */
+          }
+          this.dailySchedulePanelOpen.set(false);
           if (this.scheduleSavedTimer) clearTimeout(this.scheduleSavedTimer);
           this.scheduleSaved.set(true);
           this.scheduleSavedTimer = setTimeout(() => {
@@ -468,6 +488,10 @@ export class DashboardComponent implements OnInit {
           this.scheduleError.set(this.messageFromApiError(e, 'dashboard.errors.scheduleSaveFailed'));
         },
       });
+  }
+
+  toggleDailySchedulePanel(): void {
+    this.dailySchedulePanelOpen.update((open) => !open);
   }
 
   protected isPro(): boolean {

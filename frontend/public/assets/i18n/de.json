@@ -309,6 +309,7 @@
     "colFrequency": "Intervall",
     "colDailyCheck": "Automatik",
     "dailyCheckScheduleTitle": "Tägliche Preisprüfung",
+    "dailyCheckToggleAria": "Tägliche Preisprüfung – Zeitplan ein- oder ausblenden",
     "dailyCheckBanner": "Alle Produkte werden einmal täglich um {{time}} Uhr (Zeitzone {{zone}}) aus dem Partnerkatalog aktualisiert. E-Mail- und Push-Benachrichtigungen beziehen sich auf diese Prüfung. Du kannst einzelne Einträge jederzeit manuell aktualisieren.",
     "dailyCheckTimeLabel": "Uhrzeit",
     "dailyCheckZoneLabel": "Zeitzone",

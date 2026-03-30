@@ -37,27 +37,51 @@
             }
           </p>
         </div>
-        <div class="flex">
-            @if (!pushLoading() && !pushUnsupported() && pushServerOn() && !pushDenied()) {
-    <div class="z-40 md:hidden">
-      <button
-        type="button"
-        (click)="pushSubscribed() ? disablePush() : enablePush()"
-        [disabled]="pushBusy()"
-        [class]="
-          pushSubscribed()
-            ? 'flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition active:scale-90 disabled:opacity-50'
-            : 'flex h-10 w-10 items-center justify-center rounded-full bg-outline-variant text-on-surface-variant shadow-lg transition active:scale-90 disabled:opacity-50'
-        "
-      >
-        <span class="material-symbols-outlined text-xl">notifications_active</span>
-      </button>
-    </div>
-  }
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="toggleDailySchedulePanel()"
+            [attr.aria-expanded]="dailySchedulePanelOpen()"
+            [attr.aria-label]="'dashboard.dailyCheckToggleAria' | translate"
+            [title]="'dashboard.dailyCheckToggleAria' | translate"
+            class="z-40 flex h-10 w-10 items-center justify-center rounded-full border border-outline-variant/25 bg-surface-container-highest text-on-surface-variant shadow-md transition hover:border-primary/35 hover:text-primary active:scale-90 md:hidden"
+            [class.border-primary/45]="dailySchedulePanelOpen()"
+            [class.text-primary]="dailySchedulePanelOpen()"
+          >
+            <span class="material-symbols-outlined text-xl">schedule</span>
+          </button>
+          @if (!pushLoading() && !pushUnsupported() && pushServerOn() && !pushDenied()) {
+            <div class="z-40 md:hidden">
+              <button
+                type="button"
+                (click)="pushSubscribed() ? disablePush() : enablePush()"
+                [disabled]="pushBusy()"
+                [class]="
+                  pushSubscribed()
+                    ? 'flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition active:scale-90 disabled:opacity-50'
+                    : 'flex h-10 w-10 items-center justify-center rounded-full bg-outline-variant text-on-surface-variant shadow-lg transition active:scale-90 disabled:opacity-50'
+                "
+              >
+                <span class="material-symbols-outlined text-xl">notifications_active</span>
+              </button>
+            </div>
+          }
         </div>
         </div>
 
         <div class="hidden items-center gap-2 md:flex">
+          <button
+            type="button"
+            (click)="toggleDailySchedulePanel()"
+            [attr.aria-expanded]="dailySchedulePanelOpen()"
+            [attr.aria-label]="'dashboard.dailyCheckToggleAria' | translate"
+            [title]="'dashboard.dailyCheckToggleAria' | translate"
+            class="relative flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/20 text-on-surface-variant transition hover:border-primary/30 hover:text-primary"
+            [class.border-primary/45]="dailySchedulePanelOpen()"
+            [class.text-primary]="dailySchedulePanelOpen()"
+          >
+            <span class="material-symbols-outlined text-xl">schedule</span>
+          </button>
           <button
             type="button"
             (click)="toggleNotifs()"
@@ -218,6 +242,7 @@
       }
     </header>
 
+    @if (dailySchedulePanelOpen()) {
     <section
       class="mb-4 rounded-xl border border-outline-variant/25 bg-surface-container-low/80 px-3 py-3 shadow-sm shadow-black/10 md:px-4 md:py-3.5"
     >
@@ -275,6 +300,7 @@
         <p class="mt-2 text-xs text-error">{{ scheduleError() }}</p>
       }
     </section>
+    }
 
     @if (formError()) {
       <p class="mb-3 text-sm text-error">{{ formError() }}</p>

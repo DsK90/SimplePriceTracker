@@ -73,6 +73,9 @@ export class AwinCatalogService {
   private searchByProductText(trimmed: string, take: number) {
     const or: Prisma.AwinCatalogProductWhereInput[] = [
       { title: { contains: trimmed, mode: 'insensitive' } },
+      { brand: { contains: trimmed, mode: 'insensitive' } },
+      { category: { contains: trimmed, mode: 'insensitive' } },
+      { advertiserName: { contains: trimmed, mode: 'insensitive' } },
     ];
     if (trimmed.length >= 3) {
       or.push({ description: { contains: trimmed, mode: 'insensitive' } });

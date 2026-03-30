@@ -152,6 +152,8 @@
     "activeAlertsPlural": "{{count}} alertas de precio activas",
     "placeholderUrl": "Pega la URL del producto…",
     "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
+    "catalogSearchError": "Could not load catalog search. Check your connection or sign in again.",
+    "catalogNoResults": "No products match your search. Try another keyword or paste a product URL from the shop.",
     "catalogBusyMsg0": "Saving…",
     "catalogBusyMsg1": "Syncing feed…",
     "catalogBusyMsg2": "Almost there…",

@@ -13,7 +13,15 @@ import { DashboardUiService } from '../core/dashboard-ui.service';
 import { parseDecimalInput } from '../core/parse-decimal-input';
 import { PushNotificationService } from '../core/push-notification.service';
 import { environment } from '../../environments/environment';
-import { catchError, debounceTime, distinctUntilChanged, finalize, map, of } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 
 type CatalogHit = {
   feedKey: string;
@@ -106,6 +114,10 @@ export class DashboardComponent implements OnInit {
 
   catalogHits = signal<CatalogHit[]>([]);
   catalogLoading = signal(false);
+  /** Set when catalog search API fails (auth/network/server); otherwise null. */
+  catalogSearchError = signal<string | null>(null);
+  /** Last trimmed query used for catalog search (for empty-state copy). */
+  catalogSearchQuery = signal('');
   selectedCatalogHit = signal<CatalogHit | null>(null);
 
   editForm = this.fb.nonNullable.group({
@@ -249,33 +261,46 @@ export class DashboardComponent implements OnInit {
     void this.initPush();
 
     this.form.controls.search.valueChanges
-      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((raw) => {
-        const q = (raw ?? '').trim();
-        const sel = this.selectedCatalogHit();
-        if (sel && q !== sel.title) this.selectedCatalogHit.set(null);
-        if (q.length < 2) {
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        switchMap((raw) => {
+          const q = (raw ?? '').trim();
+          const sel = this.selectedCatalogHit();
+          if (sel && q !== sel.title) this.selectedCatalogHit.set(null);
+          this.catalogSearchQuery.set(q);
+          if (q.length < 2) {
+            this.catalogHits.set([]);
+            this.catalogSearchError.set(null);
+            return of([] as CatalogHit[]);
+          }
           this.catalogHits.set([]);
-          this.catalogLoading.set(false);
-          return;
-        }
-        this.catalogLoading.set(true);
-        this.http
-          .get<CatalogHit[]>(`${environment.apiUrl}/trackings/catalog/search`, {
-            params: { q, limit: '30' },
-          })
-          .pipe(
-            catchError(() => of([] as CatalogHit[])),
-            finalize(() => this.catalogLoading.set(false)),
-          )
-          .subscribe((hits) => this.catalogHits.set(hits));
-      });
+          this.catalogLoading.set(true);
+          this.catalogSearchError.set(null);
+          return this.http
+            .get<CatalogHit[]>(`${environment.apiUrl}/trackings/catalog/search`, {
+              params: { q, limit: '30' },
+            })
+            .pipe(
+              catchError(() => {
+                this.catalogSearchError.set(
+                  this.translate.instant('dashboard.catalogSearchError'),
+                );
+                return of([] as CatalogHit[]);
+              }),
+              finalize(() => this.catalogLoading.set(false)),
+            );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((hits) => this.catalogHits.set(hits));
   }
 
   selectCatalogHit(h: CatalogHit): void {
     this.selectedCatalogHit.set(h);
     this.form.patchValue({ search: h.title }, { emitEvent: false });
     this.catalogHits.set([]);
+    this.catalogSearchError.set(null);
     this.formError.set(null);
   }
 

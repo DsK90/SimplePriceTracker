@@ -98,7 +98,13 @@
               …
             </p>
           }
-          @if (catalogHits().length > 0 && !selectedCatalogHit()) {
+          @if (catalogSearchError()) {
+            <p class="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-error/40 bg-error/10 px-3 py-2 text-[11px] text-error">
+              {{ catalogSearchError() }}
+            </p>
+          } @else if (
+            catalogHits().length > 0 && !selectedCatalogHit() && !catalogLoading()
+          ) {
             <ul
               class="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-auto rounded-lg border border-outline-variant/40 bg-surface-container-highest py-1 shadow-lg"
               role="listbox"
@@ -118,6 +124,17 @@
                 </li>
               }
             </ul>
+          } @else if (
+            catalogSearchQuery().length >= 2 &&
+            !catalogLoading() &&
+            !selectedCatalogHit() &&
+            catalogHits().length === 0
+          ) {
+            <p
+              class="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-outline-variant/40 bg-surface-container-highest px-3 py-2 text-[11px] text-on-surface-variant"
+            >
+              {{ 'dashboard.catalogNoResults' | translate }}
+            </p>
           }
         </div>
         <button

@@ -48,6 +48,9 @@ async function main() {
         feedKey: r.feedKey,
         advertiserId: r.advertiserId,
         advertiserName: r.advertiserName,
+        awProductId: r.awProductId,
+        merchantProductId: r.merchantProductId,
+        ean: r.ean,
         title: r.title,
         description: r.description,
         price: new Prisma.Decimal(r.price),
@@ -56,10 +59,14 @@ async function main() {
         imageUrl: r.imageUrl,
         category: r.category,
         brand: r.brand,
+        searchText: r.searchText,
       },
       update: {
         advertiserId: r.advertiserId,
         advertiserName: r.advertiserName,
+        awProductId: r.awProductId,
+        merchantProductId: r.merchantProductId,
+        ean: r.ean,
         title: r.title,
         description: r.description,
         price: new Prisma.Decimal(r.price),
@@ -68,6 +75,7 @@ async function main() {
         imageUrl: r.imageUrl,
         category: r.category,
         brand: r.brand,
+        searchText: r.searchText,
       },
     });
     upserted++;

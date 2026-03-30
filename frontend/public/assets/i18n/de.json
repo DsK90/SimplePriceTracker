@@ -274,6 +274,7 @@
     "searchCatalogPlaceholder": "Produktname, Stichwort oder Shop-Link (URL)… (mind. 2 Zeichen)",
     "catalogSearchError": "Produktsuche konnte nicht geladen werden. Verbindung prüfen oder erneut anmelden.",
     "catalogNoResults": "Keine Treffer. Anderes Stichwort oder Produkt-Link aus dem Shop einfügen.",
+    "catalogEmptyBanner": "Der Partner-Produktkatalog ist auf diesem Server leer — die Suche findet nichts, bis ein Awin-Feed importiert wurde (z. B. Sync- oder Import-Skript auf dem API-Host).",
     "catalogBusyMsg0": "Eintrag wird vorbereitet…",
     "catalogBusyMsg1": "Abgleich mit Awin-Feed…",
     "catalogBusyMsg2": "Preise werden gesichert…",

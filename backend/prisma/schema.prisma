@@ -66,6 +66,12 @@ model AwinCatalogProduct {
   feedKey            String   @unique
   advertiserId       String?
   advertiserName     String?
+  /// Awin `aw_product_id` (search + display)
+  awProductId        String?
+  /// Merchant SKU / shop product id when present in feed
+  merchantProductId  String?
+  /// EAN / GTIN / UPC when present in feed
+  ean                String?
   title              String
   description        String?  @db.Text
   price              Decimal  @db.Decimal(12, 4)
@@ -74,6 +80,8 @@ model AwinCatalogProduct {
   imageUrl           String?  @db.Text
   category           String?
   brand              String?
+  /// Normalized blob for catalog search (title, description, ids, url slug, etc.)
+  searchText         String   @default("") @db.Text
   updatedFromFeedAt  DateTime @default(now()) @updatedAt
 
   @@index([title])

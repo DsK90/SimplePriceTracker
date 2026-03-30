@@ -34,6 +34,12 @@ export class TrackingsController {
     return this.trackings.searchCatalog(q ?? '', Number.isFinite(n) ? n : 20);
   }
 
+  /** How many rows are in the imported catalog (debug / empty-state in UI). */
+  @Get('catalog/stats')
+  catalogStats() {
+    return this.trackings.catalogStats();
+  }
+
   @Post()
   create(@CurrentUser() user: RequestUser, @Body() dto: CreateTrackingDto) {
     return this.trackings.create(user.userId, dto);

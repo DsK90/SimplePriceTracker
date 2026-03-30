@@ -274,6 +274,7 @@
     "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogSearchError": "Could not load catalog search. Check your connection or sign in again.",
     "catalogNoResults": "No products match your search. Try another keyword or paste a product URL from the shop.",
+    "catalogEmptyBanner": "The partner product catalog is empty on this server — search will not find anything until an Awin feed is imported (e.g. sync or import script on the API host).",
     "catalogBusyMsg0": "Reserving a shelf in the watchlist…",
     "catalogBusyMsg1": "Syncing with your Awin feed…",
     "catalogBusyMsg2": "Polishing price tags…",

@@ -49,6 +49,9 @@ export type AwinFeedRow = {
   feedKey: string;
   advertiserId: string | null;
   advertiserName: string | null;
+  awProductId: string | null;
+  merchantProductId: string | null;
+  ean: string | null;
   title: string;
   description: string | null;
   price: number;
@@ -57,7 +60,44 @@ export type AwinFeedRow = {
   imageUrl: string | null;
   category: string | null;
   brand: string | null;
+  /** Single field for substring / token search in the API */
+  searchText: string;
 };
+
+/** Build normalized search blob from feed fields (ids, title, description, URL slug text, extras). */
+export function buildCatalogSearchText(parts: {
+  title: string;
+  description: string | null;
+  brand: string | null;
+  category: string | null;
+  advertiserName: string | null;
+  feedKey: string;
+  advertiserId: string | null;
+  merchantDeepLink: string;
+  awProductId: string | null;
+  merchantProductId: string | null;
+  ean: string | null;
+  extras: string[];
+}): string {
+  const chunks = [
+    parts.title,
+    parts.description,
+    parts.brand,
+    parts.category,
+    parts.advertiserName,
+    parts.feedKey,
+    parts.advertiserId,
+    parts.awProductId,
+    parts.merchantProductId,
+    parts.ean,
+    parts.merchantDeepLink,
+    ...parts.extras,
+  ];
+  return chunks
+    .filter((c) => c != null && String(c).trim().length > 0)
+    .map((c) => String(c).trim())
+    .join(' ');
+}
 
 function col(map: Record<string, number>, aliases: string[]): number | undefined {
   for (const a of aliases) {
@@ -111,26 +151,88 @@ export function rowToAwinFeedRow(
   }
 
   const descIdx = col(map, ['description', 'product_short_description']);
+  const shortDescOnlyIdx = col(map, ['product_short_description']);
   const imgIdx = col(map, ['aw_image_url', 'merchant_image_url', 'large_image']);
   const merchIdx = col(map, ['merchant_name', 'store_name']);
   const catIdx = col(map, ['category_name', 'merchant_product_category_path']);
   const brandIdx = col(map, ['brand_name', 'brand']);
+  const mpIdx = col(map, ['merchant_product_id', 'merchant_sku']);
+  const eanIdx = col(map, ['ean', 'product_gtin', 'upc']);
+  const mpnIdx = col(map, ['mpn', 'model_number']);
+  const kwIdx = col(map, ['keywords']);
+  const specIdx = col(map, ['specifications']);
+  const promoIdx = col(map, ['promotional_text']);
+
+  const awProductId = prodIdIdx !== undefined ? (cells[prodIdIdx]?.trim() || null) : null;
+  const merchantProductId = mpIdx !== undefined ? (cells[mpIdx]?.trim() || null) : null;
+
+  let ean: string | null = null;
+  if (eanIdx !== undefined) {
+    const v = (cells[eanIdx] ?? '').trim();
+    if (v) ean = v;
+  }
+
+  const description = descIdx !== undefined ? (cells[descIdx] ?? '').trim() || null : null;
+
+  const extras: string[] = [];
+  if (
+    shortDescOnlyIdx !== undefined &&
+    descIdx !== undefined &&
+    shortDescOnlyIdx !== descIdx
+  ) {
+    const sd = (cells[shortDescOnlyIdx] ?? '').trim();
+    if (sd) extras.push(sd);
+  }
+  if (mpnIdx !== undefined) {
+    const mpn = (cells[mpnIdx] ?? '').trim();
+    if (mpn) extras.push(mpn);
+  }
+  for (const idx of [kwIdx, specIdx, promoIdx]) {
+    if (idx === undefined) continue;
+    const v = (cells[idx] ?? '').trim();
+    if (v) extras.push(v);
+  }
+
+  const advertiserId = advIdIdx !== undefined ? (cells[advIdIdx]?.trim() || null) : null;
+  const advertiserName = merchIdx !== undefined ? (cells[merchIdx]?.trim() || null) : null;
+  const imageUrl = imgIdx !== undefined ? (cells[imgIdx]?.trim() || null) : null;
+  const category = catIdx !== undefined ? (cells[catIdx]?.trim() || null) : null;
+  const brand = brandIdx !== undefined ? (cells[brandIdx]?.trim() || null) : null;
+
+  const searchText = buildCatalogSearchText({
+    title,
+    description,
+    brand,
+    category,
+    advertiserName,
+    feedKey,
+    advertiserId,
+    merchantDeepLink,
+    awProductId,
+    merchantProductId,
+    ean,
+    extras,
+  });
 
   return {
     feedKey,
-    advertiserId: advIdIdx !== undefined ? (cells[advIdIdx]?.trim() || null) : null,
-    advertiserName: merchIdx !== undefined ? (cells[merchIdx]?.trim() || null) : null,
+    advertiserId,
+    advertiserName,
+    awProductId,
+    merchantProductId,
+    ean,
     title,
-    description: descIdx !== undefined ? (cells[descIdx]?.trim() || null) : null,
+    description,
     price,
     currency:
       currencyIdx !== undefined && cells[currencyIdx]?.trim()
         ? cells[currencyIdx].trim().toUpperCase().slice(0, 8)
         : 'EUR',
     merchantDeepLink,
-    imageUrl: imgIdx !== undefined ? (cells[imgIdx]?.trim() || null) : null,
-    category: catIdx !== undefined ? (cells[catIdx]?.trim() || null) : null,
-    brand: brandIdx !== undefined ? (cells[brandIdx]?.trim() || null) : null,
+    imageUrl,
+    category,
+    brand,
+    searchText,
   };
 }
 

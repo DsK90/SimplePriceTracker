@@ -19,7 +19,10 @@ const CATALOG_SEARCH_SELECT = {
 export class AwinCatalogService {
   constructor(private prisma: PrismaService) {}
 
-  /** Product search: URLs match `merchantDeepLink`; plain text matches title and (if long enough) description. */
+  /**
+   * Product search: URLs match `merchantDeepLink`.
+   * Plain text: every whitespace-separated token must appear in `searchText` (substring, case-insensitive).
+   */
   async search(q: string, limit = 20) {
     const trimmed = q.trim().slice(0, 2000);
     if (trimmed.length < 2) return [];
@@ -31,6 +34,22 @@ export class AwinCatalogService {
     }
 
     return this.searchByProductText(trimmed, take);
+  }
+
+  /** Whitespace-separated tokens; each must match (AND). Single token = broad substring search. */
+  private static catalogQueryTokens(trimmed: string): string[] {
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    const tokens: string[] = [];
+    for (const p of parts) {
+      if (p.length >= 2) tokens.push(p);
+      else if (/^\d+$/.test(p)) tokens.push(p);
+    }
+    if (tokens.length === 0 && trimmed.length >= 2) tokens.push(trimmed);
+    return tokens.filter((t) => t.length > 0);
+  }
+
+  async count(): Promise<number> {
+    return this.prisma.awinCatalogProduct.count();
   }
 
   private looksLikeUrl(s: string): boolean {
@@ -71,17 +90,15 @@ export class AwinCatalogService {
   }
 
   private searchByProductText(trimmed: string, take: number) {
-    const or: Prisma.AwinCatalogProductWhereInput[] = [
-      { title: { contains: trimmed, mode: 'insensitive' } },
-      { brand: { contains: trimmed, mode: 'insensitive' } },
-      { category: { contains: trimmed, mode: 'insensitive' } },
-      { advertiserName: { contains: trimmed, mode: 'insensitive' } },
-    ];
-    if (trimmed.length >= 3) {
-      or.push({ description: { contains: trimmed, mode: 'insensitive' } });
-    }
+    const tokens = AwinCatalogService.catalogQueryTokens(trimmed);
+    if (tokens.length === 0) return Promise.resolve([]);
+
     return this.prisma.awinCatalogProduct.findMany({
-      where: { OR: or },
+      where: {
+        AND: tokens.map((t) => ({
+          searchText: { contains: t, mode: 'insensitive' as const },
+        })),
+      },
       take,
       orderBy: { title: 'asc' },
       select: CATALOG_SEARCH_SELECT,
@@ -103,6 +120,9 @@ export class AwinCatalogService {
           feedKey: r.feedKey,
           advertiserId: r.advertiserId,
           advertiserName: r.advertiserName,
+          awProductId: r.awProductId,
+          merchantProductId: r.merchantProductId,
+          ean: r.ean,
           title: r.title,
           description: r.description,
           price: new Prisma.Decimal(r.price),
@@ -111,10 +131,14 @@ export class AwinCatalogService {
           imageUrl: r.imageUrl,
           category: r.category,
           brand: r.brand,
+          searchText: r.searchText,
         },
         update: {
           advertiserId: r.advertiserId,
           advertiserName: r.advertiserName,
+          awProductId: r.awProductId,
+          merchantProductId: r.merchantProductId,
+          ean: r.ean,
           title: r.title,
           description: r.description,
           price: new Prisma.Decimal(r.price),
@@ -123,6 +147,7 @@ export class AwinCatalogService {
           imageUrl: r.imageUrl,
           category: r.category,
           brand: r.brand,
+          searchText: r.searchText,
         },
       });
       upserted++;

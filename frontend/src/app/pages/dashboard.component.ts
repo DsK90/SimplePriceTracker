@@ -118,6 +118,8 @@ export class DashboardComponent implements OnInit {
   catalogSearchError = signal<string | null>(null);
   /** Last trimmed query used for catalog search (for empty-state copy). */
   catalogSearchQuery = signal('');
+  /** Rows in AwinCatalogProduct on the API (null = not loaded or request failed). */
+  catalogProductCount = signal<number | null>(null);
   selectedCatalogHit = signal<CatalogHit | null>(null);
 
   editForm = this.fb.nonNullable.group({
@@ -259,6 +261,14 @@ export class DashboardComponent implements OnInit {
     this.load();
     this.loadNotifCount();
     void this.initPush();
+
+    this.http
+      .get<{ productCount: number }>(`${environment.apiUrl}/trackings/catalog/stats`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (s) => this.catalogProductCount.set(s.productCount),
+        error: () => this.catalogProductCount.set(null),
+      });
 
     this.form.controls.search.valueChanges
       .pipe(

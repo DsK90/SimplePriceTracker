@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AwinFeedRow } from './awin-feed-csv';
@@ -15,13 +15,27 @@ const CATALOG_SEARCH_SELECT = {
   category: true,
 } satisfies Prisma.AwinCatalogProductSelect;
 
+type CatalogSearchRow = {
+  feedKey: string;
+  title: string;
+  price: Prisma.Decimal | string | number;
+  currency: string;
+  advertiserName: string | null;
+  brand: string | null;
+  imageUrl: string | null;
+  merchantDeepLink: string;
+  category: string | null;
+};
+
 @Injectable()
 export class AwinCatalogService {
+  private readonly log = new Logger(AwinCatalogService.name);
+
   constructor(private prisma: PrismaService) {}
 
   /**
    * Product search: URLs match `merchantDeepLink`.
-   * Plain text: every whitespace-separated token must appear in `searchText` (substring, case-insensitive).
+   * Plain text: every token must match via substring (case-insensitive) or pg_trgm `word_similarity` (typo-tolerant).
    */
   async search(q: string, limit = 20) {
     const trimmed = q.trim().slice(0, 2000);
@@ -33,7 +47,15 @@ export class AwinCatalogService {
       if (byUrl.length > 0) return byUrl;
     }
 
-    return this.searchByProductText(trimmed, take);
+    return await this.searchByProductText(trimmed, take);
+  }
+
+  /** 0.15–0.55: lower = fuzzier (more typos), more possible noise. */
+  private fuzzyMinSimilarity(): number {
+    const raw = process.env.AWIN_CATALOG_FUZZY_MIN_SIM?.trim();
+    const n = raw ? Number.parseFloat(raw) : 0.28;
+    if (!Number.isFinite(n)) return 0.28;
+    return Math.min(0.55, Math.max(0.15, n));
   }
 
   /** Whitespace-separated tokens; each must match (AND). Single token = broad substring search. */
@@ -89,20 +111,57 @@ export class AwinCatalogService {
     });
   }
 
-  private searchByProductText(trimmed: string, take: number) {
+  private async searchByProductText(trimmed: string, take: number): Promise<CatalogSearchRow[]> {
     const tokens = AwinCatalogService.catalogQueryTokens(trimmed);
-    if (tokens.length === 0) return Promise.resolve([]);
+    if (tokens.length === 0) return [];
 
-    return this.prisma.awinCatalogProduct.findMany({
-      where: {
-        AND: tokens.map((t) => ({
-          searchText: { contains: t, mode: 'insensitive' as const },
-        })),
-      },
-      take,
-      orderBy: { title: 'asc' },
-      select: CATALOG_SEARCH_SELECT,
-    });
+    try {
+      return await this.searchByProductTextFuzzy(tokens, take);
+    } catch (e) {
+      this.log.warn(
+        `Fuzzy catalog search failed (${e instanceof Error ? e.message : String(e)}); falling back to substring match.`,
+      );
+      return this.prisma.awinCatalogProduct.findMany({
+        where: {
+          AND: tokens.map((t) => ({
+            searchText: { contains: t, mode: 'insensitive' as const },
+          })),
+        },
+        take,
+        orderBy: { title: 'asc' },
+        select: CATALOG_SEARCH_SELECT,
+      });
+    }
+  }
+
+  /** Requires `pg_trgm` (see prisma migration). */
+  private async searchByProductTextFuzzy(tokens: string[], take: number): Promise<CatalogSearchRow[]> {
+    const threshold = this.fuzzyMinSimilarity();
+    const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
+
+    const whereParts = tokenSqls.map(
+      (tok) =>
+        Prisma.sql`(strpos(lower("searchText"), ${tok}) > 0 OR word_similarity(${tok}, lower("searchText")) >= ${threshold})`,
+    );
+    const whereCombined = Prisma.join(whereParts, ' AND ');
+
+    const scoreParts = tokenSqls.map(
+      (tok) => Prisma.sql`word_similarity(${tok}, lower("searchText"))`,
+    );
+    const scoreExpr =
+      scoreParts.length === 1
+        ? scoreParts[0]
+        : Prisma.sql`(${Prisma.join(scoreParts, ' + ')})`;
+
+    const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
+      SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category"
+      FROM "AwinCatalogProduct"
+      WHERE ${whereCombined}
+      ORDER BY ${scoreExpr} DESC, "title" ASC
+      LIMIT ${take}
+    `);
+
+    return rows;
   }
 
   async getByFeedKey(feedKey: string) {

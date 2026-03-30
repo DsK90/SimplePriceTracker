@@ -24,7 +24,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "audit:retail": "tsx scripts/audit-retail-pages.ts",
-    "import-awin-feed": "tsx scripts/import-awin-feed.ts"
+    "import-awin-feed": "tsx scripts/import-awin-feed.ts",
+    "sync-awin-feeds": "tsx scripts/sync-awin-feeds.ts"
   },
   "dependencies": {
     "@getbrevo/brevo": "^5.0.3",

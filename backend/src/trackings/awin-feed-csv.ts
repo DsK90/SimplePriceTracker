@@ -80,7 +80,7 @@ export function rowToAwinFeedRow(
     if (k) map[k] = i;
   });
 
-  const advIdIdx = col(map, ['advertiser_id', 'advertiserid']);
+  const advIdIdx = col(map, ['advertiser_id', 'advertiserid', 'merchant_id']);
   const prodIdIdx = col(map, ['aw_product_id', 'product_id', 'aw_productid']);
   const feedKeyIdx = col(map, ['feed_key', 'awin_feed_key', 'catalog_key']);
 

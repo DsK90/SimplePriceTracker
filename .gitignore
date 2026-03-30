@@ -1,6 +1,10 @@
 node_modules/
 .env
 *.log
+backend/data/awin/**
+!backend/data/awin/README.md
+backend/config/awin-feeds.json
+backend/src/common/datafeed_*.csv
 
 # Let's Encrypt (docker-compose.ssl.yml)
 nginx/certbot_conf/

@@ -7,6 +7,7 @@
 import 'dotenv/config';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { parseAwinFeedRows } from '../src/trackings/awin-feed-csv';
@@ -33,7 +34,9 @@ async function main() {
     adapter: new PrismaPg({ connectionString: databaseUrl }),
   });
 
-  const raw = fs.readFileSync(abs, 'utf8');
+  const rawBuf = fs.readFileSync(abs);
+  const isGzip = abs.toLowerCase().endsWith('.gz') || (rawBuf.length >= 2 && rawBuf[0] === 0x1f && rawBuf[1] === 0x8b);
+  const raw = (isGzip ? gunzipSync(rawBuf) : rawBuf).toString('utf8');
   const { rows, skipped } = parseAwinFeedRows(raw);
   console.log(`Parsed ${rows.length} products, skipped ${skipped} rows.`);
 

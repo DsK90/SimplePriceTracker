@@ -1,0 +1,10 @@
+{
+  "sources": [
+    {
+      "id": "expert-de",
+      "enabled": true,
+      "url": "https://ui.awin.com/productdata-darwin-download/publisher/2833018/<your-token>/1/feedList",
+      "advertiserId": "30007"
+    }
+  ]
+}

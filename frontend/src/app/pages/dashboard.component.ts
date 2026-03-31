@@ -171,7 +171,7 @@ export class DashboardComponent implements OnInit {
   private scrapeIdx = 0;
   private static readonly CATALOG_BUSY_MSG_COUNT = 4;
   private static readonly PRICE_NOT_FOUND_MSG_COUNT = 10;
-  private static readonly CATALOG_SEARCH_DEBOUNCE_MS = 90;
+  private static readonly CATALOG_SEARCH_DEBOUNCE_MS = 140;
 
   /** Pro-only: overlay with price snapshots for one tracking. */
   historyTracking = signal<Tracking | null>(null);

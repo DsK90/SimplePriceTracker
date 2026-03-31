@@ -21,6 +21,7 @@ import {
   map,
   of,
   switchMap,
+  tap,
 } from 'rxjs';
 
 type CatalogHit = {
@@ -121,6 +122,9 @@ export class DashboardComponent implements OnInit {
   /** Rows in AwinCatalogProduct on the API (null = not loaded or request failed). */
   catalogProductCount = signal<number | null>(null);
   selectedCatalogHit = signal<CatalogHit | null>(null);
+  private readonly catalogSearchCache = new Map<string, { hits: CatalogHit[]; ts: number }>();
+  private static readonly CATALOG_SEARCH_CACHE_TTL_MS = 120_000;
+  private static readonly CATALOG_SEARCH_CACHE_MAX = 100;
 
   editForm = this.fb.nonNullable.group({
     productNameOverride: [''],
@@ -167,6 +171,7 @@ export class DashboardComponent implements OnInit {
   private scrapeIdx = 0;
   private static readonly CATALOG_BUSY_MSG_COUNT = 4;
   private static readonly PRICE_NOT_FOUND_MSG_COUNT = 10;
+  private static readonly CATALOG_SEARCH_DEBOUNCE_MS = 90;
 
   /** Pro-only: overlay with price snapshots for one tracking. */
   historyTracking = signal<Tracking | null>(null);
@@ -236,6 +241,54 @@ export class DashboardComponent implements OnInit {
     return this.translate.instant(fallbackKey);
   }
 
+  private normCatalogQuery(raw: string): string {
+    return raw.trim().toLowerCase();
+  }
+
+  private pickLocalCatalogCache(query: string): CatalogHit[] | null {
+    const q = this.normCatalogQuery(query);
+    if (!q) return null;
+    const now = Date.now();
+
+    const exact = this.catalogSearchCache.get(q);
+    if (exact && now - exact.ts <= DashboardComponent.CATALOG_SEARCH_CACHE_TTL_MS) {
+      return exact.hits;
+    }
+
+    let bestPrefix: string | null = null;
+    let bestHits: CatalogHit[] | null = null;
+    for (const [k, v] of this.catalogSearchCache.entries()) {
+      if (now - v.ts > DashboardComponent.CATALOG_SEARCH_CACHE_TTL_MS) continue;
+      if (!q.startsWith(k)) continue;
+      if (!bestPrefix || k.length > bestPrefix.length) {
+        bestPrefix = k;
+        bestHits = v.hits;
+      }
+    }
+    if (!bestHits) return null;
+    return bestHits.filter((h) => {
+      const title = h.title.toLowerCase();
+      const advertiser = (h.advertiserName ?? '').toLowerCase();
+      const brand = (h.brand ?? '').toLowerCase();
+      const category = (h.category ?? '').toLowerCase();
+      return (
+        title.includes(q) ||
+        advertiser.includes(q) ||
+        brand.includes(q) ||
+        category.includes(q)
+      );
+    });
+  }
+
+  private rememberCatalogQuery(query: string, hits: CatalogHit[]): void {
+    const q = this.normCatalogQuery(query);
+    if (q.length < 2) return;
+    this.catalogSearchCache.set(q, { hits, ts: Date.now() });
+    if (this.catalogSearchCache.size <= DashboardComponent.CATALOG_SEARCH_CACHE_MAX) return;
+    const oldest = this.catalogSearchCache.keys().next().value as string | undefined;
+    if (oldest) this.catalogSearchCache.delete(oldest);
+  }
+
   ngOnInit() {
     try {
       if (
@@ -286,7 +339,7 @@ export class DashboardComponent implements OnInit {
 
     this.form.controls.search.valueChanges
       .pipe(
-        debounceTime(180),
+        debounceTime(DashboardComponent.CATALOG_SEARCH_DEBOUNCE_MS),
         distinctUntilChanged(),
         switchMap((raw) => {
           const q = (raw ?? '').trim();
@@ -298,7 +351,11 @@ export class DashboardComponent implements OnInit {
             this.catalogSearchError.set(null);
             return of([] as CatalogHit[]);
           }
-          this.catalogHits.set([]);
+
+          const instantHits = this.pickLocalCatalogCache(q);
+          if (instantHits && instantHits.length > 0) {
+            this.catalogHits.set(instantHits.slice(0, 30));
+          }
           this.catalogLoading.set(true);
           this.catalogSearchError.set(null);
           return this.http
@@ -306,6 +363,7 @@ export class DashboardComponent implements OnInit {
               params: { q, limit: '30' },
             })
             .pipe(
+              tap((hits) => this.rememberCatalogQuery(q, hits)),
               catchError(() => {
                 this.catalogSearchError.set(
                   this.translate.instant('dashboard.catalogSearchError'),

@@ -153,6 +153,7 @@
     "placeholderUrl": "Indsæt produkt-URL…",
     "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogSearchError": "Could not load catalog search. Check your connection or sign in again.",
+    "catalogSearchLoading": "Søger i kataloget…",
     "catalogNoResults": "No products match your search. Try another keyword or paste a product URL from the shop.",
     "catalogSearchUnavailable": "Produktsøgning er ikke tilgængelig endnu. Prøv igen senere.",
     "catalogBusyMsg0": "Saving…",

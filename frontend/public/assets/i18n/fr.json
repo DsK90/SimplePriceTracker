@@ -153,6 +153,7 @@
     "placeholderUrl": "Collez l’URL du produit…",
     "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogSearchError": "Could not load catalog search. Check your connection or sign in again.",
+    "catalogSearchLoading": "Recherche dans le catalogue…",
     "catalogNoResults": "No products match your search. Try another keyword or paste a product URL from the shop.",
     "catalogSearchUnavailable": "La recherche produits n’est pas encore disponible. Réessaie plus tard.",
     "catalogBusyMsg0": "Saving…",

@@ -153,6 +153,7 @@
     "placeholderUrl": "粘贴商品链接…",
     "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogSearchError": "Could not load catalog search. Check your connection or sign in again.",
+    "catalogSearchLoading": "正在搜索目录…",
     "catalogNoResults": "No products match your search. Try another keyword or paste a product URL from the shop.",
     "catalogSearchUnavailable": "产品搜索暂不可用，请稍后再试。",
     "catalogBusyMsg0": "Saving…",

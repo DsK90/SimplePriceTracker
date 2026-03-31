@@ -10,7 +10,56 @@ import { createGunzip } from 'node:zlib';
 import { parse } from 'csv-parse';
 import type { PrismaClient } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import type { AwinFeedRow } from '../src/trackings/awin-feed-csv';
 import { rowToAwinFeedRow } from '../src/trackings/awin-feed-csv';
+
+/** Parallel upserts per round-trip batch (default 48). Set AWIN_FEED_UPSERT_BATCH=1 to mimic old row-by-row. */
+function upsertBatchSize(): number {
+  const raw = process.env.AWIN_FEED_UPSERT_BATCH?.trim();
+  if (!raw) return 48;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n)) return 48;
+  return Math.min(200, Math.max(1, n));
+}
+
+function upsertOne(prisma: PrismaClient, r: AwinFeedRow) {
+  return prisma.awinCatalogProduct.upsert({
+    where: { feedKey: r.feedKey },
+    create: {
+      feedKey: r.feedKey,
+      advertiserId: r.advertiserId,
+      advertiserName: r.advertiserName,
+      awProductId: r.awProductId,
+      merchantProductId: r.merchantProductId,
+      ean: r.ean,
+      title: r.title,
+      description: r.description,
+      price: new Prisma.Decimal(r.price),
+      currency: r.currency,
+      merchantDeepLink: r.merchantDeepLink,
+      imageUrl: r.imageUrl,
+      category: r.category,
+      brand: r.brand,
+      searchText: r.searchText,
+    },
+    update: {
+      advertiserId: r.advertiserId,
+      advertiserName: r.advertiserName,
+      awProductId: r.awProductId,
+      merchantProductId: r.merchantProductId,
+      ean: r.ean,
+      title: r.title,
+      description: r.description,
+      price: new Prisma.Decimal(r.price),
+      currency: r.currency,
+      merchantDeepLink: r.merchantDeepLink,
+      imageUrl: r.imageUrl,
+      category: r.category,
+      brand: r.brand,
+      searchText: r.searchText,
+    },
+  });
+}
 
 export function fileLooksLikeGzip(filePath: string): boolean {
   const fd = fs.openSync(filePath, 'r');
@@ -154,6 +203,18 @@ export async function upsertAwinFeedFromFile(
   let headers: string[] | null = null;
   let skipped = 0;
   let upserted = 0;
+  const pending: AwinFeedRow[] = [];
+  const batchSize = upsertBatchSize();
+
+  async function flushBatch(): Promise<void> {
+    if (pending.length === 0) return;
+    const batch = pending.splice(0, batchSize);
+    await Promise.all(batch.map((r) => upsertOne(prisma, r)));
+    upserted += batch.length;
+    if (onProgress && upserted % 5000 === 0) {
+      onProgress(upserted);
+    }
+  }
 
   try {
     for await (const row of parser) {
@@ -171,47 +232,16 @@ export async function upsertAwinFeedFromFile(
         skipped++;
         continue;
       }
-      const r = out;
-      await prisma.awinCatalogProduct.upsert({
-        where: { feedKey: r.feedKey },
-        create: {
-          feedKey: r.feedKey,
-          advertiserId: r.advertiserId,
-          advertiserName: r.advertiserName,
-          awProductId: r.awProductId,
-          merchantProductId: r.merchantProductId,
-          ean: r.ean,
-          title: r.title,
-          description: r.description,
-          price: new Prisma.Decimal(r.price),
-          currency: r.currency,
-          merchantDeepLink: r.merchantDeepLink,
-          imageUrl: r.imageUrl,
-          category: r.category,
-          brand: r.brand,
-          searchText: r.searchText,
-        },
-        update: {
-          advertiserId: r.advertiserId,
-          advertiserName: r.advertiserName,
-          awProductId: r.awProductId,
-          merchantProductId: r.merchantProductId,
-          ean: r.ean,
-          title: r.title,
-          description: r.description,
-          price: new Prisma.Decimal(r.price),
-          currency: r.currency,
-          merchantDeepLink: r.merchantDeepLink,
-          imageUrl: r.imageUrl,
-          category: r.category,
-          brand: r.brand,
-          searchText: r.searchText,
-        },
-      });
-      upserted++;
-      if (onProgress && upserted % 5000 === 0) {
-        onProgress(upserted);
+      pending.push(out);
+      if (pending.length >= batchSize) {
+        await flushBatch();
       }
+    }
+    while (pending.length > 0) {
+      await flushBatch();
+    }
+    if (onProgress && upserted > 0 && upserted % 5000 !== 0) {
+      onProgress(upserted);
     }
   } finally {
     parser.destroy();

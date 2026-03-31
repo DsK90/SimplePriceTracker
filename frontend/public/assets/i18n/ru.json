@@ -153,6 +153,7 @@
     "placeholderUrl": "Вставьте URL товара…",
     "searchCatalogPlaceholder": "Product name, keyword, or shop URL… (min. 2 characters)",
     "catalogSearchError": "Could not load catalog search. Check your connection or sign in again.",
+    "catalogSearchLoading": "Поиск в каталоге…",
     "catalogNoResults": "No products match your search. Try another keyword or paste a product URL from the shop.",
     "catalogSearchUnavailable": "Поиск товаров пока недоступен. Попробуйте позже.",
     "catalogBusyMsg0": "Saving…",

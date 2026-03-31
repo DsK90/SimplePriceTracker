@@ -1,5 +1,6 @@
 /**
  * Download one or more Awin CSV feeds, store them per advertiser, and upsert into catalog.
+ * Large feeds: HTTP response is streamed to disk; CSV is parsed with csv-parse streams (no full-file RAM).
  *
  * Usage:
  *   1) Copy config/awin-feeds.example.json -> config/awin-feeds.json
@@ -9,10 +10,14 @@
 import 'dotenv/config';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { gunzipSync } from 'node:zlib';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { parseAwinFeedRows, parseCsv } from '../src/trackings/awin-feed-csv';
+import { PrismaClient } from '@prisma/client';
+import {
+  downloadUrlToFile,
+  looksLikeDarwinFeedListFile,
+  pickFeedUrlFromFeedListFile,
+  upsertAwinFeedFromFile,
+} from './awin-feed-stream';
 
 type FeedSource = {
   id: string;
@@ -51,111 +56,6 @@ function readConfig(absPath: string): FeedSource[] {
   return sources.filter((s) => s && s.enabled !== false);
 }
 
-function looksLikeGzip(buf: Buffer): boolean {
-  return buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b;
-}
-
-function normHeader(h: string): string {
-  return h.replace(/^\uFEFF/, '').trim().toLowerCase().replace(/\s+/g, '_');
-}
-
-async function downloadText(url: string, headers: Record<string, string> = {}): Promise<string> {
-  const response = await fetch(url, {
-    headers,
-  });
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} for ${url}`);
-  }
-
-  const arrayBuffer = await response.arrayBuffer();
-  const body = Buffer.from(arrayBuffer);
-  const isGzip = url.endsWith('.gz') || looksLikeGzip(body);
-  const decoded = isGzip ? gunzipSync(body) : body;
-  return decoded.toString('utf8');
-}
-
-function pickFeedUrlFromFeedList(source: FeedSource, csvText: string): string | null {
-  const rows = parseCsv(csvText.trim());
-  if (rows.length < 2) return null;
-  const headers = rows[0];
-  const map: Record<string, number> = {};
-  headers.forEach((h, i) => {
-    const k = normHeader(h);
-    if (k) map[k] = i;
-  });
-  const urlIdx = map.url;
-  const advertiserIdIdx = map.advertiser_id;
-  const advertiserNameIdx = map.advertiser_name;
-  const feedIdIdx = map.feed_id;
-  if (urlIdx === undefined || advertiserIdIdx === undefined) return null;
-
-  for (let r = 1; r < rows.length; r++) {
-    const cells = rows[r];
-    const advertiserId = (cells[advertiserIdIdx] ?? '').trim();
-    const advertiserName = advertiserNameIdx !== undefined ? (cells[advertiserNameIdx] ?? '').trim() : '';
-    const feedId = feedIdIdx !== undefined ? (cells[feedIdIdx] ?? '').trim() : '';
-
-    const idMatches = source.advertiserId ? advertiserId === source.advertiserId.trim() : true;
-    const nameMatches = source.advertiserName
-      ? advertiserName.toLowerCase() === source.advertiserName.trim().toLowerCase()
-      : true;
-    const feedMatches = source.feedId ? feedId === source.feedId.trim() : true;
-
-    if (idMatches && nameMatches && feedMatches) {
-      return (cells[urlIdx] ?? '').trim() || null;
-    }
-  }
-
-  return null;
-}
-
-async function upsertRows(prisma: PrismaClient, csvText: string): Promise<{ parsed: number; skipped: number; upserted: number }> {
-  const { rows, skipped } = parseAwinFeedRows(csvText);
-  let upserted = 0;
-
-  for (const r of rows) {
-    await prisma.awinCatalogProduct.upsert({
-      where: { feedKey: r.feedKey },
-      create: {
-        feedKey: r.feedKey,
-        advertiserId: r.advertiserId,
-        advertiserName: r.advertiserName,
-        awProductId: r.awProductId,
-        merchantProductId: r.merchantProductId,
-        ean: r.ean,
-        title: r.title,
-        description: r.description,
-        price: new Prisma.Decimal(r.price),
-        currency: r.currency,
-        merchantDeepLink: r.merchantDeepLink,
-        imageUrl: r.imageUrl,
-        category: r.category,
-        brand: r.brand,
-        searchText: r.searchText,
-      },
-      update: {
-        advertiserId: r.advertiserId,
-        advertiserName: r.advertiserName,
-        awProductId: r.awProductId,
-        merchantProductId: r.merchantProductId,
-        ean: r.ean,
-        title: r.title,
-        description: r.description,
-        price: new Prisma.Decimal(r.price),
-        currency: r.currency,
-        merchantDeepLink: r.merchantDeepLink,
-        imageUrl: r.imageUrl,
-        category: r.category,
-        brand: r.brand,
-        searchText: r.searchText,
-      },
-    });
-    upserted++;
-  }
-
-  return { parsed: rows.length, skipped, upserted };
-}
-
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -189,34 +89,56 @@ async function main() {
       if (!slug) throw new Error(`Invalid feed source id: "${source.id}"`);
 
       console.log(`\n==> Sync source: ${source.id}`);
-      const firstDownload = await downloadText(source.url, source.headers ?? {});
-      const feedUrl = pickFeedUrlFromFeedList(source, firstDownload);
-      const csvText = feedUrl
-        ? await downloadText(feedUrl, source.headers ?? {})
-        : firstDownload;
-      if (feedUrl) {
-        console.log(`[${source.id}] resolved feed URL from feed list`);
-      }
+      const advertiserDir = path.join(storageRoot, slug);
+      const downloadsDir = path.join(advertiserDir, 'downloads');
+      fs.mkdirSync(downloadsDir, { recursive: true });
 
       const now = new Date();
       const datePart = now.toISOString().slice(0, 10);
       const timePart = now.toISOString().slice(11, 19).replace(/:/g, '');
-      const advertiserDir = path.join(storageRoot, slug);
-      const downloadsDir = path.join(advertiserDir, 'downloads');
-      fs.mkdirSync(downloadsDir, { recursive: true });
-      fs.writeFileSync(path.join(advertiserDir, 'latest.csv'), csvText, 'utf8');
-      if (feedUrl) {
-        fs.writeFileSync(path.join(advertiserDir, 'latest-feed-list.csv'), firstDownload, 'utf8');
-      }
-      fs.writeFileSync(path.join(downloadsDir, `${datePart}-${timePart}.csv`), csvText, 'utf8');
+      const hdr = source.headers ?? {};
 
-      const stats = await upsertRows(prisma, csvText);
+      const firstPath = path.join(downloadsDir, `${datePart}-${timePart}-first.bin`);
+      await downloadUrlToFile(source.url, firstPath, hdr);
+
+      let productPath = firstPath;
+      const isFeedList = await looksLikeDarwinFeedListFile(firstPath);
+
+      if (isFeedList) {
+        fs.copyFileSync(firstPath, path.join(advertiserDir, 'latest-feed-list.feed'));
+        const feedUrl = await pickFeedUrlFromFeedListFile(source, firstPath);
+        if (feedUrl) {
+          console.log(`[${source.id}] resolved feed URL from feed list`);
+          productPath = path.join(downloadsDir, `${datePart}-${timePart}-product.bin`);
+          await downloadUrlToFile(feedUrl, productPath, hdr);
+        }
+      }
+
+      fs.copyFileSync(productPath, path.join(advertiserDir, 'latest.feed'));
+      fs.copyFileSync(productPath, path.join(downloadsDir, `${datePart}-${timePart}.feed`));
+
+      const stats = await upsertAwinFeedFromFile(prisma, productPath, (n) =>
+        console.log(`  ... upserted ${n} rows`),
+      );
       console.log(
         `[${source.id}] parsed=${stats.parsed} skipped=${stats.skipped} upserted=${stats.upserted}`,
       );
       totalParsed += stats.parsed;
       totalSkipped += stats.skipped;
       totalUpserted += stats.upserted;
+
+      try {
+        fs.unlinkSync(firstPath);
+      } catch {
+        /* ignore */
+      }
+      if (productPath !== firstPath) {
+        try {
+          fs.unlinkSync(productPath);
+        } catch {
+          /* ignore */
+        }
+      }
     }
 
     console.log('\nSync complete.');

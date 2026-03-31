@@ -1,0 +1,28 @@
+# Runs the AWIN catalog import on the production host (same SSH key as deploy).
+# Requires secrets: DEPLOY_SSH_KEY, DEPLOY_HOST
+name: Sync AWIN catalog
+
+on:
+  schedule:
+    - cron: '20 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run remote AWIN sync script
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          if [ -z "${DEPLOY_HOST}" ] || [ -z "${DEPLOY_SSH_KEY}" ]; then
+            echo "::error::Set repository secrets DEPLOY_HOST and DEPLOY_SSH_KEY."
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "root@${DEPLOY_HOST}" \
+            "/root/pricefly-sync-awin-feed.sh"

@@ -3,8 +3,8 @@
  * @see https://wiki.awin.com/index.php/Data_Feed_-_Field_List
  */
 
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
+/** Yields one row at a time — avoids allocating a full `string[][]` (OOM on large feeds). */
+export function* iterCsvRows(text: string): Generator<string[]> {
   let row: string[] = [];
   let cur = '';
   let inQuotes = false;
@@ -30,15 +30,22 @@ export function parseCsv(text: string): string[][] {
       if (c === '\r' && text[i + 1] === '\n') i++;
       row.push(cur);
       cur = '';
-      if (row.some((cell) => cell.length > 0)) rows.push(row);
+      if (row.some((cell) => cell.length > 0)) {
+        yield row;
+      }
       row = [];
     } else {
       cur += c;
     }
   }
   row.push(cur);
-  if (row.some((cell) => cell.length > 0)) rows.push(row);
-  return rows;
+  if (row.some((cell) => cell.length > 0)) {
+    yield row;
+  }
+}
+
+export function parseCsv(text: string): string[][] {
+  return [...iterCsvRows(text)];
 }
 
 function normHeader(h: string): string {
@@ -240,13 +247,13 @@ export function parseAwinFeedRows(csvText: string): {
   rows: AwinFeedRow[];
   skipped: number;
 } {
-  const table = parseCsv(csvText.trim());
-  if (table.length < 2) return { rows: [], skipped: 0 };
-  const headers = table[0];
+  const it = iterCsvRows(csvText.trim());
+  const first = it.next();
+  if (first.done) return { rows: [], skipped: 0 };
+  const headers = first.value;
   const rows: AwinFeedRow[] = [];
   let skipped = 0;
-  for (let r = 1; r < table.length; r++) {
-    const cells = table[r];
+  for (const cells of it) {
     if (!cells || cells.every((c) => !String(c).trim())) {
       skipped++;
       continue;

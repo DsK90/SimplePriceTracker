@@ -286,7 +286,7 @@ export class DashboardComponent implements OnInit {
 
     this.form.controls.search.valueChanges
       .pipe(
-        debounceTime(350),
+        debounceTime(180),
         distinctUntilChanged(),
         switchMap((raw) => {
           const q = (raw ?? '').trim();

@@ -115,48 +115,88 @@ export class AwinCatalogService {
     const tokens = AwinCatalogService.catalogQueryTokens(trimmed);
     if (tokens.length === 0) return [];
 
+    // Fast path for normal typing: indexed token contains on prebuilt searchText.
+    const exact = await this.prisma.awinCatalogProduct.findMany({
+      where: {
+        AND: tokens.map((t) => ({
+          searchText: { contains: t, mode: 'insensitive' as const },
+        })),
+      },
+      take,
+      orderBy: { title: 'asc' },
+      select: CATALOG_SEARCH_SELECT,
+    });
+    if (exact.length > 0) return exact;
+
     try {
       return await this.searchByProductTextFuzzy(tokens, take);
     } catch (e) {
       this.log.warn(
         `Fuzzy catalog search failed (${e instanceof Error ? e.message : String(e)}); falling back to substring match.`,
       );
-      return this.prisma.awinCatalogProduct.findMany({
-        where: {
-          AND: tokens.map((t) => ({
-            searchText: { contains: t, mode: 'insensitive' as const },
-          })),
-        },
-        take,
-        orderBy: { title: 'asc' },
-        select: CATALOG_SEARCH_SELECT,
-      });
+      return [];
     }
   }
 
   /** Requires `pg_trgm` (see prisma migration). */
   private async searchByProductTextFuzzy(tokens: string[], take: number): Promise<CatalogSearchRow[]> {
-    const threshold = this.fuzzyMinSimilarity();
     const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
+    const candidateLimit = Math.min(1000, Math.max(200, take * 40));
 
-    const whereParts = tokenSqls.map(
-      (tok) =>
-        Prisma.sql`(strpos(lower("searchText"), ${tok}) > 0 OR word_similarity(${tok}, lower("searchText")) >= ${threshold})`,
+    const containsWhereParts = tokenSqls.map(
+      (tok) => Prisma.sql`(
+        "title" ILIKE ${`%${tok}%`}
+        OR COALESCE("brand", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("advertiserName", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("category", '') ILIKE ${`%${tok}%`}
+      )`,
     );
-    const whereCombined = Prisma.join(whereParts, ' AND ');
+    const containsWhere = Prisma.join(containsWhereParts, ' AND ');
 
     const scoreParts = tokenSqls.map(
-      (tok) => Prisma.sql`word_similarity(${tok}, lower("searchText"))`,
+      (tok) =>
+        Prisma.sql`GREATEST(
+          word_similarity(${tok}, lower("title")),
+          word_similarity(${tok}, lower(COALESCE("brand", ''))),
+          word_similarity(${tok}, lower(COALESCE("advertiserName", ''))),
+          word_similarity(${tok}, lower("searchText"))
+        )`,
     );
     const scoreExpr =
       scoreParts.length === 1
         ? scoreParts[0]
         : Prisma.sql`(${Prisma.join(scoreParts, ' + ')})`;
 
+    // Fast path: use indexed token contains to build a small candidate set, then fuzzy-rank only that subset.
+    const candidateRows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
+      WITH candidate AS (
+        SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category", "searchText"
+        FROM "AwinCatalogProduct"
+        WHERE ${containsWhere}
+        ORDER BY "title" ASC
+        LIMIT ${candidateLimit}
+      )
+      SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category"
+      FROM candidate
+      ORDER BY ${scoreExpr} DESC, "title" ASC
+      LIMIT ${take}
+    `);
+    if (candidateRows.length > 0) return candidateRows;
+
+    // Fallback for typo-heavy inputs that do not have direct substring matches.
+    const threshold = this.fuzzyMinSimilarity();
+    const fuzzyWhereParts = tokenSqls.map(
+      (tok) =>
+        Prisma.sql`(
+          lower("searchText") % ${tok}
+          OR word_similarity(${tok}, lower("searchText")) >= ${threshold}
+        )`,
+    );
+    const fuzzyWhere = Prisma.join(fuzzyWhereParts, ' AND ');
     const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category"
       FROM "AwinCatalogProduct"
-      WHERE ${whereCombined}
+      WHERE ${fuzzyWhere}
       ORDER BY ${scoreExpr} DESC, "title" ASC
       LIMIT ${take}
     `);

@@ -115,12 +115,53 @@
 
   <!-- Angebote -->
   <section class="mb-10">
-    <div class="mb-4 flex items-end justify-between gap-4">
+    <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
         <h2 class="font-headline text-lg font-bold text-on-surface md:text-xl">
           {{ 'shops.highlightsTitle' | translate }}
         </h2>
         <p class="text-xs text-on-surface-variant">{{ 'shops.highlightsSubtitle' | translate }}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">{{
+          'shops.sortLabel' | translate
+        }}</span>
+        <button
+          type="button"
+          (click)="setOfferSortMode('balanced')"
+          [class.bg-primary-container]="offerSortMode() === 'balanced'"
+          [class.text-on-primary-container]="offerSortMode() === 'balanced'"
+          class="rounded-full border border-outline-variant/30 px-3 py-1 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+        >
+          {{ 'shops.sortBalanced' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="setOfferSortMode('save_eur')"
+          [class.bg-primary-container]="offerSortMode() === 'save_eur'"
+          [class.text-on-primary-container]="offerSortMode() === 'save_eur'"
+          class="rounded-full border border-outline-variant/30 px-3 py-1 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+        >
+          {{ 'shops.sortSaveEur' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="setOfferSortMode('save_percent')"
+          [class.bg-primary-container]="offerSortMode() === 'save_percent'"
+          [class.text-on-primary-container]="offerSortMode() === 'save_percent'"
+          class="rounded-full border border-outline-variant/30 px-3 py-1 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+        >
+          {{ 'shops.sortSavePercent' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="setOfferSortMode('premium')"
+          [class.bg-primary-container]="offerSortMode() === 'premium'"
+          [class.text-on-primary-container]="offerSortMode() === 'premium'"
+          class="rounded-full border border-outline-variant/30 px-3 py-1 text-xs font-semibold text-on-surface-variant transition hover:border-primary/40"
+        >
+          {{ 'shops.sortPremium' | translate }}
+        </button>
       </div>
     </div>
     @if (bestLoading()) {

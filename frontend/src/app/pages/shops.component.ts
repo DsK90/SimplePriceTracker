@@ -42,6 +42,8 @@ export type CatalogProductDetail = CatalogListItem & {
   updatedFromFeedAt?: string;
 };
 
+type OfferSortMode = 'balanced' | 'save_eur' | 'save_percent' | 'premium';
+
 @Component({
   selector: 'app-shops',
   standalone: true,
@@ -67,6 +69,7 @@ export class ShopsComponent implements OnInit {
   protected readonly detailOpen = signal(false);
   protected readonly detailLoading = signal(false);
   protected readonly detailProduct = signal<CatalogProductDetail | null>(null);
+  protected readonly offerSortMode = signal<OfferSortMode>('balanced');
 
   ngOnInit(): void {
     this.loadStats();
@@ -138,12 +141,15 @@ export class ShopsComponent implements OnInit {
           : this.expertOffers;
 
     loadingSignal.set(true);
+    const mode = this.offerSortMode();
+    const [minPrice, maxPrice] = this.offerPriceRangeForMode(mode);
     const params: Record<string, string> = {
       limit: '30',
       techOnly: '1',
-      minPrice: '700',
-      maxPrice: '2500',
+      minPrice: String(minPrice),
+      maxPrice: String(maxPrice),
       preferred: 'laptop,computer,monitor,gpu,grafikkarte,ssd',
+      sort: mode,
     };
     if (kind === 'alternate') params['advertiser'] = 'alternate';
     if (kind === 'expert') params['advertiser'] = 'expert';
@@ -158,6 +164,25 @@ export class ShopsComponent implements OnInit {
         setItems.set(h);
         this.deduplicateOfferSections();
       });
+  }
+
+  protected setOfferSortMode(mode: OfferSortMode): void {
+    if (this.offerSortMode() === mode) return;
+    this.offerSortMode.set(mode);
+    this.loadAllOfferSections();
+  }
+
+  private offerPriceRangeForMode(mode: OfferSortMode): [number, number] {
+    switch (mode) {
+      case 'save_percent':
+        return [120, 3000];
+      case 'save_eur':
+      case 'premium':
+        return [300, 3500];
+      case 'balanced':
+      default:
+        return [180, 3200];
+    }
   }
 
   private deduplicateOfferSections(): void {

@@ -54,6 +54,7 @@ export type CatalogHighlightsOptions = {
   minPrice?: number;
   maxPrice?: number;
   preferredKeywords?: string[];
+  sortMode?: 'balanced' | 'save_eur' | 'save_percent' | 'premium';
 };
 
 @Injectable()
@@ -164,6 +165,8 @@ export class AwinCatalogService {
       .filter((s) => s.length >= 2)
       .slice(0, 20);
     const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
+    const sortMode = options.sortMode ?? 'balanced';
+    const orderBySql = this.highlightsOrderBySql(sortMode);
     const queryTake =
       adv && adv.length > 0 ? take : Math.min(300, Math.max(take * 12, take));
 
@@ -192,10 +195,7 @@ export class AwinCatalogService {
       ${minPriceSql}
       ${maxPriceSql}
       ORDER BY
-        "__preferredScore" DESC,
-        "price" DESC,
-        GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
-        "title" ASC
+        ${orderBySql}
       LIMIT ${queryTake}
     `);
     if (withImage.length > 0) {
@@ -221,10 +221,7 @@ export class AwinCatalogService {
       ${minPriceSql}
       ${maxPriceSql}
       ORDER BY
-        "__preferredScore" DESC,
-        "price" DESC,
-        GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
-        "title" ASC
+        ${orderBySql}
       LIMIT ${queryTake}
     `);
     const finalFallback =
@@ -289,6 +286,58 @@ export class AwinCatalogService {
       )`;
     });
     return parts.length === 1 ? parts[0] : Prisma.sql`(${Prisma.join(parts, ' + ')})`;
+  }
+
+  private highlightsOrderBySql(
+    mode: 'balanced' | 'save_eur' | 'save_percent' | 'premium',
+  ): Prisma.Sql {
+    switch (mode) {
+      case 'save_eur':
+        return Prisma.sql`
+          GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
+          "__preferredScore" DESC,
+          "price" DESC,
+          "title" ASC
+        `;
+      case 'save_percent':
+        return Prisma.sql`
+          CASE
+            WHEN COALESCE("rrpPrice", 0) > 0
+              THEN GREATEST((COALESCE("rrpPrice", 0) - "price") / NULLIF("rrpPrice", 0), 0)
+            ELSE 0
+          END DESC,
+          "__preferredScore" DESC,
+          GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
+          "price" DESC,
+          "title" ASC
+        `;
+      case 'premium':
+        return Prisma.sql`
+          "__preferredScore" DESC,
+          "price" DESC,
+          GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
+          "title" ASC
+        `;
+      case 'balanced':
+      default:
+        return Prisma.sql`
+          (
+            ("__preferredScore" * 20)
+            + (GREATEST(COALESCE("rrpPrice", 0) - "price", 0) * 1.8)
+            + (
+              CASE
+                WHEN COALESCE("rrpPrice", 0) > 0
+                  THEN GREATEST((COALESCE("rrpPrice", 0) - "price") / NULLIF("rrpPrice", 0), 0) * 160
+                ELSE 0
+              END
+            )
+            + LEAST("price", 1800) * 0.02
+          ) DESC,
+          "price" DESC,
+          GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
+          "title" ASC
+        `;
+    }
   }
 
   private looksLikeUrl(s: string): boolean {

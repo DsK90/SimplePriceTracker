@@ -147,26 +147,27 @@ export class AwinCatalogService {
     const cached = this.highlightsCache.get(cacheKey);
     if (cached && cached.expiresAt > now) return cached.rows;
 
-    const discounted = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
+    const withImage = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       SELECT
         "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
         "merchantDeepLink", "category", "categoryPath", "description",
         "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
       FROM "AwinCatalogProduct"
-      WHERE "rrpPrice" IS NOT NULL
-        AND "rrpPrice" > 0
-        AND "price" < "rrpPrice"
+      WHERE COALESCE("imageUrl", '') <> ''
       ${techSql}
       ${advSql}
-      ORDER BY ("rrpPrice" - "price") / NULLIF("rrpPrice", 0) DESC, "title" ASC
+      ORDER BY
+        "price" DESC,
+        GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
+        "title" ASC
       LIMIT ${take}
     `);
-    if (discounted.length >= Math.min(5, take)) {
+    if (withImage.length > 0) {
       this.highlightsCache.set(cacheKey, {
         expiresAt: now + this.highlightsCacheTtlMs,
-        rows: discounted,
+        rows: withImage,
       });
-      return discounted;
+      return withImage;
     }
 
     const fallback = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
@@ -178,7 +179,10 @@ export class AwinCatalogService {
       WHERE 1=1
       ${techSql}
       ${advSql}
-      ORDER BY "updatedFromFeedAt" DESC, "title" ASC
+      ORDER BY
+        "price" DESC,
+        GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
+        "title" ASC
       LIMIT ${take}
     `);
     this.highlightsCache.set(cacheKey, {

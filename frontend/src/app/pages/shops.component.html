@@ -60,9 +60,13 @@
             class="relative flex gap-4 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-4 text-left transition hover:border-primary/20 md:flex-col md:gap-3"
           >
             @if (discountPercent(h) !== null) {
-              <span class="absolute right-3 top-3 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary"
-                >-{{ discountPercent(h) }}%</span
-              >
+              <span class="absolute right-3 top-3 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary">
+                @if (savedAmount(h) !== null) {
+                  -{{ formatPrice(savedAmount(h), h.currency) }}
+                } @else {
+                  -{{ discountPercent(h) }}%
+                }
+              </span>
             }
             <div class="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-surface-container-highest md:h-44 md:w-full">
               @if (h.imageUrl) {
@@ -137,9 +141,13 @@
             class="relative min-w-[260px] max-w-[280px] shrink-0 snap-start rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 text-left transition hover:border-primary/25 hover:bg-surface-container md:min-w-[300px]"
           >
             @if (discountPercent(h) !== null) {
-              <span class="absolute right-3 top-12 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary"
-                >-{{ discountPercent(h) }}%</span
-              >
+              <span class="absolute right-3 top-12 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary">
+                @if (savedAmount(h) !== null) {
+                  -{{ formatPrice(savedAmount(h), h.currency) }}
+                } @else {
+                  -{{ discountPercent(h) }}%
+                }
+              </span>
             }
             <div class="mb-3 flex justify-between gap-2">
               <span class="truncate text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70">{{
@@ -187,9 +195,13 @@
             class="relative min-w-[260px] max-w-[280px] shrink-0 snap-start rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 text-left transition hover:border-primary/25 hover:bg-surface-container md:min-w-[300px]"
           >
             @if (discountPercent(h) !== null) {
-              <span class="absolute right-3 top-3 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary"
-                >-{{ discountPercent(h) }}%</span
-              >
+              <span class="absolute right-3 top-3 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary">
+                @if (savedAmount(h) !== null) {
+                  -{{ formatPrice(savedAmount(h), h.currency) }}
+                } @else {
+                  -{{ discountPercent(h) }}%
+                }
+              </span>
             }
             <div class="mb-3 aspect-[4/3] overflow-hidden rounded-xl bg-surface-container-highest">
               @if (h.imageUrl) {
@@ -232,9 +244,13 @@
             class="relative min-w-[260px] max-w-[280px] shrink-0 snap-start rounded-2xl border border-outline-variant/20 bg-surface-container-low p-4 text-left transition hover:border-primary/25 hover:bg-surface-container md:min-w-[300px]"
           >
             @if (discountPercent(h) !== null) {
-              <span class="absolute right-3 top-3 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary"
-                >-{{ discountPercent(h) }}%</span
-              >
+              <span class="absolute right-3 top-3 z-10 rounded-md bg-tertiary px-2 py-1 text-[10px] font-black text-on-tertiary">
+                @if (savedAmount(h) !== null) {
+                  -{{ formatPrice(savedAmount(h), h.currency) }}
+                } @else {
+                  -{{ discountPercent(h) }}%
+                }
+              </span>
             }
             <div class="mb-3 aspect-[4/3] overflow-hidden rounded-xl bg-surface-container-highest">
               @if (h.imageUrl) {

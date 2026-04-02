@@ -401,21 +401,8 @@
         @if (detailProduct(); as p) {
         <div class="space-y-4">
           @if (p.imageUrl || p.imageUrl2) {
-            <div
-              class="grid gap-2"
-              [class.grid-cols-2]="!!p.imageUrl && !!p.imageUrl2"
-              [class.grid-cols-1]="!p.imageUrl || !p.imageUrl2"
-            >
-              @if (p.imageUrl) {
-                <div class="overflow-hidden rounded-xl bg-white">
-                  <img [src]="p.imageUrl" [alt]="p.title" class="mx-auto max-h-56 w-full object-contain p-1" />
-                </div>
-              }
-              @if (p.imageUrl2) {
-                <div class="overflow-hidden rounded-xl bg-white">
-                  <img [src]="p.imageUrl2" [alt]="p.title" class="mx-auto max-h-56 w-full object-contain p-1" />
-                </div>
-              }
+            <div class="overflow-hidden rounded-xl bg-white">
+              <img [src]="(p.imageUrl || p.imageUrl2)!" [alt]="p.title" class="mx-auto max-h-56 w-full object-contain p-1" />
             </div>
           }
           <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70">
@@ -613,17 +600,6 @@
                 'shops.addToWatchlistLogin' | translate
               }}</a>
             </p>
-          }
-          @if (p.awDeepLink?.trim()) {
-            <a
-              [href]="p.awDeepLink!"
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              class="flex w-full items-center justify-center gap-2 rounded-xl border border-outline-variant/30 bg-surface-container-high py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-container-highest"
-            >
-              {{ 'shops.trackingLink' | translate }}
-              <span class="material-symbols-outlined text-lg">open_in_new</span>
-            </a>
           }
           <a
             [href]="p.merchantDeepLink"

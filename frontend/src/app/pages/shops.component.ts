@@ -89,7 +89,7 @@ export class ShopsComponent implements OnInit {
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
 
-  private readonly searchPageSize = 18;
+  private readonly searchPageSize = 20;
   private readonly searchSentinel = viewChild<ElementRef<HTMLElement>>('searchSentinel');
   private readonly searchRequestId = signal(0);
 

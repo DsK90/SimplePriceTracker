@@ -112,12 +112,12 @@
             type="search"
             autocomplete="off"
             [attr.placeholder]="'dashboard.searchCatalogPlaceholder' | translate"
-            [attr.aria-busy]="catalogLoading()"
+            [attr.aria-busy]="catalogLoading() || catalogLoadingMore()"
             [disabled]="saving()"
-            [class.pr-24]="catalogLoading()"
+            [class.pr-24]="catalogLoading() || catalogLoadingMore()"
             class="w-full rounded-lg border border-outline-variant/45 bg-surface-container-highest py-2 pl-3 pr-3 text-xs text-on-surface shadow-inner shadow-black/10 placeholder:text-on-surface-variant/65 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/35 disabled:opacity-60 disabled:cursor-not-allowed md:py-2 md:pl-9 md:text-sm md:placeholder:text-on-surface-variant/55"
           />
-          @if (catalogLoading()) {
+          @if (catalogLoading() || catalogLoadingMore()) {
             <div
               class="pointer-events-none absolute right-2 top-1/2 flex max-w-[calc(100%-0.5rem)] -translate-y-1/2 items-center gap-1.5"
               aria-live="polite"
@@ -127,7 +127,11 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
               </svg>
               <span class="hidden max-w-[7.5rem] truncate text-[10px] font-medium text-on-surface-variant/90 sm:inline">
-                {{ 'dashboard.catalogSearchLoading' | translate }}
+                @if (catalogLoading()) {
+                  {{ 'dashboard.catalogSearchLoading' | translate }}
+                } @else {
+                  {{ 'dashboard.catalogSearchLoadingMore' | translate }}
+                }
               </span>
             </div>
           }
@@ -139,6 +143,7 @@
             catalogHits().length > 0 && !selectedCatalogHit() && !catalogLoading()
           ) {
             <ul
+              #catalogSearchList
               class="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-auto rounded-lg border border-outline-variant/40 bg-surface-container-highest py-1 shadow-lg"
               role="listbox"
             >
@@ -173,6 +178,14 @@
                       </span>
                     }
                   </button>
+                </li>
+              }
+              @if (catalogHasMore()) {
+                <li #catalogSearchSentinel class="h-2 list-none" aria-hidden="true"></li>
+              }
+              @if (catalogLoadingMore()) {
+                <li class="list-none px-3 py-2 text-center text-[10px] text-on-surface-variant">
+                  {{ 'dashboard.catalogSearchLoadingMore' | translate }}
                 </li>
               }
             </ul>

@@ -368,6 +368,7 @@
     "searchCatalogPlaceholder": "Produktname, Stichwort oder Shop-Link (URL)… (mind. 2 Zeichen)",
     "catalogSearchError": "Produktsuche konnte nicht geladen werden. Verbindung prüfen oder erneut anmelden.",
     "catalogSearchLoading": "Katalog wird durchsucht…",
+    "catalogSearchLoadingMore": "Weitere Treffer werden geladen …",
     "catalogNoResults": "Keine Treffer. Anderes Stichwort oder Produkt-Link aus dem Shop einfügen.",
     "catalogSearchUnavailable": "Die Produktsuche ist derzeit nicht verfügbar. Bitte versuche es später erneut.",
     "catalogBusyMsg0": "Eintrag wird vorbereitet…",

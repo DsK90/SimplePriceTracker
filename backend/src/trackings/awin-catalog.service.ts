@@ -136,6 +136,7 @@ export class AwinCatalogService {
   async search(q: string, options: CatalogSearchOptions = {}) {
     const trimmed = q.trim().slice(0, 2000);
     if (trimmed.length < 2) return [];
+    /** Default page size 20; callers use offset for lazy loading (max 50 per request). */
     const limit = Math.min(50, Math.max(1, options.limit ?? 20));
     const offset = Math.max(0, options.offset ?? 0);
     const techOnly = options.techOnly === true;
@@ -473,10 +474,17 @@ export class AwinCatalogService {
     const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
     const candidateLimit = Math.min(220, Math.max(80, (take + skip) * 8));
 
-    const st = Prisma.sql`lower(COALESCE("searchText", ''))`;
     const mustMatchParts = tokenSqls.map(
-      (tok) =>
-        Prisma.sql`(${st} LIKE ${`%${tok}%`} OR (${st} % ${tok}))`,
+      (tok) => Prisma.sql`(
+        "title" ILIKE ${`%${tok}%`}
+        OR COALESCE("brand", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("advertiserName", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("category", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("categoryPath", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("productModel", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("modelNumber", '') ILIKE ${`%${tok}%`}
+        OR lower(COALESCE("searchText", '')) % ${tok}
+      )`,
     );
     const mustMatchWhere = Prisma.join(mustMatchParts, ' AND ');
 

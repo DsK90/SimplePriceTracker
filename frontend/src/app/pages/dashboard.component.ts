@@ -2,7 +2,17 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, DestroyRef, HostListener, OnInit, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
@@ -21,8 +31,9 @@ import {
   map,
   of,
   switchMap,
-  tap,
 } from 'rxjs';
+
+const CATALOG_SEARCH_PAGE_SIZE = 20;
 
 type CatalogHit = {
   feedKey: string;
@@ -139,6 +150,13 @@ export class DashboardComponent implements OnInit {
 
   catalogHits = signal<CatalogHit[]>([]);
   catalogLoading = signal(false);
+  catalogLoadingMore = signal(false);
+  catalogHasMore = signal(false);
+  /** Next `offset` query param (skip) for `/catalog/search`; not deduped list length. */
+  private catalogNextApiOffset = signal(0);
+  private readonly catalogSearchRequestId = signal(0);
+  private readonly catalogSearchList = viewChild<ElementRef<HTMLElement>>('catalogSearchList');
+  private readonly catalogSearchSentinel = viewChild<ElementRef<HTMLElement>>('catalogSearchSentinel');
   /** Set when catalog search API fails (auth/network/server); otherwise null. */
   catalogSearchError = signal<string | null>(null);
   /** Last trimmed query used for catalog search (for empty-state copy). */
@@ -146,7 +164,10 @@ export class DashboardComponent implements OnInit {
   /** Rows in AwinCatalogProduct on the API (null = not loaded or request failed). */
   catalogProductCount = signal<number | null>(null);
   selectedCatalogHit = signal<CatalogHit | null>(null);
-  private readonly catalogSearchCache = new Map<string, { hits: CatalogHit[]; ts: number }>();
+  private readonly catalogSearchCache = new Map<
+    string,
+    { hits: CatalogHit[]; ts: number; exhausted: boolean }
+  >();
   private static readonly CATALOG_SEARCH_CACHE_TTL_MS = 120_000;
   private static readonly CATALOG_SEARCH_CACHE_MAX = 100;
 
@@ -212,6 +233,24 @@ export class DashboardComponent implements OnInit {
   private static readonly PUSH_REMINDER_KEY = 'pricefly_push_reminder';
   private static readonly PUSH_REMINDER_DELAYS = [0, 5 * 60_000, 30 * 60_000, 2 * 3600_000, 12 * 3600_000];
 
+  constructor() {
+    effect((onCleanup) => {
+      const root = this.catalogSearchList()?.nativeElement;
+      const el = this.catalogSearchSentinel()?.nativeElement;
+      if (!root || !el) return;
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) this.loadMoreCatalogSearch();
+          }
+        },
+        { root, rootMargin: '80px', threshold: 0 },
+      );
+      obs.observe(el);
+      onCleanup(() => obs.disconnect());
+    });
+  }
+
   private readonly addBusyMsgEffect = effect(() => {
     const active = this.saving();
     if (active) {
@@ -269,50 +308,73 @@ export class DashboardComponent implements OnInit {
     return raw.trim().toLowerCase();
   }
 
-  private pickLocalCatalogCache(query: string): CatalogHit[] | null {
+  private getExactCatalogCache(query: string): { hits: CatalogHit[]; exhausted: boolean } | null {
     const q = this.normCatalogQuery(query);
     if (!q) return null;
     const now = Date.now();
-
     const exact = this.catalogSearchCache.get(q);
     if (exact && now - exact.ts <= DashboardComponent.CATALOG_SEARCH_CACHE_TTL_MS) {
-      return exact.hits;
+      return { hits: exact.hits, exhausted: exact.exhausted };
     }
-
-    let bestPrefix: string | null = null;
-    let bestHits: CatalogHit[] | null = null;
-    for (const [k, v] of this.catalogSearchCache.entries()) {
-      if (now - v.ts > DashboardComponent.CATALOG_SEARCH_CACHE_TTL_MS) continue;
-      if (!q.startsWith(k)) continue;
-      if (!bestPrefix || k.length > bestPrefix.length) {
-        bestPrefix = k;
-        bestHits = v.hits;
-      }
-    }
-    if (!bestHits) return null;
-    return bestHits.filter((h) => {
-      const title = h.title.toLowerCase();
-      const advertiser = (h.advertiserName ?? '').toLowerCase();
-      const brand = (h.brand ?? '').toLowerCase();
-      const category = (h.category ?? '').toLowerCase();
-      const path = (h.categoryPath ?? '').toLowerCase();
-      return (
-        title.includes(q) ||
-        advertiser.includes(q) ||
-        brand.includes(q) ||
-        category.includes(q) ||
-        path.includes(q)
-      );
-    });
+    return null;
   }
 
-  private rememberCatalogQuery(query: string, hits: CatalogHit[]): void {
+  private rememberCatalogQuery(query: string, hits: CatalogHit[], exhausted: boolean): void {
     const q = this.normCatalogQuery(query);
     if (q.length < 2) return;
-    this.catalogSearchCache.set(q, { hits, ts: Date.now() });
+    this.catalogSearchCache.set(q, { hits, ts: Date.now(), exhausted });
     if (this.catalogSearchCache.size <= DashboardComponent.CATALOG_SEARCH_CACHE_MAX) return;
     const oldest = this.catalogSearchCache.keys().next().value as string | undefined;
     if (oldest) this.catalogSearchCache.delete(oldest);
+  }
+
+  private resetCatalogPagination(): void {
+    this.catalogHasMore.set(false);
+    this.catalogNextApiOffset.set(0);
+    this.catalogLoadingMore.set(false);
+  }
+
+  private loadMoreCatalogSearch(): void {
+    const q = this.form.controls.search.value.trim();
+    if (q.length < 2) return;
+    if (this.catalogLoading() || this.catalogLoadingMore() || !this.catalogHasMore()) return;
+    const rid = this.catalogSearchRequestId();
+    const offset = this.catalogNextApiOffset();
+    this.catalogLoadingMore.set(true);
+    this.http
+      .get<CatalogHit[]>(`${environment.apiUrl}/catalog/search`, {
+        params: {
+          q,
+          limit: String(CATALOG_SEARCH_PAGE_SIZE),
+          offset: String(offset),
+          techOnly: '1',
+        },
+      })
+      .pipe(
+        catchError(() => of([] as CatalogHit[])),
+        finalize(() => this.catalogLoadingMore.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((next) => {
+        if (rid !== this.catalogSearchRequestId()) return;
+        if (next.length === 0) {
+          this.catalogHasMore.set(false);
+          this.rememberCatalogQuery(q, this.catalogHits(), true);
+          return;
+        }
+        const seen = new Set(this.catalogHits().map((h) => h.feedKey));
+        const merged = [...this.catalogHits()];
+        for (const h of next) {
+          if (seen.has(h.feedKey)) continue;
+          seen.add(h.feedKey);
+          merged.push(h);
+        }
+        this.catalogHits.set(merged);
+        const exhausted = next.length < CATALOG_SEARCH_PAGE_SIZE;
+        this.catalogHasMore.set(!exhausted);
+        this.catalogNextApiOffset.set(offset + next.length);
+        this.rememberCatalogQuery(q, merged, exhausted);
+      });
   }
 
   ngOnInit() {
@@ -375,39 +437,70 @@ export class DashboardComponent implements OnInit {
           if (q.length < 2) {
             this.catalogHits.set([]);
             this.catalogSearchError.set(null);
-            return of([] as CatalogHit[]);
+            this.resetCatalogPagination();
+            this.catalogSearchRequestId.update((x) => x + 1);
+            return of({ rid: -1, hits: [] as CatalogHit[], exhausted: true });
           }
 
-          const instantHits = this.pickLocalCatalogCache(q);
-          if (instantHits && instantHits.length > 0) {
-            this.catalogHits.set(instantHits.slice(0, 30));
+          const rid = this.catalogSearchRequestId() + 1;
+          this.catalogSearchRequestId.set(rid);
+          this.resetCatalogPagination();
+
+          const cached = this.getExactCatalogCache(q);
+          if (cached) {
+            return of({
+              rid,
+              hits: cached.hits,
+              exhausted: cached.exhausted,
+              fromCache: true,
+            });
           }
+
           this.catalogLoading.set(true);
           this.catalogSearchError.set(null);
           return this.http
             .get<CatalogHit[]>(`${environment.apiUrl}/catalog/search`, {
-              params: { q, limit: '30', techOnly: '1' },
+              params: {
+                q,
+                limit: String(CATALOG_SEARCH_PAGE_SIZE),
+                offset: '0',
+                techOnly: '1',
+              },
             })
             .pipe(
-              tap((hits) => this.rememberCatalogQuery(q, hits)),
+              map((hits) => {
+                const exhausted = hits.length < CATALOG_SEARCH_PAGE_SIZE;
+                this.rememberCatalogQuery(q, hits, exhausted);
+                return { rid, hits, exhausted, fromCache: false };
+              }),
               catchError(() => {
                 this.catalogSearchError.set(
                   this.translate.instant('dashboard.catalogSearchError'),
                 );
-                return of([] as CatalogHit[]);
+                return of({ rid, hits: [] as CatalogHit[], exhausted: true, fromCache: false });
               }),
               finalize(() => this.catalogLoading.set(false)),
             );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((hits) => this.catalogHits.set(hits));
+      .subscribe((pack) => {
+        if (pack.rid === -1) {
+          this.catalogHits.set([]);
+          return;
+        }
+        if (pack.rid !== this.catalogSearchRequestId()) return;
+        this.catalogHits.set(pack.hits);
+        this.catalogHasMore.set(!pack.exhausted);
+        this.catalogNextApiOffset.set(pack.hits.length);
+      });
   }
 
   selectCatalogHit(h: CatalogHit): void {
     this.selectedCatalogHit.set(h);
     this.form.patchValue({ search: h.title }, { emitEvent: false });
     this.catalogHits.set([]);
+    this.resetCatalogPagination();
     this.catalogSearchError.set(null);
     this.formError.set(null);
   }
@@ -799,6 +892,7 @@ export class DashboardComponent implements OnInit {
         this.form.reset({ search: '' });
         this.selectedCatalogHit.set(null);
         this.catalogHits.set([]);
+        this.resetCatalogPagination();
         this.saving.set(false);
         this.load();
       },

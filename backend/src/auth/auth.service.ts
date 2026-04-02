@@ -21,9 +21,11 @@ import {
   normalizeLocalTimeHHmm,
   parseLocalTimeHHmm,
 } from '../common/daily-check-time';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UpdateDailyCheckDto } from './dto/update-daily-check.dto';
 import { normalizeMailLocale } from '../mail/i18n/mail-locale';
 import { PaypalService } from '../paypal/paypal.service';
@@ -33,6 +35,11 @@ import { TrackingsService } from '../trackings/trackings.service';
 const VERIFICATION_EMAIL_MAX_SENDS = 6;
 /** Minimum seconds between confirmation e-mails for the same account. */
 const VERIFICATION_RESEND_MIN_INTERVAL_MS = 60_000;
+
+/** Between password-reset e-mails for the same account. */
+const PASSWORD_RESET_COOLDOWN_MS = 60_000;
+/** Password reset link validity. */
+const PASSWORD_RESET_EXPIRY_MS = 3600 * 1000;
 
 @Injectable()
 export class AuthService {
@@ -208,6 +215,78 @@ export class AuthService {
     return this.issueTokens(user.id, user.email);
   }
 
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const email = dto.email.toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    const hasBrevo = !!this.config.get<string>('BREVO_API_KEY')?.trim();
+    if (!user?.emailVerifiedAt || !hasBrevo) {
+      return { ok: true as const };
+    }
+
+    const lastSent = user.passwordResetLastSentAt;
+    if (lastSent != null) {
+      const elapsed = Date.now() - lastSent.getTime();
+      if (elapsed < PASSWORD_RESET_COOLDOWN_MS) {
+        const retryAfterSeconds = Math.max(
+          1,
+          Math.ceil((PASSWORD_RESET_COOLDOWN_MS - elapsed) / 1000),
+        );
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.TOO_MANY_REQUESTS,
+            code: 'RESET_COOLDOWN',
+            message: 'Please wait before requesting another reset email.',
+            retryAfterSeconds,
+          },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+    }
+
+    const raw = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(raw, 'utf8').digest('hex');
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRY_MS);
+    const mailLocale = normalizeMailLocale(dto.locale ?? user.preferredLocale);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: expiresAt,
+        passwordResetLastSentAt: new Date(),
+      },
+    });
+    void this.mail.sendPasswordReset(email, this.buildResetUrl(raw), mailLocale);
+    return { ok: true as const };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const tokenHash = createHash('sha256').update(dto.token.trim(), 'utf8').digest('hex');
+    const user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: { gt: new Date() },
+      },
+    });
+    if (!user) {
+      this.log.warn('resetPassword: invalid or expired token.');
+      throw new BadRequestException({
+        code: 'INVALID_OR_EXPIRED_TOKEN',
+        message: 'Invalid or expired reset link.',
+      });
+    }
+    const passwordHash = await bcrypt.hash(dto.password, 12);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+        passwordResetLastSentAt: null,
+      },
+    });
+    return this.issueTokens(user.id, user.email);
+  }
+
   async updateDailyCheckSchedule(userId: string, dto: UpdateDailyCheckDto) {
     const tz = dto.dailyCheckTimeZone.trim();
     if (!isValidIanaTimeZone(tz)) {
@@ -310,6 +389,11 @@ export class AuthService {
   private buildVerifyUrl(rawToken: string): string {
     const base = this.resolvePublicAppBaseUrl();
     return `${base}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  }
+
+  private buildResetUrl(rawToken: string): string {
+    const base = this.resolvePublicAppBaseUrl();
+    return `${base}/reset-password?token=${encodeURIComponent(rawToken)}`;
   }
 
   private stripTrailingSlash(url: string): string {

@@ -30,6 +30,10 @@ model User {
   emailVerificationLastSentAt DateTime?
   /// Count of confirmation e-mails sent while unverified (sign-up + resends); reset when verified. Capped server-side.
   emailVerificationEmailsSent Int @default(0)
+  /// SHA-256 hex of raw token for password reset e-mail; cleared after use or expiry.
+  passwordResetTokenHash     String?
+  passwordResetExpiresAt     DateTime?
+  passwordResetLastSentAt    DateTime?
   /// UI / transactional mail language (e.g. `de`, `en`); set at registration, used for verification & welcome e-mails.
   preferredLocale      String?
   /// IANA timezone for the daily price check (e.g. Europe/Berlin).
@@ -77,7 +81,37 @@ model AwinCatalogProduct {
   price              Decimal  @db.Decimal(12, 4)
   currency           String   @default("EUR")
   merchantDeepLink   String   @db.Text
+  /// Awin tracking / `aw_deep_link` when present (separate from merchant product URL)
+  awDeepLink         String?  @db.Text
+  /// Feed `language` cell
+  language           String?  @db.VarChar(16)
+  /// `category_id` from feed when present
+  categoryId         String?  @db.VarChar(64)
+  /// `data_feed_id`
+  dataFeedId         String?  @db.VarChar(32)
+  /// Raw `display_price` string from merchant (often formatted)
+  displayPriceRaw    String?  @db.VarChar(512)
+  /// Raw `store_price` from feed (not merged into compare-at list price)
+  storePrice         Decimal? @db.Decimal(12, 4)
+  /// `savings_percent` from feed, or derived from compare-at vs sale when feed is empty
+  savingsPercent     Decimal? @db.Decimal(8, 4)
+  /// `saving` from feed, or derived (compare-at − sale) when feed is empty
+  savingAmount       Decimal? @db.Decimal(12, 4)
+  /// `promotional_text`
+  promotionalText    String?  @db.Text
+  /// Parsed `last_updated` from feed when parseable
+  feedProductUpdatedAt DateTime?
   imageUrl           String?  @db.Text
+  /// Second product image from feed (e.g. alternate_image) when different from `imageUrl`
+  imageUrl2          String?  @db.Text
+  /// Free-text reviews blob from Awin `reviews` when present
+  reviewsText        String?  @db.Text
+  /// Typical range 0–5 from `average_rating` / `rating`
+  averageRating      Decimal? @db.Decimal(3, 2)
+  /// Raw `in_stock` / availability label from the merchant feed
+  stockStatus        String?  @db.VarChar(128)
+  /// Parsed `number_available` when the feed provides a numeric count
+  stockQuantity      Int?
   category           String?
   /// Merchant category breadcrumb path from feed (better for filtering than category alone)
   categoryPath       String?  @db.Text

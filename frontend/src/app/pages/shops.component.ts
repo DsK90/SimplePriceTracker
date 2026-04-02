@@ -1,16 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../environments/environment';
 import {
   catchError,
   debounceTime,
   distinctUntilChanged,
+  EMPTY,
   finalize,
+  map,
   of,
   switchMap,
 } from 'rxjs';
@@ -24,6 +35,7 @@ export type CatalogListItem = {
   advertiserName: string | null;
   brand: string | null;
   imageUrl: string | null;
+  imageUrl2: string | null;
   merchantDeepLink: string;
   category: string | null;
   categoryPath: string | null;
@@ -33,6 +45,20 @@ export type CatalogListItem = {
   rrpPrice: string | number | null;
   basePrice: string | number | null;
   deliveryCost: string | number | null;
+  reviewsText: string | null;
+  averageRating: string | number | null;
+  stockStatus: string | null;
+  stockQuantity: number | null;
+  awDeepLink: string | null;
+  language: string | null;
+  categoryId: string | null;
+  dataFeedId: string | null;
+  displayPriceRaw: string | null;
+  storePrice: string | number | null;
+  savingsPercent: string | number | null;
+  savingAmount: string | number | null;
+  promotionalText: string | null;
+  feedProductUpdatedAt: string | null;
 };
 
 export type CatalogProductDetail = CatalogListItem & {
@@ -41,6 +67,14 @@ export type CatalogProductDetail = CatalogListItem & {
   ean: string | null;
   updatedFromFeedAt?: string;
 };
+
+type ApiErrorBody = {
+  code?: string;
+  limit?: number;
+  message?: string | string[];
+};
+
+type TrackingCreated = { id: string };
 
 @Component({
   selector: 'app-shops',
@@ -51,22 +85,51 @@ export type CatalogProductDetail = CatalogListItem & {
 export class ShopsComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly translate = inject(TranslateService);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
+
+  private readonly searchPageSize = 18;
+  private readonly searchSentinel = viewChild<ElementRef<HTMLElement>>('searchSentinel');
+  private readonly searchRequestId = signal(0);
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   protected readonly loading = signal(false);
-  protected readonly bestLoading = signal(false);
-  protected readonly alternateLoading = signal(false);
-  protected readonly expertLoading = signal(false);
+  protected readonly budgetLoading = signal(false);
+  protected readonly premiumLoading = signal(false);
+  protected readonly accessoryLoading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly hits = signal<CatalogListItem[]>([]);
-  protected readonly bestOffers = signal<CatalogListItem[]>([]);
-  protected readonly alternateOffers = signal<CatalogListItem[]>([]);
-  protected readonly expertOffers = signal<CatalogListItem[]>([]);
+  protected readonly searchHasMore = signal(false);
+  protected readonly searchLoadingMore = signal(false);
+  private readonly searchNextOffset = signal(0);
+  protected readonly budgetOffers = signal<CatalogListItem[]>([]);
+  protected readonly premiumOffers = signal<CatalogListItem[]>([]);
+  protected readonly accessoryOffers = signal<CatalogListItem[]>([]);
   protected readonly productCount = signal<number | null>(null);
   protected readonly detailOpen = signal(false);
   protected readonly detailLoading = signal(false);
   protected readonly detailProduct = signal<CatalogProductDetail | null>(null);
+  protected readonly watchlistAddSaving = signal(false);
+  protected readonly watchlistAddError = signal<string | null>(null);
+  protected readonly watchlistAddSuccess = signal(false);
+
+  constructor() {
+    effect((onCleanup) => {
+      const el = this.searchSentinel()?.nativeElement;
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) this.loadMoreSearch();
+          }
+        },
+        { root: null, rootMargin: '400px', threshold: 0 },
+      );
+      obs.observe(el);
+      onCleanup(() => obs.disconnect());
+    });
+  }
 
   ngOnInit(): void {
     this.loadStats();
@@ -79,32 +142,85 @@ export class ShopsComponent implements OnInit {
         switchMap((raw) => {
           const q = (raw ?? '').trim();
           if (q.length < 2) {
+            this.searchRequestId.update((x) => x + 1);
             this.hits.set([]);
+            this.searchHasMore.set(false);
+            this.searchNextOffset.set(0);
             this.error.set(null);
             this.loading.set(false);
-            return of([] as CatalogListItem[]);
+            return EMPTY;
           }
+          const rid = this.searchRequestId() + 1;
+          this.searchRequestId.set(rid);
           this.loading.set(true);
           this.error.set(null);
           const params: Record<string, string> = {
             q,
-            limit: '18',
+            limit: String(this.searchPageSize),
             offset: '0',
             techOnly: '1',
           };
           return this.http
             .get<CatalogListItem[]>(`${environment.apiUrl}/catalog/search`, { params })
             .pipe(
+              map((list) => ({ rid, list })),
               catchError(() => {
                 this.error.set('shops.searchError');
-                return of([] as CatalogListItem[]);
+                return of({ rid, list: [] as CatalogListItem[] });
               }),
               finalize(() => this.loading.set(false)),
             );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((list) => this.hits.set(list));
+      .subscribe(({ rid, list }) => {
+        if (rid !== this.searchRequestId()) return;
+        this.hits.set(list);
+        this.searchNextOffset.set(list.length);
+        this.searchHasMore.set(list.length >= this.searchPageSize);
+      });
+  }
+
+  private loadMoreSearch(): void {
+    const q = this.searchControl.value.trim();
+    if (q.length < 2) return;
+    if (this.loading() || this.searchLoadingMore() || !this.searchHasMore()) {
+      return;
+    }
+    const rid = this.searchRequestId();
+    const offset = this.searchNextOffset();
+    this.searchLoadingMore.set(true);
+    const params: Record<string, string> = {
+      q,
+      limit: String(this.searchPageSize),
+      offset: String(offset),
+      techOnly: '1',
+    };
+    this.http
+      .get<CatalogListItem[]>(`${environment.apiUrl}/catalog/search`, { params })
+      .pipe(
+        catchError(() => of(null)),
+        finalize(() => this.searchLoadingMore.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((next) => {
+        if (rid !== this.searchRequestId()) return;
+        if (next === null) return;
+        if (next.length === 0) {
+          this.searchHasMore.set(false);
+          return;
+        }
+        this.searchNextOffset.set(offset + next.length);
+        this.searchHasMore.set(next.length >= this.searchPageSize);
+        const seen = new Set(this.hits().map((h) => h.feedKey));
+        const merged = [...this.hits()];
+        for (const h of next) {
+          if (seen.has(h.feedKey)) continue;
+          seen.add(h.feedKey);
+          merged.push(h);
+        }
+        this.hits.set(merged);
+      });
   }
 
   private loadStats(): void {
@@ -118,33 +234,46 @@ export class ShopsComponent implements OnInit {
   }
 
   private loadAllOfferSections(): void {
-    this.loadOfferSection('best');
-    this.loadOfferSection('alternate');
-    this.loadOfferSection('expert');
+    this.loadOfferSection('budget');
+    this.loadOfferSection('premium');
+    this.loadOfferSection('accessory');
   }
 
-  private loadOfferSection(kind: 'best' | 'alternate' | 'expert'): void {
+  private loadOfferSection(kind: 'budget' | 'premium' | 'accessory'): void {
     const loadingSignal =
-      kind === 'best'
-        ? this.bestLoading
-        : kind === 'alternate'
-          ? this.alternateLoading
-          : this.expertLoading;
+      kind === 'budget'
+        ? this.budgetLoading
+        : kind === 'premium'
+          ? this.premiumLoading
+          : this.accessoryLoading;
     const setItems =
-      kind === 'best'
-        ? this.bestOffers
-        : kind === 'alternate'
-          ? this.alternateOffers
-          : this.expertOffers;
+      kind === 'budget'
+        ? this.budgetOffers
+        : kind === 'premium'
+          ? this.premiumOffers
+          : this.accessoryOffers;
 
     loadingSignal.set(true);
     const params: Record<string, string> = {
-      limit: '20',
+      limit: kind === 'budget' || kind === 'premium' ? '10' : '20',
       techOnly: '1',
-      preferred: 'laptop,computer,monitor,gpu,grafikkarte,ssd',
     };
-    if (kind === 'alternate') params['advertiser'] = 'alternate';
-    if (kind === 'expert') params['advertiser'] = 'expert';
+    if (kind === 'budget') {
+      params['maxPrice'] = '899';
+      params['priceSort'] = 'asc';
+      params['compose'] = '1';
+      params['preferred'] =
+        'laptop,notebook,chromebook,computer,desktop,pc-system,workstation,komplett-pc,gaming-pc';
+    } else if (kind === 'premium') {
+      params['minPrice'] = '999';
+      params['priceSort'] = 'desc';
+      params['compose'] = '1';
+      params['preferred'] =
+        'laptop,workstation,macbook,apple,oled,sony,canon,ipad,grafikkarte,gpu';
+    } else {
+      params['preferred'] =
+        'tasche,hülle,huelle,kabel,adapter,dock,halterung,maus,mouse,tastatur,headset,ladegerät,case,cover,sleeve,powerbank,rucksack';
+    }
     this.http
       .get<CatalogListItem[]>(`${environment.apiUrl}/catalog/highlights`, { params })
       .pipe(
@@ -170,16 +299,18 @@ export class ShopsComponent implements OnInit {
       return out;
     };
 
-    const best = dedupe(this.bestOffers());
-    const alternate = dedupe(this.alternateOffers());
-    const expert = dedupe(this.expertOffers());
+    const budget = dedupe(this.budgetOffers());
+    const premium = dedupe(this.premiumOffers());
+    const accessory = dedupe(this.accessoryOffers());
 
-    this.bestOffers.set(best.slice(0, 10));
-    this.alternateOffers.set(alternate.slice(0, 10));
-    this.expertOffers.set(expert.slice(0, 10));
+    this.budgetOffers.set(budget.slice(0, 10));
+    this.premiumOffers.set(premium.slice(0, 10));
+    this.accessoryOffers.set(accessory.slice(0, 10));
   }
 
   openDetail(item: CatalogListItem): void {
+    this.watchlistAddError.set(null);
+    this.watchlistAddSuccess.set(false);
     this.detailOpen.set(true);
     this.detailLoading.set(true);
     this.detailProduct.set(null);
@@ -197,6 +328,55 @@ export class ShopsComponent implements OnInit {
   closeDetail(): void {
     this.detailOpen.set(false);
     this.detailProduct.set(null);
+    this.watchlistAddError.set(null);
+    this.watchlistAddSuccess.set(false);
+  }
+
+  addProductToWatchlist(): void {
+    const p = this.detailProduct();
+    if (!p?.feedKey?.trim()) return;
+    this.watchlistAddSaving.set(true);
+    this.watchlistAddError.set(null);
+    this.watchlistAddSuccess.set(false);
+    this.http
+      .post<TrackingCreated>(`${environment.apiUrl}/trackings`, { awinFeedKey: p.feedKey.trim() })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.watchlistAddSaving.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.watchlistAddSuccess.set(true);
+        },
+        error: (e: { error?: ApiErrorBody }) => {
+          this.watchlistAddError.set(this.messageFromApiError(e, 'shops.addToWatchlistFailed'));
+        },
+      });
+  }
+
+  goToDashboard(): void {
+    void this.router.navigateByUrl('/dashboard');
+  }
+
+  private messageFromApiError(err: { error?: ApiErrorBody }, fallbackKey: string): string {
+    const body = err.error;
+    if (body?.code === 'FREE_TRACKING_LIMIT') {
+      return this.translate.instant('dashboard.errors.freeTrackingLimit', {
+        max: body.limit ?? 5,
+      });
+    }
+    if (body?.code === 'AWIN_PRODUCT_NOT_IN_CATALOG') {
+      return this.translate.instant('dashboard.errors.awinNotInCatalog');
+    }
+    if (body?.code === 'EMAIL_ALERT_LIMIT') {
+      return this.translate.instant('dashboard.errors.emailAlertLimit', {
+        max: body.limit ?? 2,
+      });
+    }
+    const m = body?.message;
+    if (Array.isArray(m)) return m[0] ?? this.translate.instant(fallbackKey);
+    if (typeof m === 'string' && m.length > 0) return m;
+    return this.translate.instant(fallbackKey);
   }
 
   num(v: string | number | null | undefined): number | null {
@@ -213,6 +393,19 @@ export class ShopsComponent implements OnInit {
     } catch {
       return `${n.toFixed(2)} ${currency}`;
     }
+  }
+
+  formatRating(v: string | number | null | undefined): string {
+    const n = this.num(v);
+    if (n == null) return '';
+    return n.toFixed(1);
+  }
+
+  formatFeedDate(iso: string | null | undefined): string {
+    if (iso == null || iso === '') return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(d);
   }
 
   discountPercent(item: CatalogListItem): number | null {

@@ -70,6 +70,9 @@ function apiErrorCode(e: unknown): string | undefined {
         <input type="email" formControlName="email" autocomplete="email" />
         <label>{{ 'login.password' | translate }}</label>
         <input type="password" formControlName="password" autocomplete="current-password" />
+        <p class="forgot-link-row">
+          <a routerLink="/forgot-password">{{ 'login.forgotPassword' | translate }}</a>
+        </p>
         @if (error()) {
           <p class="err" role="alert">{{ error() }}</p>
         }
@@ -188,6 +191,14 @@ function apiErrorCode(e: unknown): string | undefined {
       h1 {
         margin: 0 0 1.5rem;
         font-size: 1.5rem;
+      }
+      .forgot-link-row {
+        margin: 0.2rem 0 0;
+        text-align: right;
+        font-size: 0.82rem;
+      }
+      .forgot-link-row a {
+        color: var(--accent);
       }
       label {
         display: block;

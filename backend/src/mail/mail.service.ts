@@ -8,12 +8,18 @@ import {
   verificationEmailSubject,
 } from './i18n/verification-email';
 import { welcomeEmailBody, welcomeEmailSubject } from './i18n/welcome-email';
+import {
+  passwordResetEmailBody,
+  passwordResetEmailHtml,
+  passwordResetEmailSubject,
+} from './i18n/password-reset-email';
 
 /**
  * Transactional e-mail via Brevo (`transactionalEmails.sendTransacEmail` only — no marketing campaigns).
  *
  * - **Welcome** after the user confirms their e-mail (verification link).
  * - **Verify e-mail** link on sign-up when double opt-in is active.
+ * - **Password reset** link (`/reset-password?token=…`) for verified accounts.
  * - **Price alerts**: only if `SEND_PRICE_ALERT_EMAILS` is truthy (`true`, `1`, `yes`). If unset, defaults to
  *   enabled so existing deployments keep behaviour; set `SEND_PRICE_ALERT_EMAILS=false` for sign-up-only mail.
  *
@@ -127,6 +133,26 @@ export class MailService {
     } catch (e) {
       this.log.warn(
         `Verification e-mail failed — recipient=${maskEmailForLog(to)}: ${describeOutboundMailError(e)}`,
+      );
+    }
+  }
+
+  async sendPasswordReset(to: string, resetUrl: string, localeRaw?: string | null) {
+    if (!this.brevo) {
+      this.log.warn(
+        `Password reset e-mail not sent (BREVO_API_KEY missing) — recipient=${maskEmailForLog(to)}`,
+      );
+      return;
+    }
+    const locale = normalizeMailLocale(localeRaw);
+    const subject = passwordResetEmailSubject(locale);
+    const text = passwordResetEmailBody(locale, resetUrl);
+    const html = passwordResetEmailHtml(locale, resetUrl);
+    try {
+      await this.sendTransactional(to, subject, text, html);
+    } catch (e) {
+      this.log.warn(
+        `Password reset e-mail failed — recipient=${maskEmailForLog(to)}: ${describeOutboundMailError(e)}`,
       );
     }
   }

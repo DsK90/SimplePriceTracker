@@ -3,7 +3,9 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UpdateDailyCheckDto } from './dto/update-daily-check.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser, RequestUser } from './decorators/current-user.decorator';
@@ -30,6 +32,16 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.auth.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.auth.resetPassword(dto);
   }
 
   @Get('me')

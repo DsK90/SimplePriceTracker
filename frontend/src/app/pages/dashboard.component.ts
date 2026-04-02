@@ -32,6 +32,7 @@ type CatalogHit = {
   advertiserName: string | null;
   brand: string | null;
   imageUrl: string | null;
+  imageUrl2?: string | null;
   merchantDeepLink: string;
   category: string | null;
   categoryPath?: string | null;
@@ -41,6 +42,20 @@ type CatalogHit = {
   rrpPrice?: string | number | null;
   basePrice?: string | number | null;
   deliveryCost?: string | number | null;
+  reviewsText?: string | null;
+  averageRating?: string | number | null;
+  stockStatus?: string | null;
+  stockQuantity?: number | null;
+  awDeepLink?: string | null;
+  language?: string | null;
+  categoryId?: string | null;
+  dataFeedId?: string | null;
+  displayPriceRaw?: string | null;
+  storePrice?: string | number | null;
+  savingsPercent?: string | number | null;
+  savingAmount?: string | number | null;
+  promotionalText?: string | null;
+  feedProductUpdatedAt?: string | null;
 };
 
 type Tracking = {

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AwinFeedRow } from './awin-feed-csv';
+import { classifyOffersComposition, isOffersAccessoryRow } from './catalog-offers-composition';
 import { techOnlyPrismaWhere, techOnlySqlAndFragment } from './catalog-tech-filter';
 
 const CATALOG_SEARCH_SELECT = {
@@ -12,7 +13,18 @@ const CATALOG_SEARCH_SELECT = {
   advertiserName: true,
   brand: true,
   imageUrl: true,
+  imageUrl2: true,
   merchantDeepLink: true,
+  awDeepLink: true,
+  language: true,
+  categoryId: true,
+  dataFeedId: true,
+  displayPriceRaw: true,
+  storePrice: true,
+  savingsPercent: true,
+  savingAmount: true,
+  promotionalText: true,
+  feedProductUpdatedAt: true,
   category: true,
   categoryPath: true,
   description: true,
@@ -21,6 +33,10 @@ const CATALOG_SEARCH_SELECT = {
   rrpPrice: true,
   basePrice: true,
   deliveryCost: true,
+  reviewsText: true,
+  averageRating: true,
+  stockStatus: true,
+  stockQuantity: true,
 } satisfies Prisma.AwinCatalogProductSelect;
 
 export type CatalogSearchRow = {
@@ -31,7 +47,18 @@ export type CatalogSearchRow = {
   advertiserName: string | null;
   brand: string | null;
   imageUrl: string | null;
+  imageUrl2: string | null;
   merchantDeepLink: string;
+  awDeepLink: string | null;
+  language: string | null;
+  categoryId: string | null;
+  dataFeedId: string | null;
+  displayPriceRaw: string | null;
+  storePrice: Prisma.Decimal | string | number | null;
+  savingsPercent: Prisma.Decimal | string | number | null;
+  savingAmount: Prisma.Decimal | string | number | null;
+  promotionalText: string | null;
+  feedProductUpdatedAt: Date | string | null;
   category: string | null;
   categoryPath: string | null;
   description: string | null;
@@ -40,6 +67,10 @@ export type CatalogSearchRow = {
   rrpPrice: Prisma.Decimal | string | number | null;
   basePrice: Prisma.Decimal | string | number | null;
   deliveryCost: Prisma.Decimal | string | number | null;
+  reviewsText: string | null;
+  averageRating: Prisma.Decimal | string | number | null;
+  stockStatus: string | null;
+  stockQuantity: number | null;
 };
 
 export type CatalogSearchOptions = {
@@ -54,6 +85,14 @@ export type CatalogHighlightsOptions = {
   minPrice?: number;
   maxPrice?: number;
   preferredKeywords?: string[];
+  /** Final tie-breaker for `price` after preferred score and discount (default desc). */
+  priceSort?: 'asc' | 'desc';
+  /**
+   * Enforce mix: ≥50% laptop/PC systems and ≥20% hardware/GPU (categoryPath from
+   * merchant_product_category_path plus text fallbacks).
+   * Skips advertiser diversity pass so quotas can be met.
+   */
+  enforceOffersComposition?: boolean;
 };
 
 @Injectable()
@@ -164,8 +203,16 @@ export class AwinCatalogService {
       .filter((s) => s.length >= 2)
       .slice(0, 20);
     const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
+    const compose = options.enforceOffersComposition === true;
     const queryTake =
-      adv && adv.length > 0 ? take : Math.min(180, Math.max(take * 6, take));
+      adv && adv.length > 0
+        ? take
+        : compose
+          ? Math.min(320, Math.max(take * 10, 60))
+          : Math.min(180, Math.max(take * 6, take));
+    const priceSort = options.priceSort === 'asc' ? 'asc' : 'desc';
+    const priceOrderSql =
+      priceSort === 'asc' ? Prisma.sql`"price" ASC` : Prisma.sql`"price" DESC`;
 
     const cacheKey = [
       techOnly ? '1' : '0',
@@ -174,6 +221,8 @@ export class AwinCatalogService {
       minPrice == null ? '' : String(minPrice),
       maxPrice == null ? '' : String(maxPrice),
       preferredKeywords.join(','),
+      priceSort,
+      compose ? 'c1' : 'c0',
     ].join('|');
     const now = Date.now();
     const cached = this.highlightsCache.get(cacheKey);
@@ -181,9 +230,12 @@ export class AwinCatalogService {
 
     const withImage = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       SELECT
-        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
-        "merchantDeepLink", "category", "categoryPath", "description",
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "imageUrl2",
+        "merchantDeepLink", "awDeepLink", "language", "categoryId", "dataFeedId", "displayPriceRaw",
+        "storePrice", "savingsPercent", "savingAmount", "promotionalText", "feedProductUpdatedAt",
+        "category", "categoryPath", "description",
         "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost",
+        "reviewsText", "averageRating", "stockStatus", "stockQuantity",
         ${preferredScoreExpr} AS "__preferredScore"
       FROM "AwinCatalogProduct"
       WHERE COALESCE("imageUrl", '') <> ''
@@ -194,13 +246,12 @@ export class AwinCatalogService {
       ORDER BY
         "__preferredScore" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
-        "price" DESC,
+        ${priceOrderSql},
         "title" ASC
       LIMIT ${queryTake}
     `);
     if (withImage.length > 0) {
-      const finalRows =
-        adv && adv.length > 0 ? withImage.slice(0, take) : this.ensureAdvertiserMix(withImage, take, 2);
+      const finalRows = this.finishHighlightRows(withImage, take, adv, compose);
       this.highlightsCache.set(cacheKey, {
         expiresAt: now + this.highlightsCacheTtlMs,
         rows: finalRows,
@@ -210,9 +261,12 @@ export class AwinCatalogService {
 
     const fallback = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       SELECT
-        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
-        "merchantDeepLink", "category", "categoryPath", "description",
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "imageUrl2",
+        "merchantDeepLink", "awDeepLink", "language", "categoryId", "dataFeedId", "displayPriceRaw",
+        "storePrice", "savingsPercent", "savingAmount", "promotionalText", "feedProductUpdatedAt",
+        "category", "categoryPath", "description",
         "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost",
+        "reviewsText", "averageRating", "stockStatus", "stockQuantity",
         ${preferredScoreExpr} AS "__preferredScore"
       FROM "AwinCatalogProduct"
       WHERE 1=1
@@ -223,12 +277,11 @@ export class AwinCatalogService {
       ORDER BY
         "__preferredScore" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
-        "price" DESC,
+        ${priceOrderSql},
         "title" ASC
       LIMIT ${queryTake}
     `);
-    const finalFallback =
-      adv && adv.length > 0 ? fallback.slice(0, take) : this.ensureAdvertiserMix(fallback, take, 2);
+    const finalFallback = this.finishHighlightRows(fallback, take, adv, compose);
     this.highlightsCache.set(cacheKey, {
       expiresAt: now + this.highlightsCacheTtlMs,
       rows: finalFallback,
@@ -272,6 +325,58 @@ export class AwinCatalogService {
         if (picked.length >= take) break;
       }
     }
+    return picked;
+  }
+
+  private finishHighlightRows(
+    rows: CatalogSearchRow[],
+    take: number,
+    adv: string | undefined,
+    compose: boolean,
+  ): CatalogSearchRow[] {
+    if (rows.length === 0) return rows;
+    if (adv && adv.trim().length > 0) return rows.slice(0, take);
+    if (compose) return this.ensureOffersComposition(rows, take);
+    return this.ensureAdvertiserMix(rows, take, 2);
+  }
+
+  /**
+   * ≥50% laptop/PC, ≥20% hardware/GPU. Order = quota pass (rank order) then fill pass (rank order),
+   * so any prefix of length `n` still meets the minimums when the pool contains enough matches.
+   */
+  private ensureOffersComposition(rows: CatalogSearchRow[], take: number): CatalogSearchRow[] {
+    const n = Math.min(Math.max(1, take), rows.length);
+    const minLaptop = Math.ceil(n * 0.5);
+    const minHw = Math.ceil(n * 0.2);
+
+    const usedKeys = new Set<string>();
+    const picked: CatalogSearchRow[] = [];
+    let countL = 0;
+    let countH = 0;
+
+    for (let i = 0; i < rows.length && picked.length < n && (countL < minLaptop || countH < minHw); i++) {
+      const row = rows[i];
+      if (usedKeys.has(row.feedKey)) continue;
+      const { laptopOrPc, hardwareGpu } = classifyOffersComposition(row);
+      const needL = countL < minLaptop && laptopOrPc;
+      const needH = countH < minHw && hardwareGpu;
+      if (!needL && !needH) continue;
+      usedKeys.add(row.feedKey);
+      picked.push(row);
+      if (laptopOrPc) countL++;
+      if (hardwareGpu) countH++;
+    }
+
+    for (let i = 0; i < rows.length && picked.length < n; i++) {
+      const row = rows[i];
+      if (usedKeys.has(row.feedKey)) continue;
+      if (isOffersAccessoryRow(row)) continue;
+      const c = classifyOffersComposition(row);
+      if (!c.laptopOrPc && !c.hardwareGpu) continue;
+      usedKeys.add(row.feedKey);
+      picked.push(row);
+    }
+
     return picked;
   }
 
@@ -414,9 +519,12 @@ export class AwinCatalogService {
       const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       WITH candidate AS (
         SELECT
-          "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
-          "merchantDeepLink", "category", "categoryPath", "description",
-          "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost", "searchText",
+          "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "imageUrl2",
+          "merchantDeepLink", "awDeepLink", "language", "categoryId", "dataFeedId", "displayPriceRaw",
+          "storePrice", "savingsPercent", "savingAmount", "promotionalText", "feedProductUpdatedAt",
+          "category", "categoryPath", "description",
+          "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost",
+          "reviewsText", "averageRating", "stockStatus", "stockQuantity", "searchText",
           ${scoreExpr} AS "__score"
         FROM "AwinCatalogProduct"
         WHERE ${mustMatchWhere}
@@ -426,9 +534,12 @@ export class AwinCatalogService {
         LIMIT ${candidateLimit}
       )
       SELECT
-        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
-        "merchantDeepLink", "category", "categoryPath", "description",
-        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "imageUrl2",
+        "merchantDeepLink", "awDeepLink", "language", "categoryId", "dataFeedId", "displayPriceRaw",
+        "storePrice", "savingsPercent", "savingAmount", "promotionalText", "feedProductUpdatedAt",
+        "category", "categoryPath", "description",
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost",
+        "reviewsText", "averageRating", "stockStatus", "stockQuantity"
       FROM candidate
       ORDER BY "__score" DESC, "price" DESC, "title" ASC
       LIMIT ${take} OFFSET ${skip}
@@ -512,7 +623,20 @@ export class AwinCatalogService {
           price: new Prisma.Decimal(r.price),
           currency: r.currency,
           merchantDeepLink: r.merchantDeepLink,
+          awDeepLink: r.awDeepLink,
+          language: r.language,
+          categoryId: r.categoryId,
+          dataFeedId: r.dataFeedId,
+          displayPriceRaw: r.displayPriceRaw,
+          storePrice: r.storePrice != null ? new Prisma.Decimal(r.storePrice) : null,
+          savingsPercent:
+            r.savingsPercent != null ? new Prisma.Decimal(r.savingsPercent) : null,
+          savingAmount:
+            r.savingAmount != null ? new Prisma.Decimal(r.savingAmount) : null,
+          promotionalText: r.promotionalText,
+          feedProductUpdatedAt: r.feedProductUpdatedAt,
           imageUrl: r.imageUrl,
+          imageUrl2: r.imageUrl2,
           category: r.category,
           categoryPath: r.categoryPath,
           brand: r.brand,
@@ -521,6 +645,11 @@ export class AwinCatalogService {
           rrpPrice: r.rrpPrice != null ? new Prisma.Decimal(r.rrpPrice) : null,
           basePrice: r.basePrice != null ? new Prisma.Decimal(r.basePrice) : null,
           deliveryCost: r.deliveryCost != null ? new Prisma.Decimal(r.deliveryCost) : null,
+          reviewsText: r.reviewsText,
+          averageRating:
+            r.averageRating != null ? new Prisma.Decimal(r.averageRating) : null,
+          stockStatus: r.stockStatus,
+          stockQuantity: r.stockQuantity,
           searchText: r.searchText,
         },
         update: {
@@ -534,7 +663,20 @@ export class AwinCatalogService {
           price: new Prisma.Decimal(r.price),
           currency: r.currency,
           merchantDeepLink: r.merchantDeepLink,
+          awDeepLink: r.awDeepLink,
+          language: r.language,
+          categoryId: r.categoryId,
+          dataFeedId: r.dataFeedId,
+          displayPriceRaw: r.displayPriceRaw,
+          storePrice: r.storePrice != null ? new Prisma.Decimal(r.storePrice) : null,
+          savingsPercent:
+            r.savingsPercent != null ? new Prisma.Decimal(r.savingsPercent) : null,
+          savingAmount:
+            r.savingAmount != null ? new Prisma.Decimal(r.savingAmount) : null,
+          promotionalText: r.promotionalText,
+          feedProductUpdatedAt: r.feedProductUpdatedAt,
           imageUrl: r.imageUrl,
+          imageUrl2: r.imageUrl2,
           category: r.category,
           categoryPath: r.categoryPath,
           brand: r.brand,
@@ -543,6 +685,11 @@ export class AwinCatalogService {
           rrpPrice: r.rrpPrice != null ? new Prisma.Decimal(r.rrpPrice) : null,
           basePrice: r.basePrice != null ? new Prisma.Decimal(r.basePrice) : null,
           deliveryCost: r.deliveryCost != null ? new Prisma.Decimal(r.deliveryCost) : null,
+          reviewsText: r.reviewsText,
+          averageRating:
+            r.averageRating != null ? new Prisma.Decimal(r.averageRating) : null,
+          stockStatus: r.stockStatus,
+          stockQuantity: r.stockQuantity,
           searchText: r.searchText,
         },
       });

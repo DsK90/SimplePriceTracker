@@ -88,6 +88,22 @@ export class AuthService {
       .pipe(tap((r) => this.setToken(r.access_token)));
   }
 
+  forgotPassword(email: string, locale?: string) {
+    return this.http.post<{ ok: boolean }>(`${environment.apiUrl}/auth/forgot-password`, {
+      email,
+      ...(locale ? { locale } : {}),
+    });
+  }
+
+  resetPassword(token: string, password: string) {
+    return this.http
+      .post<{ access_token: string; user: { id: string; email: string } }>(
+        `${environment.apiUrl}/auth/reset-password`,
+        { token, password },
+      )
+      .pipe(tap((r) => this.setToken(r.access_token)));
+  }
+
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     this.tokenSig.set(null);

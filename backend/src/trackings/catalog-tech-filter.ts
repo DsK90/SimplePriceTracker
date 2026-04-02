@@ -45,7 +45,8 @@ export const CATALOG_TECH_CORE_KEYWORDS: readonly string[] = [
   'headset',
   'earphones',
   'earphone',
-  'earbud'
+  'earbud',
+  'software'
 ] as const;
 
 export const CATALOG_TECH_ACCESSORY_KEYWORDS: readonly string[] = [

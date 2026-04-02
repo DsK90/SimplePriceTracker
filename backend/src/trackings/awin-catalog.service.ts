@@ -49,6 +49,13 @@ export type CatalogSearchOptions = {
   advertiser?: string;
 };
 
+export type CatalogHighlightsOptions = {
+  advertiser?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  preferredKeywords?: string[];
+};
+
 @Injectable()
 export class AwinCatalogService {
   private readonly log = new Logger(AwinCatalogService.name);
@@ -133,16 +140,39 @@ export class AwinCatalogService {
   async highlights(
     techOnly: boolean,
     limit: number,
-    advertiser?: string,
+    options: CatalogHighlightsOptions = {},
   ): Promise<CatalogSearchRow[]> {
     const take = Math.min(50, Math.max(1, limit));
     const techSql = techOnly ? techOnlySqlAndFragment() : Prisma.empty;
-    const adv = advertiser?.trim();
+    const adv = options.advertiser?.trim();
     const advSql =
       adv && adv.length > 0
         ? Prisma.sql`AND COALESCE("advertiserName", '') ILIKE ${`%${adv}%`}`
         : Prisma.empty;
-    const cacheKey = `${techOnly ? 1 : 0}|${take}|${(adv || '').toLowerCase()}`;
+    const minPrice = Number.isFinite(options.minPrice)
+      ? Math.max(0, options.minPrice as number)
+      : undefined;
+    const maxPrice = Number.isFinite(options.maxPrice)
+      ? Math.max(0, options.maxPrice as number)
+      : undefined;
+    const minPriceSql =
+      minPrice != null ? Prisma.sql`AND "price" >= ${new Prisma.Decimal(minPrice)}` : Prisma.empty;
+    const maxPriceSql =
+      maxPrice != null ? Prisma.sql`AND "price" <= ${new Prisma.Decimal(maxPrice)}` : Prisma.empty;
+    const preferredKeywords = (options.preferredKeywords ?? [])
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length >= 2)
+      .slice(0, 20);
+    const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
+
+    const cacheKey = [
+      techOnly ? '1' : '0',
+      String(take),
+      (adv || '').toLowerCase(),
+      minPrice == null ? '' : String(minPrice),
+      maxPrice == null ? '' : String(maxPrice),
+      preferredKeywords.join(','),
+    ].join('|');
     const now = Date.now();
     const cached = this.highlightsCache.get(cacheKey);
     if (cached && cached.expiresAt > now) return cached.rows;
@@ -151,12 +181,16 @@ export class AwinCatalogService {
       SELECT
         "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
         "merchantDeepLink", "category", "categoryPath", "description",
-        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost",
+        ${preferredScoreExpr} AS "__preferredScore"
       FROM "AwinCatalogProduct"
       WHERE COALESCE("imageUrl", '') <> ''
       ${techSql}
       ${advSql}
+      ${minPriceSql}
+      ${maxPriceSql}
       ORDER BY
+        "__preferredScore" DESC,
         "price" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
         "title" ASC
@@ -174,12 +208,16 @@ export class AwinCatalogService {
       SELECT
         "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
         "merchantDeepLink", "category", "categoryPath", "description",
-        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost",
+        ${preferredScoreExpr} AS "__preferredScore"
       FROM "AwinCatalogProduct"
       WHERE 1=1
       ${techSql}
       ${advSql}
+      ${minPriceSql}
+      ${maxPriceSql}
       ORDER BY
+        "__preferredScore" DESC,
         "price" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
         "title" ASC
@@ -190,6 +228,22 @@ export class AwinCatalogService {
       rows: fallback,
     });
     return fallback;
+  }
+
+  private preferredOfferScoreSql(keywords: string[]): Prisma.Sql {
+    if (keywords.length === 0) return Prisma.sql`0`;
+    const parts = keywords.map((kw) => {
+      const like = `%${kw}%`;
+      return Prisma.sql`(
+        CASE WHEN (
+          lower("title") LIKE ${like}
+          OR lower(COALESCE("category", '')) LIKE ${like}
+          OR lower(COALESCE("categoryPath", '')) LIKE ${like}
+          OR lower(COALESCE("productModel", '')) LIKE ${like}
+        ) THEN 1 ELSE 0 END
+      )`;
+    });
+    return parts.length === 1 ? parts[0] : Prisma.sql`(${Prisma.join(parts, ' + ')})`;
   }
 
   private looksLikeUrl(s: string): boolean {

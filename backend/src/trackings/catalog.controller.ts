@@ -41,12 +41,27 @@ export class CatalogController {
     @Query('techOnly') techOnly?: string,
     @Query('limit') limit?: string,
     @Query('advertiser') advertiser?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
+    @Query('preferred') preferred?: string,
   ) {
     const n = limit ? Number.parseInt(limit, 10) : 12;
+    const min = minPrice ? Number.parseFloat(minPrice) : undefined;
+    const max = maxPrice ? Number.parseFloat(maxPrice) : undefined;
+    const preferredKeywords =
+      preferred
+        ?.split(',')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0) || [];
     return this.catalog.highlights(
       techOnly === '1' || techOnly === 'true',
       Number.isFinite(n) ? n : 12,
-      advertiser?.trim() || undefined,
+      {
+        advertiser: advertiser?.trim() || undefined,
+        minPrice: Number.isFinite(min ?? Number.NaN) ? min : undefined,
+        maxPrice: Number.isFinite(max ?? Number.NaN) ? max : undefined,
+        preferredKeywords,
+      },
     );
   }
 }

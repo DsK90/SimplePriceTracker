@@ -138,7 +138,13 @@ export class ShopsComponent implements OnInit {
           : this.expertOffers;
 
     loadingSignal.set(true);
-    const params: Record<string, string> = { limit: '10', techOnly: '1' };
+    const params: Record<string, string> = {
+      limit: '10',
+      techOnly: '1',
+      minPrice: '700',
+      maxPrice: '2500',
+      preferred: 'laptop,computer,monitor,gpu,grafikkarte,ssd',
+    };
     if (kind === 'alternate') params['advertiser'] = 'alternate';
     if (kind === 'expert') params['advertiser'] = 'expert';
     this.http

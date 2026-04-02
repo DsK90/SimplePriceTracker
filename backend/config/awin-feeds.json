@@ -3,7 +3,7 @@
     {
       "id": "expert-alternate-de",
       "enabled": true,
-      "url": "https://productdata.awin.com/datafeed/download/apikey/da28295930a86a3592cc52ae05215987/language/de/fid/23591,71867,91847,114484/rid/0/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id,brand_name,product_model,rrp_price,base_price,model_number,merchant_product_category_path/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/"
+      "url": "https://productdata.awin.com/datafeed/download/apikey/da28295930a86a3592cc52ae05215987/language/de/fid/23591,71867,91847,104057,114484/rid/0/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id,brand_name,product_model,model_number,merchant_product_category_path,rrp_price,base_price,merchant_thumb_url,large_image,alternate_image,aw_thumb_url,alternate_image_two,alternate_image_three,alternate_image_four,reviews,average_rating,number_available/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/"
     }
   ]
 }

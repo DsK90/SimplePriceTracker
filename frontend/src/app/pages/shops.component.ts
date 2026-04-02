@@ -13,7 +13,6 @@ import {
   finalize,
   of,
   switchMap,
-  tap,
 } from 'rxjs';
 import { AuthService } from '../core/auth.service';
 
@@ -55,12 +54,15 @@ export class ShopsComponent implements OnInit {
   protected readonly auth = inject(AuthService);
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
-  protected readonly techOnly = signal(true);
   protected readonly loading = signal(false);
-  protected readonly highlightsLoading = signal(false);
+  protected readonly bestLoading = signal(false);
+  protected readonly alternateLoading = signal(false);
+  protected readonly expertLoading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly hits = signal<CatalogListItem[]>([]);
-  protected readonly highlights = signal<CatalogListItem[]>([]);
+  protected readonly bestOffers = signal<CatalogListItem[]>([]);
+  protected readonly alternateOffers = signal<CatalogListItem[]>([]);
+  protected readonly expertOffers = signal<CatalogListItem[]>([]);
   protected readonly productCount = signal<number | null>(null);
   protected readonly detailOpen = signal(false);
   protected readonly detailLoading = signal(false);
@@ -68,11 +70,11 @@ export class ShopsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadStats();
-    this.loadHighlights();
+    this.loadAllOfferSections();
 
     this.searchControl.valueChanges
       .pipe(
-        debounceTime(300),
+        debounceTime(220),
         distinctUntilChanged(),
         switchMap((raw) => {
           const q = (raw ?? '').trim();
@@ -86,10 +88,10 @@ export class ShopsComponent implements OnInit {
           this.error.set(null);
           const params: Record<string, string> = {
             q,
-            limit: '24',
+            limit: '18',
             offset: '0',
+            techOnly: '1',
           };
-          if (this.techOnly()) params['techOnly'] = '1';
           return this.http
             .get<CatalogListItem[]>(`${environment.apiUrl}/catalog/search`, { params })
             .pipe(
@@ -105,16 +107,6 @@ export class ShopsComponent implements OnInit {
       .subscribe((list) => this.hits.set(list));
   }
 
-  toggleTechOnly(): void {
-    this.techOnly.update((v) => !v);
-    const q = this.searchControl.value.trim();
-    if (q.length >= 2) {
-      this.searchControl.setValue(q, { emitEvent: true });
-    } else {
-      this.loadHighlights();
-    }
-  }
-
   private loadStats(): void {
     this.http
       .get<{ productCount: number }>(`${environment.apiUrl}/catalog/stats`)
@@ -125,18 +117,38 @@ export class ShopsComponent implements OnInit {
       });
   }
 
-  private loadHighlights(): void {
-    this.highlightsLoading.set(true);
-    const params: Record<string, string> = { limit: '12' };
-    if (this.techOnly()) params['techOnly'] = '1';
+  private loadAllOfferSections(): void {
+    this.loadOfferSection('best');
+    this.loadOfferSection('alternate');
+    this.loadOfferSection('expert');
+  }
+
+  private loadOfferSection(kind: 'best' | 'alternate' | 'expert'): void {
+    const loadingSignal =
+      kind === 'best'
+        ? this.bestLoading
+        : kind === 'alternate'
+          ? this.alternateLoading
+          : this.expertLoading;
+    const setItems =
+      kind === 'best'
+        ? this.bestOffers
+        : kind === 'alternate'
+          ? this.alternateOffers
+          : this.expertOffers;
+
+    loadingSignal.set(true);
+    const params: Record<string, string> = { limit: '10', techOnly: '1' };
+    if (kind === 'alternate') params['advertiser'] = 'alternate';
+    if (kind === 'expert') params['advertiser'] = 'expert';
     this.http
       .get<CatalogListItem[]>(`${environment.apiUrl}/catalog/highlights`, { params })
       .pipe(
         catchError(() => of([] as CatalogListItem[])),
-        finalize(() => this.highlightsLoading.set(false)),
+        finalize(() => loadingSignal.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((h) => this.highlights.set(h));
+      .subscribe((h) => setItems.set(h));
   }
 
   openDetail(item: CatalogListItem): void {
@@ -187,5 +199,9 @@ export class ShopsComponent implements OnInit {
     const rrp = this.num(item.rrpPrice);
     if (price == null || rrp == null || rrp <= price) return null;
     return rrp - price;
+  }
+
+  hasActiveSearch(): boolean {
+    return this.searchControl.value.trim().length >= 2;
   }
 }

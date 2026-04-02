@@ -52,6 +52,11 @@ export type CatalogSearchOptions = {
 @Injectable()
 export class AwinCatalogService {
   private readonly log = new Logger(AwinCatalogService.name);
+  private readonly highlightsCache = new Map<
+    string,
+    { expiresAt: number; rows: CatalogSearchRow[] }
+  >();
+  private readonly highlightsCacheTtlMs = 45_000;
 
   constructor(private prisma: PrismaService) {}
 
@@ -125,9 +130,22 @@ export class AwinCatalogService {
   /**
    * Top products by discount when RRP is present; else recently updated rows (tech filter optional).
    */
-  async highlights(techOnly: boolean, limit: number): Promise<CatalogSearchRow[]> {
+  async highlights(
+    techOnly: boolean,
+    limit: number,
+    advertiser?: string,
+  ): Promise<CatalogSearchRow[]> {
     const take = Math.min(50, Math.max(1, limit));
     const techSql = techOnly ? techOnlySqlAndFragment() : Prisma.empty;
+    const adv = advertiser?.trim();
+    const advSql =
+      adv && adv.length > 0
+        ? Prisma.sql`AND COALESCE("advertiserName", '') ILIKE ${`%${adv}%`}`
+        : Prisma.empty;
+    const cacheKey = `${techOnly ? 1 : 0}|${take}|${(adv || '').toLowerCase()}`;
+    const now = Date.now();
+    const cached = this.highlightsCache.get(cacheKey);
+    if (cached && cached.expiresAt > now) return cached.rows;
 
     const discounted = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       SELECT
@@ -139,10 +157,17 @@ export class AwinCatalogService {
         AND "rrpPrice" > 0
         AND "price" < "rrpPrice"
       ${techSql}
+      ${advSql}
       ORDER BY ("rrpPrice" - "price") / NULLIF("rrpPrice", 0) DESC, "title" ASC
       LIMIT ${take}
     `);
-    if (discounted.length >= Math.min(5, take)) return discounted;
+    if (discounted.length >= Math.min(5, take)) {
+      this.highlightsCache.set(cacheKey, {
+        expiresAt: now + this.highlightsCacheTtlMs,
+        rows: discounted,
+      });
+      return discounted;
+    }
 
     const fallback = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       SELECT
@@ -152,9 +177,14 @@ export class AwinCatalogService {
       FROM "AwinCatalogProduct"
       WHERE 1=1
       ${techSql}
+      ${advSql}
       ORDER BY "updatedFromFeedAt" DESC, "title" ASC
       LIMIT ${take}
     `);
+    this.highlightsCache.set(cacheKey, {
+      expiresAt: now + this.highlightsCacheTtlMs,
+      rows: fallback,
+    });
     return fallback;
   }
 
@@ -213,68 +243,47 @@ export class AwinCatalogService {
   ): Promise<CatalogSearchRow[]> {
     const tokens = AwinCatalogService.catalogQueryTokens(trimmed);
     if (tokens.length === 0) return [];
-
-    const tokenWhere: Prisma.AwinCatalogProductWhereInput = {
-      AND: tokens.map((t) => ({
-        searchText: { contains: t, mode: 'insensitive' as const },
-      })),
-    };
-    const where = this.mergeWhere(tokenWhere, techOnly, advertiser);
-
-    const exact = await this.prisma.awinCatalogProduct.findMany({
-      where,
-      take,
-      skip,
-      orderBy: { title: 'asc' },
-      select: CATALOG_SEARCH_SELECT,
-    });
-    if (exact.length > 0) return exact;
-
-    try {
-      return await this.searchByProductTextFuzzy(tokens, take, skip, techOnly, advertiser);
-    } catch (e) {
-      this.log.warn(
-        `Fuzzy catalog search failed (${e instanceof Error ? e.message : String(e)}); falling back to substring match.`,
-      );
-      return [];
-    }
-  }
-
-  /** Requires `pg_trgm` (see prisma migration). */
-  private async searchByProductTextFuzzy(
-    tokens: string[],
-    take: number,
-    skip: number,
-    techOnly: boolean,
-    advertiser?: string,
-  ): Promise<CatalogSearchRow[]> {
     const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
-    const candidateLimit = Math.min(1000, Math.max(200, (take + skip) * 40));
+    const candidateLimit = Math.min(800, Math.max(150, (take + skip) * 20));
+    const threshold = this.fuzzyMinSimilarity();
 
-    const containsWhereParts = tokenSqls.map(
+    const mustMatchParts = tokenSqls.map(
       (tok) => Prisma.sql`(
         "title" ILIKE ${`%${tok}%`}
         OR COALESCE("brand", '') ILIKE ${`%${tok}%`}
         OR COALESCE("advertiserName", '') ILIKE ${`%${tok}%`}
         OR COALESCE("category", '') ILIKE ${`%${tok}%`}
         OR COALESCE("categoryPath", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("productModel", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("modelNumber", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("searchText", '') ILIKE ${`%${tok}%`}
+        OR lower(COALESCE("searchText", '')) % ${tok}
+        OR word_similarity(${tok}, lower(COALESCE("searchText", ''))) >= ${threshold}
       )`,
     );
-    const containsWhere = Prisma.join(containsWhereParts, ' AND ');
+    const mustMatchWhere = Prisma.join(mustMatchParts, ' AND ');
+
+    const accessoryPenalty = this.accessoryPenaltySql(tokenSqls);
 
     const scoreParts = tokenSqls.map(
       (tok) =>
-        Prisma.sql`GREATEST(
-          word_similarity(${tok}, lower("title")),
-          word_similarity(${tok}, lower(COALESCE("brand", ''))),
-          word_similarity(${tok}, lower(COALESCE("advertiserName", ''))),
-          word_similarity(${tok}, lower("searchText"))
+        Prisma.sql`(
+          CASE WHEN lower("title") = ${tok} THEN 24 ELSE 0 END
+          + CASE WHEN lower("title") LIKE ${`${tok}%`} THEN 16 ELSE 0 END
+          + CASE WHEN lower(COALESCE("productModel", '')) LIKE ${`${tok}%`} THEN 12 ELSE 0 END
+          + CASE WHEN lower(COALESCE("category", '')) LIKE ${`${tok}%`} THEN 8 ELSE 0 END
+          + CASE WHEN lower(COALESCE("title", '')) LIKE ${`% ${tok} %`} THEN 7 ELSE 0 END
+          + CASE WHEN lower(COALESCE("title", '')) LIKE ${`%${tok}%`} THEN 5 ELSE 0 END
+          + (word_similarity(${tok}, lower("title")) * 10)
+          + (word_similarity(${tok}, lower(COALESCE("productModel", ''))) * 5)
+          + (word_similarity(${tok}, lower(COALESCE("brand", ''))) * 4)
+          + (word_similarity(${tok}, lower(COALESCE("category", ''))) * 2)
+          + (word_similarity(${tok}, lower(COALESCE("searchText", ''))) * 3)
         )`,
     );
-    const scoreExpr =
-      scoreParts.length === 1
-        ? scoreParts[0]
-        : Prisma.sql`(${Prisma.join(scoreParts, ' + ')})`;
+    const rawScoreExpr =
+      scoreParts.length === 1 ? scoreParts[0] : Prisma.sql`(${Prisma.join(scoreParts, ' + ')})`;
+    const scoreExpr = Prisma.sql`(${rawScoreExpr} ${accessoryPenalty})`;
 
     const techSql = techOnly ? techOnlySqlAndFragment() : Prisma.empty;
     const adv = advertiser?.trim();
@@ -283,17 +292,19 @@ export class AwinCatalogService {
         ? Prisma.sql`AND COALESCE("advertiserName", '') ILIKE ${`%${adv}%`}`
         : Prisma.empty;
 
-    const candidateRows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
+    try {
+      const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       WITH candidate AS (
         SELECT
           "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
           "merchantDeepLink", "category", "categoryPath", "description",
-          "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost", "searchText"
+          "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost", "searchText",
+          ${scoreExpr} AS "__score"
         FROM "AwinCatalogProduct"
-        WHERE ${containsWhere}
+        WHERE ${mustMatchWhere}
         ${techSql}
         ${advSql}
-        ORDER BY "title" ASC
+        ORDER BY "__score" DESC, "price" DESC, "title" ASC
         LIMIT ${candidateLimit}
       )
       SELECT
@@ -301,34 +312,69 @@ export class AwinCatalogService {
         "merchantDeepLink", "category", "categoryPath", "description",
         "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
       FROM candidate
-      ORDER BY ${scoreExpr} DESC, "title" ASC
+      ORDER BY "__score" DESC, "price" DESC, "title" ASC
       LIMIT ${take} OFFSET ${skip}
     `);
-    if (candidateRows.length > 0) return candidateRows;
+      return rows;
+    } catch (e) {
+      this.log.warn(
+        `Ranked catalog search failed (${e instanceof Error ? e.message : String(e)}); falling back to substring search.`,
+      );
+      const tokenWhere: Prisma.AwinCatalogProductWhereInput = {
+        AND: tokens.map((t) => ({
+          searchText: { contains: t, mode: 'insensitive' as const },
+        })),
+      };
+      const where = this.mergeWhere(tokenWhere, techOnly, advertiser);
+      return this.prisma.awinCatalogProduct.findMany({
+        where,
+        take,
+        skip,
+        orderBy: [{ price: 'desc' }, { title: 'asc' }],
+        select: CATALOG_SEARCH_SELECT,
+      });
+    }
+  }
 
-    const threshold = this.fuzzyMinSimilarity();
-    const fuzzyWhereParts = tokenSqls.map(
-      (tok) =>
-        Prisma.sql`(
-          lower("searchText") % ${tok}
-          OR word_similarity(${tok}, lower("searchText")) >= ${threshold}
-        )`,
-    );
-    const fuzzyWhere = Prisma.join(fuzzyWhereParts, ' AND ');
-    const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
-      SELECT
-        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
-        "merchantDeepLink", "category", "categoryPath", "description",
-        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
-      FROM "AwinCatalogProduct"
-      WHERE ${fuzzyWhere}
-      ${techSql}
-      ${advSql}
-      ORDER BY ${scoreExpr} DESC, "title" ASC
-      LIMIT ${take} OFFSET ${skip}
-    `);
+  private accessoryPenaltySql(tokens: string[]): Prisma.Sql {
+    const techTerms = [
+      'laptop',
+      'notebook',
+      'computer',
+      'ram',
+      'ssd',
+      'gpu',
+      'grafikkarte',
+      'kamera',
+      'handy',
+      'smartphone',
+    ];
+    const hasTechIntent = tokens.some((t) => techTerms.includes(t));
+    if (!hasTechIntent) return Prisma.empty;
 
-    return rows;
+    const accessoryTerms = [
+      'tasche',
+      'bag',
+      'hülle',
+      'huelle',
+      'sleeve',
+      'rucksack',
+      'case',
+      'cover',
+      'halterung',
+      'dock',
+      'kabel',
+      'adapter',
+    ];
+    const checks = accessoryTerms.map((kw) => {
+      const like = `%${kw}%`;
+      return Prisma.sql`(
+        lower("title") LIKE ${like}
+        OR lower(COALESCE("category", '')) LIKE ${like}
+        OR lower(COALESCE("categoryPath", '')) LIKE ${like}
+      )`;
+    });
+    return Prisma.sql` + (CASE WHEN ${Prisma.join(checks, ' OR ')} THEN -12 ELSE 0 END)`;
   }
 
   async getByFeedKey(feedKey: string) {

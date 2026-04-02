@@ -37,11 +37,16 @@ export class CatalogController {
   }
 
   @Get('highlights')
-  highlights(@Query('techOnly') techOnly?: string, @Query('limit') limit?: string) {
+  highlights(
+    @Query('techOnly') techOnly?: string,
+    @Query('limit') limit?: string,
+    @Query('advertiser') advertiser?: string,
+  ) {
     const n = limit ? Number.parseInt(limit, 10) : 12;
     return this.catalog.highlights(
       techOnly === '1' || techOnly === 'true',
       Number.isFinite(n) ? n : 12,
+      advertiser?.trim() || undefined,
     );
   }
 }

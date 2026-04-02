@@ -180,7 +180,18 @@ export function rowToAwinFeedRow(
 
   const descIdx = col(map, ['description', 'product_short_description']);
   const shortDescOnlyIdx = col(map, ['product_short_description']);
-  const imgIdx = col(map, ['aw_image_url', 'merchant_image_url', 'large_image']);
+  // Prefer larger sources first to avoid blurry cards on desktop grids.
+  const imgIdx = col(map, [
+    'large_image',
+    'alternate_image',
+    'alternate_image_two',
+    'alternate_image_three',
+    'alternate_image_four',
+    'aw_image_url',
+    'merchant_image_url',
+    'aw_thumb_url',
+    'merchant_thumb_url',
+  ]);
   const merchIdx = col(map, ['merchant_name', 'store_name']);
   const catNameIdx = col(map, ['category_name', 'merchant_category']);
   const catPathIdx = col(map, ['merchant_product_category_path']);
@@ -195,6 +206,9 @@ export function rowToAwinFeedRow(
   const kwIdx = col(map, ['keywords']);
   const specIdx = col(map, ['specifications']);
   const promoIdx = col(map, ['promotional_text']);
+  const reviewsIdx = col(map, ['reviews']);
+  const avgRatingIdx = col(map, ['average_rating']);
+  const numberAvailableIdx = col(map, ['number_available']);
 
   const awProductId = prodIdIdx !== undefined ? (cells[prodIdIdx]?.trim() || null) : null;
   const merchantProductId = mpIdx !== undefined ? (cells[mpIdx]?.trim() || null) : null;
@@ -216,7 +230,14 @@ export function rowToAwinFeedRow(
     const sd = (cells[shortDescOnlyIdx] ?? '').trim();
     if (sd) extras.push(sd);
   }
-  for (const idx of [kwIdx, specIdx, promoIdx]) {
+  for (const idx of [
+    kwIdx,
+    specIdx,
+    promoIdx,
+    reviewsIdx,
+    avgRatingIdx,
+    numberAvailableIdx,
+  ]) {
     if (idx === undefined) continue;
     const v = (cells[idx] ?? '').trim();
     if (v) extras.push(v);

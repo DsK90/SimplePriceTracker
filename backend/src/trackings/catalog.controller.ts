@@ -44,7 +44,6 @@ export class CatalogController {
     @Query('minPrice') minPrice?: string,
     @Query('maxPrice') maxPrice?: string,
     @Query('preferred') preferred?: string,
-    @Query('sort') sort?: string,
   ) {
     const n = limit ? Number.parseInt(limit, 10) : 12;
     const min = minPrice ? Number.parseFloat(minPrice) : undefined;
@@ -62,10 +61,6 @@ export class CatalogController {
         minPrice: Number.isFinite(min ?? Number.NaN) ? min : undefined,
         maxPrice: Number.isFinite(max ?? Number.NaN) ? max : undefined,
         preferredKeywords,
-        sortMode:
-          sort === 'save_eur' || sort === 'save_percent' || sort === 'premium'
-            ? sort
-            : 'balanced',
       },
     );
   }

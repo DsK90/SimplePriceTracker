@@ -139,7 +139,7 @@ export class ShopsComponent implements OnInit {
 
     loadingSignal.set(true);
     const params: Record<string, string> = {
-      limit: '10',
+      limit: '30',
       techOnly: '1',
       minPrice: '700',
       maxPrice: '2500',
@@ -154,7 +154,31 @@ export class ShopsComponent implements OnInit {
         finalize(() => loadingSignal.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((h) => setItems.set(h));
+      .subscribe((h) => {
+        setItems.set(h);
+        this.deduplicateOfferSections();
+      });
+  }
+
+  private deduplicateOfferSections(): void {
+    const seen = new Set<string>();
+    const dedupe = (items: CatalogListItem[]) => {
+      const out: CatalogListItem[] = [];
+      for (const item of items) {
+        if (seen.has(item.feedKey)) continue;
+        seen.add(item.feedKey);
+        out.push(item);
+      }
+      return out;
+    };
+
+    const best = dedupe(this.bestOffers());
+    const alternate = dedupe(this.alternateOffers());
+    const expert = dedupe(this.expertOffers());
+
+    this.bestOffers.set(best.slice(0, 10));
+    this.alternateOffers.set(alternate.slice(0, 10));
+    this.expertOffers.set(expert.slice(0, 10));
   }
 
   openDetail(item: CatalogListItem): void {

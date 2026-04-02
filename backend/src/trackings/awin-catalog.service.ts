@@ -164,6 +164,8 @@ export class AwinCatalogService {
       .filter((s) => s.length >= 2)
       .slice(0, 20);
     const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
+    const queryTake =
+      adv && adv.length > 0 ? take : Math.min(300, Math.max(take * 12, take));
 
     const cacheKey = [
       techOnly ? '1' : '0',
@@ -194,14 +196,16 @@ export class AwinCatalogService {
         "price" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
         "title" ASC
-      LIMIT ${take}
+      LIMIT ${queryTake}
     `);
     if (withImage.length > 0) {
+      const finalRows =
+        adv && adv.length > 0 ? withImage.slice(0, take) : this.ensureAdvertiserMix(withImage, take, 2);
       this.highlightsCache.set(cacheKey, {
         expiresAt: now + this.highlightsCacheTtlMs,
-        rows: withImage,
+        rows: finalRows,
       });
-      return withImage;
+      return finalRows;
     }
 
     const fallback = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
@@ -221,13 +225,54 @@ export class AwinCatalogService {
         "price" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
         "title" ASC
-      LIMIT ${take}
+      LIMIT ${queryTake}
     `);
+    const finalFallback =
+      adv && adv.length > 0 ? fallback.slice(0, take) : this.ensureAdvertiserMix(fallback, take, 2);
     this.highlightsCache.set(cacheKey, {
       expiresAt: now + this.highlightsCacheTtlMs,
-      rows: fallback,
+      rows: finalFallback,
     });
-    return fallback;
+    return finalFallback;
+  }
+
+  private ensureAdvertiserMix(
+    rows: CatalogSearchRow[],
+    take: number,
+    minPerAdvertiser: number,
+  ): CatalogSearchRow[] {
+    if (rows.length <= take) return rows;
+    const groups = new Map<string, CatalogSearchRow[]>();
+    for (const row of rows) {
+      const key = (row.advertiserName ?? '').trim().toLowerCase() || '__unknown__';
+      const list = groups.get(key);
+      if (list) list.push(row);
+      else groups.set(key, [row]);
+    }
+
+    const picked: CatalogSearchRow[] = [];
+    const used = new Set<string>();
+
+    for (let pass = 0; pass < minPerAdvertiser && picked.length < take; pass++) {
+      for (const list of groups.values()) {
+        const item = list[pass];
+        if (!item) continue;
+        if (used.has(item.feedKey)) continue;
+        picked.push(item);
+        used.add(item.feedKey);
+        if (picked.length >= take) break;
+      }
+    }
+
+    if (picked.length < take) {
+      for (const row of rows) {
+        if (used.has(row.feedKey)) continue;
+        picked.push(row);
+        used.add(row.feedKey);
+        if (picked.length >= take) break;
+      }
+    }
+    return picked;
   }
 
   private preferredOfferScoreSql(keywords: string[]): Prisma.Sql {
@@ -301,9 +346,26 @@ export class AwinCatalogService {
   ): Promise<CatalogSearchRow[]> {
     const tokens = AwinCatalogService.catalogQueryTokens(trimmed);
     if (tokens.length === 0) return [];
+    const tokenWhere: Prisma.AwinCatalogProductWhereInput = {
+      AND: tokens.map((t) => ({
+        searchText: { contains: t, mode: 'insensitive' as const },
+      })),
+    };
+    const where = this.mergeWhere(tokenWhere, techOnly, advertiser);
+    const exact = await this.prisma.awinCatalogProduct.findMany({
+      where,
+      take,
+      skip,
+      orderBy: [{ price: 'desc' }, { title: 'asc' }],
+      select: CATALOG_SEARCH_SELECT,
+    });
+    if (exact.length > 0) return exact;
+
+    // Keep fallback cheap; avoid long-running ranked scans for broad terms.
+    if (tokens.length > 3 || trimmed.length > 48) return [];
+
     const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
-    const candidateLimit = Math.min(800, Math.max(150, (take + skip) * 20));
-    const threshold = this.fuzzyMinSimilarity();
+    const candidateLimit = Math.min(220, Math.max(80, (take + skip) * 8));
 
     const mustMatchParts = tokenSqls.map(
       (tok) => Prisma.sql`(
@@ -314,9 +376,7 @@ export class AwinCatalogService {
         OR COALESCE("categoryPath", '') ILIKE ${`%${tok}%`}
         OR COALESCE("productModel", '') ILIKE ${`%${tok}%`}
         OR COALESCE("modelNumber", '') ILIKE ${`%${tok}%`}
-        OR COALESCE("searchText", '') ILIKE ${`%${tok}%`}
         OR lower(COALESCE("searchText", '')) % ${tok}
-        OR word_similarity(${tok}, lower(COALESCE("searchText", ''))) >= ${threshold}
       )`,
     );
     const mustMatchWhere = Prisma.join(mustMatchParts, ' AND ');
@@ -332,11 +392,10 @@ export class AwinCatalogService {
           + CASE WHEN lower(COALESCE("category", '')) LIKE ${`${tok}%`} THEN 8 ELSE 0 END
           + CASE WHEN lower(COALESCE("title", '')) LIKE ${`% ${tok} %`} THEN 7 ELSE 0 END
           + CASE WHEN lower(COALESCE("title", '')) LIKE ${`%${tok}%`} THEN 5 ELSE 0 END
-          + (word_similarity(${tok}, lower("title")) * 10)
-          + (word_similarity(${tok}, lower(COALESCE("productModel", ''))) * 5)
-          + (word_similarity(${tok}, lower(COALESCE("brand", ''))) * 4)
-          + (word_similarity(${tok}, lower(COALESCE("category", ''))) * 2)
-          + (word_similarity(${tok}, lower(COALESCE("searchText", ''))) * 3)
+          + (word_similarity(${tok}, lower("title")) * 6)
+          + (word_similarity(${tok}, lower(COALESCE("productModel", ''))) * 3)
+          + (word_similarity(${tok}, lower(COALESCE("brand", ''))) * 2)
+          + (word_similarity(${tok}, lower(COALESCE("searchText", ''))) * 2)
         )`,
     );
     const rawScoreExpr =
@@ -378,12 +437,6 @@ export class AwinCatalogService {
       this.log.warn(
         `Ranked catalog search failed (${e instanceof Error ? e.message : String(e)}); falling back to substring search.`,
       );
-      const tokenWhere: Prisma.AwinCatalogProductWhereInput = {
-        AND: tokens.map((t) => ({
-          searchText: { contains: t, mode: 'insensitive' as const },
-        })),
-      };
-      const where = this.mergeWhere(tokenWhere, techOnly, advertiser);
       return this.prisma.awinCatalogProduct.findMany({
         where,
         take,

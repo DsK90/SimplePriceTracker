@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AwinCatalogService } from './awin-catalog.service';
+import { CatalogController } from './catalog.controller';
 import { TrackingsController } from './trackings.controller';
 import { TrackingsScheduler } from './trackings.scheduler';
 import { TrackingsService } from './trackings.service';
 
 @Module({
   imports: [NotificationsModule],
-  controllers: [TrackingsController],
+  controllers: [TrackingsController, CatalogController],
   providers: [TrackingsService, TrackingsScheduler, AwinCatalogService],
   exports: [TrackingsService],
 })

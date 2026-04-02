@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AwinFeedRow } from './awin-feed-csv';
+import { techOnlyPrismaWhere, techOnlySqlAndFragment } from './catalog-tech-filter';
 
 const CATALOG_SEARCH_SELECT = {
   feedKey: true,
@@ -13,9 +14,16 @@ const CATALOG_SEARCH_SELECT = {
   imageUrl: true,
   merchantDeepLink: true,
   category: true,
+  categoryPath: true,
+  description: true,
+  productModel: true,
+  modelNumber: true,
+  rrpPrice: true,
+  basePrice: true,
+  deliveryCost: true,
 } satisfies Prisma.AwinCatalogProductSelect;
 
-type CatalogSearchRow = {
+export type CatalogSearchRow = {
   feedKey: string;
   title: string;
   price: Prisma.Decimal | string | number;
@@ -25,6 +33,20 @@ type CatalogSearchRow = {
   imageUrl: string | null;
   merchantDeepLink: string;
   category: string | null;
+  categoryPath: string | null;
+  description: string | null;
+  productModel: string | null;
+  modelNumber: string | null;
+  rrpPrice: Prisma.Decimal | string | number | null;
+  basePrice: Prisma.Decimal | string | number | null;
+  deliveryCost: Prisma.Decimal | string | number | null;
+};
+
+export type CatalogSearchOptions = {
+  limit?: number;
+  offset?: number;
+  techOnly?: boolean;
+  advertiser?: string;
 };
 
 @Injectable()
@@ -33,21 +55,47 @@ export class AwinCatalogService {
 
   constructor(private prisma: PrismaService) {}
 
+  private listFilters(
+    techOnly: boolean,
+    advertiser?: string,
+  ): Prisma.AwinCatalogProductWhereInput {
+    const parts: Prisma.AwinCatalogProductWhereInput[] = [];
+    if (techOnly) parts.push(techOnlyPrismaWhere());
+    const adv = advertiser?.trim();
+    if (adv)
+      parts.push({ advertiserName: { contains: adv, mode: 'insensitive' as const } });
+    if (parts.length === 0) return {};
+    return { AND: parts };
+  }
+
+  private mergeWhere(
+    base: Prisma.AwinCatalogProductWhereInput,
+    techOnly: boolean,
+    advertiser?: string,
+  ): Prisma.AwinCatalogProductWhereInput {
+    const extra = this.listFilters(techOnly, advertiser);
+    if (Object.keys(extra).length === 0) return base;
+    return { AND: [base, extra] };
+  }
+
   /**
    * Product search: URLs match `merchantDeepLink`.
    * Plain text: every token must match via substring (case-insensitive) or pg_trgm `word_similarity` (typo-tolerant).
    */
-  async search(q: string, limit = 20) {
+  async search(q: string, options: CatalogSearchOptions = {}) {
     const trimmed = q.trim().slice(0, 2000);
     if (trimmed.length < 2) return [];
-    const take = Math.min(50, Math.max(1, limit));
+    const limit = Math.min(50, Math.max(1, options.limit ?? 20));
+    const offset = Math.max(0, options.offset ?? 0);
+    const techOnly = options.techOnly === true;
+    const advertiser = options.advertiser;
 
     if (this.looksLikeUrl(trimmed)) {
-      const byUrl = await this.searchByMerchantUrl(trimmed, take);
+      const byUrl = await this.searchByMerchantUrl(trimmed, limit, offset, techOnly, advertiser);
       if (byUrl.length > 0) return byUrl;
     }
 
-    return await this.searchByProductText(trimmed, take);
+    return await this.searchByProductText(trimmed, limit, offset, techOnly, advertiser);
   }
 
   /** 0.15–0.55: lower = fuzzier (more typos), more possible noise. */
@@ -74,6 +122,42 @@ export class AwinCatalogService {
     return this.prisma.awinCatalogProduct.count();
   }
 
+  /**
+   * Top products by discount when RRP is present; else recently updated rows (tech filter optional).
+   */
+  async highlights(techOnly: boolean, limit: number): Promise<CatalogSearchRow[]> {
+    const take = Math.min(50, Math.max(1, limit));
+    const techSql = techOnly ? techOnlySqlAndFragment() : Prisma.empty;
+
+    const discounted = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
+      SELECT
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
+        "merchantDeepLink", "category", "categoryPath", "description",
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
+      FROM "AwinCatalogProduct"
+      WHERE "rrpPrice" IS NOT NULL
+        AND "rrpPrice" > 0
+        AND "price" < "rrpPrice"
+      ${techSql}
+      ORDER BY ("rrpPrice" - "price") / NULLIF("rrpPrice", 0) DESC, "title" ASC
+      LIMIT ${take}
+    `);
+    if (discounted.length >= Math.min(5, take)) return discounted;
+
+    const fallback = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
+      SELECT
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
+        "merchantDeepLink", "category", "categoryPath", "description",
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
+      FROM "AwinCatalogProduct"
+      WHERE 1=1
+      ${techSql}
+      ORDER BY "updatedFromFeedAt" DESC, "title" ASC
+      LIMIT ${take}
+    `);
+    return fallback;
+  }
+
   private looksLikeUrl(s: string): boolean {
     return /^https?:\/\//i.test(s) || /^www\./i.test(s);
   }
@@ -96,40 +180,58 @@ export class AwinCatalogService {
     return [...variants];
   }
 
-  private async searchByMerchantUrl(trimmed: string, take: number) {
+  private async searchByMerchantUrl(
+    trimmed: string,
+    take: number,
+    skip: number,
+    techOnly: boolean,
+    advertiser?: string,
+  ) {
     const variants = this.urlSearchVariants(trimmed);
     if (variants.length === 0) return [];
+    const base: Prisma.AwinCatalogProductWhereInput = {
+      OR: variants.map((v) => ({
+        merchantDeepLink: { contains: v, mode: 'insensitive' as const },
+      })),
+    };
+    const where = this.mergeWhere(base, techOnly, advertiser);
     return this.prisma.awinCatalogProduct.findMany({
-      where: {
-        OR: variants.map((v) => ({
-          merchantDeepLink: { contains: v, mode: 'insensitive' as const },
-        })),
-      },
+      where,
       take,
+      skip,
       orderBy: { title: 'asc' },
       select: CATALOG_SEARCH_SELECT,
     });
   }
 
-  private async searchByProductText(trimmed: string, take: number): Promise<CatalogSearchRow[]> {
+  private async searchByProductText(
+    trimmed: string,
+    take: number,
+    skip: number,
+    techOnly: boolean,
+    advertiser?: string,
+  ): Promise<CatalogSearchRow[]> {
     const tokens = AwinCatalogService.catalogQueryTokens(trimmed);
     if (tokens.length === 0) return [];
 
-    // Fast path for normal typing: indexed token contains on prebuilt searchText.
+    const tokenWhere: Prisma.AwinCatalogProductWhereInput = {
+      AND: tokens.map((t) => ({
+        searchText: { contains: t, mode: 'insensitive' as const },
+      })),
+    };
+    const where = this.mergeWhere(tokenWhere, techOnly, advertiser);
+
     const exact = await this.prisma.awinCatalogProduct.findMany({
-      where: {
-        AND: tokens.map((t) => ({
-          searchText: { contains: t, mode: 'insensitive' as const },
-        })),
-      },
+      where,
       take,
+      skip,
       orderBy: { title: 'asc' },
       select: CATALOG_SEARCH_SELECT,
     });
     if (exact.length > 0) return exact;
 
     try {
-      return await this.searchByProductTextFuzzy(tokens, take);
+      return await this.searchByProductTextFuzzy(tokens, take, skip, techOnly, advertiser);
     } catch (e) {
       this.log.warn(
         `Fuzzy catalog search failed (${e instanceof Error ? e.message : String(e)}); falling back to substring match.`,
@@ -139,9 +241,15 @@ export class AwinCatalogService {
   }
 
   /** Requires `pg_trgm` (see prisma migration). */
-  private async searchByProductTextFuzzy(tokens: string[], take: number): Promise<CatalogSearchRow[]> {
+  private async searchByProductTextFuzzy(
+    tokens: string[],
+    take: number,
+    skip: number,
+    techOnly: boolean,
+    advertiser?: string,
+  ): Promise<CatalogSearchRow[]> {
     const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
-    const candidateLimit = Math.min(1000, Math.max(200, take * 40));
+    const candidateLimit = Math.min(1000, Math.max(200, (take + skip) * 40));
 
     const containsWhereParts = tokenSqls.map(
       (tok) => Prisma.sql`(
@@ -149,6 +257,7 @@ export class AwinCatalogService {
         OR COALESCE("brand", '') ILIKE ${`%${tok}%`}
         OR COALESCE("advertiserName", '') ILIKE ${`%${tok}%`}
         OR COALESCE("category", '') ILIKE ${`%${tok}%`}
+        OR COALESCE("categoryPath", '') ILIKE ${`%${tok}%`}
       )`,
     );
     const containsWhere = Prisma.join(containsWhereParts, ' AND ');
@@ -167,23 +276,36 @@ export class AwinCatalogService {
         ? scoreParts[0]
         : Prisma.sql`(${Prisma.join(scoreParts, ' + ')})`;
 
-    // Fast path: use indexed token contains to build a small candidate set, then fuzzy-rank only that subset.
+    const techSql = techOnly ? techOnlySqlAndFragment() : Prisma.empty;
+    const adv = advertiser?.trim();
+    const advSql =
+      adv && adv.length > 0
+        ? Prisma.sql`AND COALESCE("advertiserName", '') ILIKE ${`%${adv}%`}`
+        : Prisma.empty;
+
     const candidateRows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
       WITH candidate AS (
-        SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category", "searchText"
+        SELECT
+          "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
+          "merchantDeepLink", "category", "categoryPath", "description",
+          "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost", "searchText"
         FROM "AwinCatalogProduct"
         WHERE ${containsWhere}
+        ${techSql}
+        ${advSql}
         ORDER BY "title" ASC
         LIMIT ${candidateLimit}
       )
-      SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category"
+      SELECT
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
+        "merchantDeepLink", "category", "categoryPath", "description",
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
       FROM candidate
       ORDER BY ${scoreExpr} DESC, "title" ASC
-      LIMIT ${take}
+      LIMIT ${take} OFFSET ${skip}
     `);
     if (candidateRows.length > 0) return candidateRows;
 
-    // Fallback for typo-heavy inputs that do not have direct substring matches.
     const threshold = this.fuzzyMinSimilarity();
     const fuzzyWhereParts = tokenSqls.map(
       (tok) =>
@@ -194,11 +316,16 @@ export class AwinCatalogService {
     );
     const fuzzyWhere = Prisma.join(fuzzyWhereParts, ' AND ');
     const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>(Prisma.sql`
-      SELECT "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl", "merchantDeepLink", "category"
+      SELECT
+        "feedKey", "title", "price", "currency", "advertiserName", "brand", "imageUrl",
+        "merchantDeepLink", "category", "categoryPath", "description",
+        "productModel", "modelNumber", "rrpPrice", "basePrice", "deliveryCost"
       FROM "AwinCatalogProduct"
       WHERE ${fuzzyWhere}
+      ${techSql}
+      ${advSql}
       ORDER BY ${scoreExpr} DESC, "title" ASC
-      LIMIT ${take}
+      LIMIT ${take} OFFSET ${skip}
     `);
 
     return rows;
@@ -229,7 +356,13 @@ export class AwinCatalogService {
           merchantDeepLink: r.merchantDeepLink,
           imageUrl: r.imageUrl,
           category: r.category,
+          categoryPath: r.categoryPath,
           brand: r.brand,
+          productModel: r.productModel,
+          modelNumber: r.modelNumber,
+          rrpPrice: r.rrpPrice != null ? new Prisma.Decimal(r.rrpPrice) : null,
+          basePrice: r.basePrice != null ? new Prisma.Decimal(r.basePrice) : null,
+          deliveryCost: r.deliveryCost != null ? new Prisma.Decimal(r.deliveryCost) : null,
           searchText: r.searchText,
         },
         update: {
@@ -245,7 +378,13 @@ export class AwinCatalogService {
           merchantDeepLink: r.merchantDeepLink,
           imageUrl: r.imageUrl,
           category: r.category,
+          categoryPath: r.categoryPath,
           brand: r.brand,
+          productModel: r.productModel,
+          modelNumber: r.modelNumber,
+          rrpPrice: r.rrpPrice != null ? new Prisma.Decimal(r.rrpPrice) : null,
+          basePrice: r.basePrice != null ? new Prisma.Decimal(r.basePrice) : null,
+          deliveryCost: r.deliveryCost != null ? new Prisma.Decimal(r.deliveryCost) : null,
           searchText: r.searchText,
         },
       });

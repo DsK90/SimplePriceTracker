@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -25,19 +24,6 @@ export class TrackingsController {
   @Get()
   list(@CurrentUser() user: RequestUser) {
     return this.trackings.list(user.userId);
-  }
-
-  /** Search Awin catalog (camera & tech products after you import a niche feed). */
-  @Get('catalog/search')
-  searchCatalog(@Query('q') q: string, @Query('limit') limit?: string) {
-    const n = limit ? Number.parseInt(limit, 10) : 20;
-    return this.trackings.searchCatalog(q ?? '', Number.isFinite(n) ? n : 20);
-  }
-
-  /** How many rows are in the imported catalog (debug / empty-state in UI). */
-  @Get('catalog/stats')
-  catalogStats() {
-    return this.trackings.catalogStats();
   }
 
   @Post()

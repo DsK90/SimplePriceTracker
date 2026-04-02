@@ -20,6 +20,7 @@
     "acceptAll": "Alle akzeptieren"
   },
   "nav": {
+    "shops": "Shops",
     "dashboard": "Übersicht",
     "pricing": "Preise",
     "fairUse": "Fair Use",
@@ -28,6 +29,36 @@
     "register": "Registrieren",
     "installApp": "App installieren",
     "installAppShort": "App"
+  },
+  "shops": {
+    "kicker": "Partner-Angebote",
+    "title": "Technik & Deals",
+    "subtitle": "Durchsuche den Produktkatalog, filtere Nicht-Technik heraus und springe mit einem Klick zum Shop.",
+    "productCount": "{{count}} Produkte im Katalog",
+    "searchPlaceholder": "Produkt suchen …",
+    "techFilterOn": "Nur Technik",
+    "techFilterOff": "Alle Kategorien",
+    "searchError": "Suche fehlgeschlagen. Bitte später erneut versuchen.",
+    "loading": "Laden …",
+    "highlightsTitle": "Beste Angebote",
+    "highlightsSubtitle": "Sortiert nach Rabatt, wenn UVP vorliegt",
+    "highlightsEmpty": "Noch keine Highlights — nach dem nächsten Feed-Import erscheinen Angebote hier.",
+    "resultsTitle": "Suchergebnisse",
+    "noResults": "Keine Treffer.",
+    "typeToSearch": "Mindestens 2 Zeichen eingeben, um zu suchen.",
+    "goToDashboard": "Zur Übersicht / Tracking hinzufügen",
+    "detailTitle": "Produktdetails",
+    "closeDetail": "Schließen",
+    "brand": "Marke",
+    "model": "Modell",
+    "modelNumber": "Modellnummer",
+    "category": "Kategorie",
+    "saved": "Du sparst {{amount}}",
+    "basePrice": "Basispreis",
+    "delivery": "Versand",
+    "toShop": "Zum Shop",
+    "detailUnavailable": "Details konnten nicht geladen werden.",
+    "bottomHome": "Start"
   },
   "home": {
     "nav": {

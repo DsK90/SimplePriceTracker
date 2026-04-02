@@ -152,7 +152,23 @@
                     <span class="font-semibold text-on-surface">{{ h.title }}</span>
                     <span class="text-[10px] text-on-surface-variant/85">
                       {{ h.advertiserName || h.brand || '—' }} · {{ h.price }} {{ h.currency }}
+                      @if (catalogShowRrp(h)) {
+                        <span class="text-tertiary"> · UVP {{ h.rrpPrice }}</span>
+                      }
                     </span>
+                    @if (h.productModel || h.modelNumber) {
+                      <span class="block text-[10px] text-on-surface-variant/70">
+                        @if (h.brand) {
+                          <span>{{ h.brand }}</span>
+                        }
+                        @if (h.productModel) {
+                          <span> · {{ h.productModel }}</span>
+                        }
+                        @if (h.modelNumber) {
+                          <span class="font-mono"> · {{ h.modelNumber }}</span>
+                        }
+                      </span>
+                    }
                   </button>
                 </li>
               }

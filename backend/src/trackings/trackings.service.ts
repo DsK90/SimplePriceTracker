@@ -44,15 +44,6 @@ export class TrackingsService {
     private awinCatalog: AwinCatalogService,
   ) {}
 
-  searchCatalog(q: string, limit: number) {
-    return this.awinCatalog.search(q, limit);
-  }
-
-  /** For UI: confirm imported feed rows exist (otherwise search always looks empty). */
-  catalogStats() {
-    return this.awinCatalog.count().then((productCount) => ({ productCount }));
-  }
-
   /** Dev/staging only unless ENABLE_DEMO_PRICE=true (never in production by default). */
   private isDemoPriceApiEnabled(): boolean {
     const env = this.config.get<string>('NODE_ENV');

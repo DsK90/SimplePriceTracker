@@ -66,7 +66,13 @@ export type AwinFeedRow = {
   merchantDeepLink: string;
   imageUrl: string | null;
   category: string | null;
+  categoryPath: string | null;
   brand: string | null;
+  productModel: string | null;
+  modelNumber: string | null;
+  rrpPrice: number | null;
+  basePrice: number | null;
+  deliveryCost: number | null;
   /** Single field for substring / token search in the API */
   searchText: string;
 };
@@ -77,6 +83,9 @@ export function buildCatalogSearchText(parts: {
   description: string | null;
   brand: string | null;
   category: string | null;
+  categoryPath: string | null;
+  productModel: string | null;
+  modelNumber: string | null;
   advertiserName: string | null;
   feedKey: string;
   advertiserId: string | null;
@@ -91,6 +100,9 @@ export function buildCatalogSearchText(parts: {
     parts.description,
     parts.brand,
     parts.category,
+    parts.categoryPath,
+    parts.productModel,
+    parts.modelNumber,
     parts.advertiserName,
     parts.feedKey,
     parts.advertiserId,
@@ -112,6 +124,15 @@ function col(map: Record<string, number>, aliases: string[]): number | undefined
     if (i !== undefined) return i;
   }
   return undefined;
+}
+
+/** Parse optional decimal from feed cell (comma or dot). */
+export function parseOptionalDecimal(raw: string | undefined): number | null {
+  if (raw == null) return null;
+  const t = raw.trim().replace(',', '.');
+  if (!t) return null;
+  const n = Number.parseFloat(t);
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
 /**
@@ -161,11 +182,16 @@ export function rowToAwinFeedRow(
   const shortDescOnlyIdx = col(map, ['product_short_description']);
   const imgIdx = col(map, ['aw_image_url', 'merchant_image_url', 'large_image']);
   const merchIdx = col(map, ['merchant_name', 'store_name']);
-  const catIdx = col(map, ['category_name', 'merchant_product_category_path']);
+  const catNameIdx = col(map, ['category_name', 'merchant_category']);
+  const catPathIdx = col(map, ['merchant_product_category_path']);
   const brandIdx = col(map, ['brand_name', 'brand']);
   const mpIdx = col(map, ['merchant_product_id', 'merchant_sku']);
   const eanIdx = col(map, ['ean', 'product_gtin', 'upc']);
-  const mpnIdx = col(map, ['mpn', 'model_number']);
+  const productModelIdx = col(map, ['product_model']);
+  const modelNumberIdx = col(map, ['model_number', 'mpn']);
+  const rrpIdx = col(map, ['rrp_price']);
+  const basePriceIdx = col(map, ['base_price']);
+  const deliveryIdx = col(map, ['delivery_cost']);
   const kwIdx = col(map, ['keywords']);
   const specIdx = col(map, ['specifications']);
   const promoIdx = col(map, ['promotional_text']);
@@ -190,10 +216,6 @@ export function rowToAwinFeedRow(
     const sd = (cells[shortDescOnlyIdx] ?? '').trim();
     if (sd) extras.push(sd);
   }
-  if (mpnIdx !== undefined) {
-    const mpn = (cells[mpnIdx] ?? '').trim();
-    if (mpn) extras.push(mpn);
-  }
   for (const idx of [kwIdx, specIdx, promoIdx]) {
     if (idx === undefined) continue;
     const v = (cells[idx] ?? '').trim();
@@ -203,14 +225,25 @@ export function rowToAwinFeedRow(
   const advertiserId = advIdIdx !== undefined ? (cells[advIdIdx]?.trim() || null) : null;
   const advertiserName = merchIdx !== undefined ? (cells[merchIdx]?.trim() || null) : null;
   const imageUrl = imgIdx !== undefined ? (cells[imgIdx]?.trim() || null) : null;
-  const category = catIdx !== undefined ? (cells[catIdx]?.trim() || null) : null;
+  const category = catNameIdx !== undefined ? (cells[catNameIdx]?.trim() || null) : null;
+  const categoryPath = catPathIdx !== undefined ? (cells[catPathIdx]?.trim() || null) : null;
   const brand = brandIdx !== undefined ? (cells[brandIdx]?.trim() || null) : null;
+  const productModel =
+    productModelIdx !== undefined ? (cells[productModelIdx]?.trim() || null) : null;
+  const modelNumber =
+    modelNumberIdx !== undefined ? (cells[modelNumberIdx]?.trim() || null) : null;
+  const rrpPrice = rrpIdx !== undefined ? parseOptionalDecimal(cells[rrpIdx]) : null;
+  const basePrice = basePriceIdx !== undefined ? parseOptionalDecimal(cells[basePriceIdx]) : null;
+  const deliveryCost = deliveryIdx !== undefined ? parseOptionalDecimal(cells[deliveryIdx]) : null;
 
   const searchText = buildCatalogSearchText({
     title,
     description,
     brand,
     category,
+    categoryPath,
+    productModel,
+    modelNumber,
     advertiserName,
     feedKey,
     advertiserId,
@@ -238,7 +271,13 @@ export function rowToAwinFeedRow(
     merchantDeepLink,
     imageUrl,
     category,
+    categoryPath,
     brand,
+    productModel,
+    modelNumber,
+    rrpPrice,
+    basePrice,
+    deliveryCost,
     searchText,
   };
 }

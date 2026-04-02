@@ -32,6 +32,11 @@ import { AuthService } from '../core/auth.service';
           class="hidden text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface md:inline"
           >{{ 'nav.pricing' | translate }}</a
         >
+        <a
+          routerLink="/shops"
+          class="hidden text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface md:inline"
+          >{{ 'nav.shops' | translate }}</a
+        >
         @if (auth.isLoggedIn()) {
           <a
             routerLink="/dashboard"

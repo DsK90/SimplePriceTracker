@@ -20,6 +20,7 @@
     "acceptAll": "Accept all"
   },
   "nav": {
+    "shops": "Shops",
     "dashboard": "Tracking",
     "pricing": "Pricing",
     "fairUse": "Fair use",
@@ -28,6 +29,36 @@
     "register": "Register",
     "installApp": "Install app",
     "installAppShort": "App"
+  },
+  "shops": {
+    "kicker": "Partner offers",
+    "title": "Tech & deals",
+    "subtitle": "Browse the product catalog, filter out non-tech clutter, and open the shop in one click.",
+    "productCount": "{{count}} products in catalog",
+    "searchPlaceholder": "Search products…",
+    "techFilterOn": "Tech only",
+    "techFilterOff": "All categories",
+    "searchError": "Search failed. Please try again later.",
+    "loading": "Loading…",
+    "highlightsTitle": "Top deals",
+    "highlightsSubtitle": "Sorted by discount when list price is available",
+    "highlightsEmpty": "No highlights yet — they will appear after the next feed import.",
+    "resultsTitle": "Search results",
+    "noResults": "No matches.",
+    "typeToSearch": "Type at least 2 characters to search.",
+    "goToDashboard": "Go to dashboard / add tracking",
+    "detailTitle": "Product details",
+    "closeDetail": "Close",
+    "brand": "Brand",
+    "model": "Model",
+    "modelNumber": "Model number",
+    "category": "Category",
+    "saved": "You save {{amount}}",
+    "basePrice": "Base price",
+    "delivery": "Delivery",
+    "toShop": "Go to shop",
+    "detailUnavailable": "Could not load details.",
+    "bottomHome": "Home"
   },
   "home": {
     "nav": {

@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestHomeGuard } from './core/auth.guard';
+import { authGuard } from './core/auth.guard';
 import { DashboardComponent } from './pages/dashboard.component';
 import { HomeComponent } from './pages/home.component';
+import { ShopsComponent } from './pages/shops.component';
 import { LoginComponent } from './pages/login.component';
 import { PricingComponent } from './pages/pricing.component';
 import { RegisterComponent } from './pages/register.component';
@@ -16,8 +17,8 @@ export const routes: Routes = [
     path: '',
     pathMatch: 'full',
     component: HomeComponent,
-    canActivate: [guestHomeGuard],
   },
+  { path: 'shops', component: ShopsComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'verify-email', component: VerifyEmailComponent },

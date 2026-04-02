@@ -34,6 +34,13 @@ type CatalogHit = {
   imageUrl: string | null;
   merchantDeepLink: string;
   category: string | null;
+  categoryPath?: string | null;
+  description?: string | null;
+  productModel?: string | null;
+  modelNumber?: string | null;
+  rrpPrice?: string | number | null;
+  basePrice?: string | number | null;
+  deliveryCost?: string | number | null;
 };
 
 type Tracking = {
@@ -271,11 +278,13 @@ export class DashboardComponent implements OnInit {
       const advertiser = (h.advertiserName ?? '').toLowerCase();
       const brand = (h.brand ?? '').toLowerCase();
       const category = (h.category ?? '').toLowerCase();
+      const path = (h.categoryPath ?? '').toLowerCase();
       return (
         title.includes(q) ||
         advertiser.includes(q) ||
         brand.includes(q) ||
-        category.includes(q)
+        category.includes(q) ||
+        path.includes(q)
       );
     });
   }
@@ -330,7 +339,7 @@ export class DashboardComponent implements OnInit {
     void this.initPush();
 
     this.http
-      .get<{ productCount: number }>(`${environment.apiUrl}/trackings/catalog/stats`)
+      .get<{ productCount: number }>(`${environment.apiUrl}/catalog/stats`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (s) => this.catalogProductCount.set(s.productCount),
@@ -359,8 +368,8 @@ export class DashboardComponent implements OnInit {
           this.catalogLoading.set(true);
           this.catalogSearchError.set(null);
           return this.http
-            .get<CatalogHit[]>(`${environment.apiUrl}/trackings/catalog/search`, {
-              params: { q, limit: '30' },
+            .get<CatalogHit[]>(`${environment.apiUrl}/catalog/search`, {
+              params: { q, limit: '30', techOnly: '1' },
             })
             .pipe(
               tap((hits) => this.rememberCatalogQuery(q, hits)),
@@ -384,6 +393,14 @@ export class DashboardComponent implements OnInit {
     this.catalogHits.set([]);
     this.catalogSearchError.set(null);
     this.formError.set(null);
+  }
+
+  /** Show list price in catalog dropdown when feed provides RRP above current price. */
+  protected catalogShowRrp(h: CatalogHit): boolean {
+    if (h.rrpPrice == null || h.rrpPrice === '') return false;
+    const rrp = Number(h.rrpPrice);
+    const price = Number(h.price);
+    return Number.isFinite(rrp) && Number.isFinite(price) && rrp > price;
   }
 
   private hasAlertThresholds(): boolean {

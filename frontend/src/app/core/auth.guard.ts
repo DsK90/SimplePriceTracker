@@ -10,10 +10,3 @@ export const authGuard: CanActivateFn = () => {
   return false;
 };
 
-/** Marketing home is for guests only; signed-in users go straight to the dashboard. */
-export const guestHomeGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-  if (auth.isLoggedIn()) return router.createUrlTree(['/dashboard']);
-  return true;
-};

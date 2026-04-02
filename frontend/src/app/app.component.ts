@@ -28,8 +28,8 @@ import { AuthService } from './core/auth.service';
       <main
         class="flex-1 pt-[4.5rem] md:pt-24"
         [ngClass]="{
-          'pb-28 md:pb-16': isHomeRoute(),
-          'pb-8 md:pb-12': !isHomeRoute(),
+          'pb-28 md:pb-16': needsWideBottomPadding(),
+          'pb-8 md:pb-12': !needsWideBottomPadding(),
         }"
       >
         <router-outlet />
@@ -58,7 +58,7 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly host = inject(ElementRef<HTMLElement>);
 
-  /** Marketing home only: extra bottom padding + sticky CTA clear the fixed bar. */
+  /** Home: sticky CTA on mobile. */
   protected isHomeRoute = toSignal(
     merge(
       of(null),
@@ -67,9 +67,27 @@ export class AppComponent implements OnInit {
     { initialValue: this.snapshotIsHome() },
   );
 
+  /** Room for mobile bottom nav (dashboard/pricing/shops) or home sticky CTA. */
+  protected needsWideBottomPadding = toSignal(
+    merge(
+      of(null),
+      this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)),
+    ).pipe(map(() => this.snapshotNeedsWideBottomPadding())),
+    { initialValue: this.snapshotNeedsWideBottomPadding() },
+  );
+
   private snapshotIsHome(): boolean {
     const path = this.router.url.split('?')[0].split('#')[0];
     return path === '' || path === '/';
+  }
+
+  private snapshotNeedsWideBottomPadding(): boolean {
+    const path = this.router.url.split('?')[0].split('#')[0];
+    if (path === '' || path === '/') return true;
+    if (path === '/shops') return true;
+    if (path.startsWith('/dashboard')) return true;
+    if (path === '/pricing') return true;
+    return false;
   }
 
   constructor() {

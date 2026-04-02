@@ -62,6 +62,8 @@ type Tracking = {
   id: string;
   url: string;
   awinFeedKey?: string | null;
+  /** Catalog UVP/RRP (decimal string) when Awin-backed; from GET /trackings enrich. */
+  catalogListPrice?: string | null;
   productName: string;
   companyName: string | null;
   displayProductName: string;
@@ -653,6 +655,19 @@ export class DashboardComponent implements OnInit {
     if (!Number.isFinite(cur) || !Number.isFinite(prev)) return null;
     const diff = prev - cur;
     return diff > 0 ? Math.round(diff * 100) / 100 : null;
+  }
+
+  /**
+   * Discount vs catalog UVP/RRP (Awin feed) when current tracked price is below list price.
+   */
+  catalogDiscountVsList(t: Tracking): { pct: number; saveAmount: number; rrp: number } | null {
+    if (t.lastPrice == null || t.catalogListPrice == null || t.catalogListPrice === '') return null;
+    const rrp = parseFloat(String(t.catalogListPrice).replace(',', '.'));
+    const cur = parseFloat(String(t.lastPrice).replace(',', '.'));
+    if (!Number.isFinite(rrp) || !Number.isFinite(cur) || rrp <= 0 || cur >= rrp) return null;
+    const saveAmount = Math.round((rrp - cur) * 100) / 100;
+    const pct = Math.round((saveAmount / rrp) * 100);
+    return { pct, saveAmount, rrp };
   }
 
   isDemoTracking(t: Tracking): boolean {

@@ -394,6 +394,7 @@
     "stable": "Stable",
     "stableUpper": "STABLE",
     "savesYou": "Saves you {{amount}} {{currency}}",
+    "uvpLabel": "MSRP",
     "trackedProduct": "Tracked product",
     "notificationActive": "Notification active",
     "notificationInactive": "Notification inactive",

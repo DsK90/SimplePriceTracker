@@ -150,10 +150,13 @@
                     class="flex w-full flex-col gap-0.5 px-3 py-2 text-left text-xs transition hover:bg-primary/10"
                   >
                     <span class="font-semibold text-on-surface">{{ h.title }}</span>
-                    <span class="text-[10px] text-on-surface-variant/85">
-                      {{ h.advertiserName || h.brand || '—' }} · {{ h.price }} {{ h.currency }}
+                    <span class="flex flex-wrap items-baseline gap-x-1 gap-y-0.5 text-[10px] text-on-surface-variant/85">
+                      <span>{{ h.advertiserName || h.brand || '—' }}</span>
+                      <span class="font-semibold tabular-nums text-emerald-700 dark:text-emerald-400"
+                        >{{ h.price }} {{ h.currency }}</span
+                      >
                       @if (catalogShowRrp(h)) {
-                        <span class="text-tertiary"> · UVP {{ h.rrpPrice }}</span>
+                        <span class="text-on-surface-variant/50">· UVP {{ h.rrpPrice }}</span>
                       }
                     </span>
                     @if (h.productModel || h.modelNumber) {
@@ -484,9 +487,25 @@
                   <div class="mt-0.5 flex w-full min-w-0 items-center justify-between gap-2">
                     <div class="flex min-w-0 flex-wrap items-center gap-1.5">
                       @if (t.lastPrice !== null) {
-                        <span class="text-sm font-bold text-primary"
-                          >{{ t.lastPrice | number: '1.2-2' }} {{ currencySymbol(t.currency) }}</span
-                        >
+                        @if (catalogDiscountVsList(t); as disc) {
+                          <span class="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-400"
+                            >{{ t.lastPrice | number: '1.2-2' }} {{ currencySymbol(t.currency) }}</span
+                          >
+                          <div class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[9px] leading-tight">
+                            <span class="text-on-surface-variant/50 line-through tabular-nums">
+                              {{ 'dashboard.uvpLabel' | translate }} {{ disc.rrp | number: '1.2-2' }}
+                              {{ currencySymbol(t.currency) }}
+                            </span>
+                            <span
+                              class="rounded bg-emerald-500/20 px-1 py-0 font-bold tabular-nums text-emerald-800 dark:text-emerald-300"
+                              >−{{ disc.pct }}%</span
+                            >
+                          </div>
+                        } @else {
+                          <span class="text-sm font-bold text-primary"
+                            >{{ t.lastPrice | number: '1.2-2' }} {{ currencySymbol(t.currency) }}</span
+                          >
+                        }
                       }
                       @if (priceDelta(t); as d) {
                         @if (d.pct === 0) {
@@ -497,13 +516,16 @@
                             0%
                           </span>
                         } @else if (d.pct < 0) {
-                          <span class="rounded bg-tertiary/20 px-1 py-0 text-[9px] font-bold text-tertiary">{{ d.label }}</span>
+                          <span
+                            class="rounded bg-emerald-500/15 px-1 py-0 text-[9px] font-bold text-emerald-800 dark:text-emerald-300"
+                            >{{ d.label }}</span
+                          >
                         } @else {
                           <span class="rounded bg-primary/20 px-1 py-0 text-[9px] font-bold text-primary">{{ d.label }}</span>
                         }
                       }
                       @if (priceSavings(t); as saved) {
-                        <span class="text-[9px] font-medium text-tertiary">
+                        <span class="text-[9px] font-medium text-emerald-800/90 dark:text-emerald-300/90">
                           {{
                             'dashboard.savesYou'
                               | translate: { amount: (saved | number: '1.2-2'), currency: currencySymbol(t.currency) }
@@ -656,10 +678,29 @@
                     </td>
                     <td class="px-6 py-4">
                       @if (t.lastPrice !== null) {
-                        <div class="flex flex-col">
-                          <span class="font-headline text-base font-bold text-on-surface"
-                            >{{ t.lastPrice | number: '1.2-2' }} {{ currencySymbol(t.currency) }}</span
-                          >
+                        <div class="flex flex-col gap-1">
+                          @if (catalogDiscountVsList(t); as disc) {
+                            <span
+                              class="font-headline text-base font-bold tabular-nums text-emerald-700 dark:text-emerald-400"
+                              >{{ t.lastPrice | number: '1.2-2' }} {{ currencySymbol(t.currency) }}</span
+                            >
+                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] leading-tight">
+                              <span class="text-on-surface-variant/50 line-through tabular-nums">
+                                {{ 'dashboard.uvpLabel' | translate }} {{ disc.rrp | number: '1.2-2' }}
+                                {{ currencySymbol(t.currency) }}
+                              </span>
+                              <span
+                                class="inline-flex items-center gap-0.5 rounded-md bg-emerald-500/20 px-1.5 py-0.5 font-bold tabular-nums text-emerald-800 dark:text-emerald-300"
+                              >
+                                <span class="material-symbols-outlined text-[14px] leading-none">sell</span>
+                                −{{ disc.pct }}%
+                              </span>
+                            </div>
+                          } @else {
+                            <span class="font-headline text-base font-bold tabular-nums text-on-surface"
+                              >{{ t.lastPrice | number: '1.2-2' }} {{ currencySymbol(t.currency) }}</span
+                            >
+                          }
                           @if (priceDelta(t); as d) {
                             @if (d.pct === 0) {
                               <span class="flex items-center gap-0.5 text-[10px] font-bold text-outline">
@@ -667,7 +708,9 @@
                                 0%
                               </span>
                             } @else if (d.pct < 0) {
-                              <span class="flex items-center gap-0.5 text-[10px] font-bold text-tertiary">
+                              <span
+                                class="flex items-center gap-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300"
+                              >
                                 <span class="material-symbols-outlined text-[12px]">trending_down</span>
                                 {{ d.label }}
                               </span>
@@ -679,7 +722,7 @@
                             }
                           }
                           @if (priceSavings(t); as saved) {
-                            <span class="text-[10px] font-medium text-tertiary">
+                            <span class="text-[10px] font-medium text-emerald-800/90 dark:text-emerald-300/90">
                               {{
                                 'dashboard.savesYou'
                                   | translate: { amount: (saved | number: '1.2-2'), currency: currencySymbol(t.currency) }

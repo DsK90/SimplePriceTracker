@@ -473,17 +473,10 @@ export class AwinCatalogService {
     const tokenSqls = tokens.map((t) => t.toLowerCase().slice(0, 200));
     const candidateLimit = Math.min(220, Math.max(80, (take + skip) * 8));
 
+    const st = Prisma.sql`lower(COALESCE("searchText", ''))`;
     const mustMatchParts = tokenSqls.map(
-      (tok) => Prisma.sql`(
-        "title" ILIKE ${`%${tok}%`}
-        OR COALESCE("brand", '') ILIKE ${`%${tok}%`}
-        OR COALESCE("advertiserName", '') ILIKE ${`%${tok}%`}
-        OR COALESCE("category", '') ILIKE ${`%${tok}%`}
-        OR COALESCE("categoryPath", '') ILIKE ${`%${tok}%`}
-        OR COALESCE("productModel", '') ILIKE ${`%${tok}%`}
-        OR COALESCE("modelNumber", '') ILIKE ${`%${tok}%`}
-        OR lower(COALESCE("searchText", '')) % ${tok}
-      )`,
+      (tok) =>
+        Prisma.sql`(${st} LIKE ${`%${tok}%`} OR (${st} % ${tok}))`,
     );
     const mustMatchWhere = Prisma.join(mustMatchParts, ' AND ');
 
@@ -604,6 +597,17 @@ export class AwinCatalogService {
     return this.prisma.awinCatalogProduct.findUnique({
       where: { feedKey: feedKey.trim() },
     });
+  }
+
+  /** Batch UVP/RRP for dashboard list (one query). */
+  async getRrpByFeedKeys(feedKeys: string[]): Promise<Map<string, Prisma.Decimal | null>> {
+    const unique = [...new Set(feedKeys.map((k) => k.trim()).filter((k) => k.length > 0))];
+    if (unique.length === 0) return new Map();
+    const rows = await this.prisma.awinCatalogProduct.findMany({
+      where: { feedKey: { in: unique } },
+      select: { feedKey: true, rrpPrice: true },
+    });
+    return new Map(rows.map((r) => [r.feedKey, r.rrpPrice]));
   }
 
   async upsertMany(rows: AwinFeedRow[]): Promise<{ upserted: number }> {

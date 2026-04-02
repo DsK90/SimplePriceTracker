@@ -31,6 +31,8 @@ type TrackingRow = Prisma.PriceTrackingGetPayload<typeof TRACKING_LIST>;
 export type PublicTracking = TrackingRow & {
   displayProductName: string;
   displayCompanyName: string | null;
+  /** Current catalog UVP/RRP when `awinFeedKey` is set (string decimal or null). */
+  catalogListPrice?: string | null;
 };
 
 @Injectable()
@@ -149,8 +151,21 @@ export class TrackingsService {
       ...TRACKING_LIST,
     });
     const mapped = rows.map((t) => this.toPublicTracking(t));
-    if (user?.planTier === PlanTier.PRO || user?.email === ADMIN_EMAIL) return mapped;
-    return mapped.map((t) => ({
+    const feedKeys = mapped
+      .map((t) => t.awinFeedKey?.trim())
+      .filter((k): k is string => !!k && k.length > 0);
+    const rrpMap = await this.awinCatalog.getRrpByFeedKeys(feedKeys);
+    const enriched = mapped.map((t) => {
+      const k = t.awinFeedKey?.trim();
+      if (!k) return { ...t, catalogListPrice: null as string | null };
+      const rrp = rrpMap.get(k);
+      return {
+        ...t,
+        catalogListPrice: rrp != null ? rrp.toString() : null,
+      };
+    });
+    if (user?.planTier === PlanTier.PRO || user?.email === ADMIN_EMAIL) return enriched;
+    return enriched.map((t) => ({
       ...t,
       snapshots: (t.snapshots ?? []).slice(0, 2),
     }));

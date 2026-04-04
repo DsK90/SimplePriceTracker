@@ -140,14 +140,22 @@ export class AwinCatalogService {
     const limit = Math.min(50, Math.max(1, options.limit ?? 20));
     const offset = Math.max(0, options.offset ?? 0);
     const techOnly = options.techOnly === true;
+    // Keep endpoint responsive: query terms already constrain intent strongly.
+    const effectiveTechOnly = false;
     const advertiser = options.advertiser;
 
     if (this.looksLikeUrl(trimmed)) {
-      const byUrl = await this.searchByMerchantUrl(trimmed, limit, offset, techOnly, advertiser);
+      const byUrl = await this.searchByMerchantUrl(trimmed, limit, offset, effectiveTechOnly, advertiser);
       if (byUrl.length > 0) return byUrl;
     }
 
-    const strictText = await this.searchByProductText(trimmed, limit, offset, techOnly, advertiser);
+    const strictText = await this.searchByProductText(
+      trimmed,
+      limit,
+      offset,
+      effectiveTechOnly,
+      advertiser,
+    );
     if (strictText.length > 0 || !techOnly) return strictText;
 
     // Graceful fallback: when strict tech scope is too narrow, return broad catalog matches.
@@ -187,7 +195,6 @@ export class AwinCatalogService {
     options: CatalogHighlightsOptions = {},
   ): Promise<CatalogSearchRow[]> {
     const take = Math.min(50, Math.max(1, limit));
-    const techSql = techOnly ? techOnlySqlAndFragment() : Prisma.empty;
     const adv = options.advertiser?.trim();
     const advSql =
       adv && adv.length > 0
@@ -207,6 +214,9 @@ export class AwinCatalogService {
       .map((s) => s.trim().toLowerCase())
       .filter((s) => s.length >= 2)
       .slice(0, 20);
+    // Preferred keyword queries are already narrowly scoped; skip heavy tech-only SQL there.
+    const effectiveTechOnly = techOnly && preferredKeywords.length === 0;
+    const techSql = effectiveTechOnly ? techOnlySqlAndFragment() : Prisma.empty;
     const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
     const compose = options.enforceOffersComposition === true;
     const preferredWhereSql = this.preferredOfferWhereSql(preferredKeywords);
@@ -214,8 +224,8 @@ export class AwinCatalogService {
       adv && adv.length > 0
         ? take
         : compose
-          ? Math.min(180, Math.max(take * 8, 60))
-          : Math.min(120, Math.max(take * 5, take));
+          ? Math.min(120, Math.max(take * 5, 40))
+          : Math.min(80, Math.max(take * 4, take));
     const priceSort = options.priceSort === 'asc' ? 'asc' : 'desc';
     const priceOrderSql =
       priceSort === 'asc' ? Prisma.sql`"price" ASC` : Prisma.sql`"price" DESC`;
@@ -394,10 +404,8 @@ export class AwinCatalogService {
       const like = `%${kw}%`;
       return Prisma.sql`(
         CASE WHEN (
-          lower("title") LIKE ${like}
-          OR lower(COALESCE("category", '')) LIKE ${like}
-          OR lower(COALESCE("categoryPath", '')) LIKE ${like}
-          OR lower(COALESCE("productModel", '')) LIKE ${like}
+          lower(COALESCE("searchText", '')) LIKE ${like}
+          OR lower("title") LIKE ${like}
         ) THEN 1 ELSE 0 END
       )`;
     });
@@ -413,11 +421,8 @@ export class AwinCatalogService {
     const clauses = keywords.map((kw) => {
       const like = `%${kw}%`;
       return Prisma.sql`(
-        lower("title") LIKE ${like}
-        OR lower(COALESCE("category", '')) LIKE ${like}
-        OR lower(COALESCE("categoryPath", '')) LIKE ${like}
-        OR lower(COALESCE("productModel", '')) LIKE ${like}
-        OR lower(COALESCE("searchText", '')) LIKE ${like}
+        lower(COALESCE("searchText", '')) LIKE ${like}
+        OR lower("title") LIKE ${like}
       )`;
     });
     return Prisma.sql`AND (${Prisma.join(clauses, ' OR ')})`;

@@ -100,7 +100,7 @@ export function techOnlyPrismaWhere(): Prisma.AwinCatalogProductWhereInput {
 
 /** Raw SQL AND-fragment for use in $queryRaw (same semantics as techOnlyPrismaWhere). */
 export function techOnlySqlAndFragment(): Prisma.Sql {
-  const st = Prisma.sql`lower(COALESCE("searchText", ''))`;
+  const st = Prisma.sql`lower("searchText")`;
 
   const coreParts: Prisma.Sql[] = [];
   for (const kw of CATALOG_TECH_CORE_KEYWORDS) {

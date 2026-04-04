@@ -194,7 +194,7 @@ export class AwinCatalogService {
     limit: number,
     options: CatalogHighlightsOptions = {},
   ): Promise<CatalogSearchRow[]> {
-    const take = Math.min(50, Math.max(1, limit));
+    const requestedTake = Math.min(50, Math.max(1, limit));
     const adv = options.advertiser?.trim();
     const advSql =
       adv && adv.length > 0
@@ -213,12 +213,14 @@ export class AwinCatalogService {
     const preferredKeywords = (options.preferredKeywords ?? [])
       .map((s) => s.trim().toLowerCase())
       .filter((s) => s.length >= 2)
-      .slice(0, 20);
+      .slice(0, 8);
     // Preferred keyword queries are already narrowly scoped; skip heavy tech-only SQL there.
     const effectiveTechOnly = techOnly && preferredKeywords.length === 0;
     const techSql = effectiveTechOnly ? techOnlySqlAndFragment() : Prisma.empty;
     const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
     const compose = options.enforceOffersComposition === true;
+    const take =
+      !compose && preferredKeywords.length >= 6 ? Math.min(requestedTake, 10) : requestedTake;
     const preferredWhereSql = this.preferredOfferWhereSql(preferredKeywords);
     const queryTake =
       adv && adv.length > 0
@@ -404,7 +406,7 @@ export class AwinCatalogService {
       const like = `%${kw}%`;
       return Prisma.sql`(
         CASE WHEN (
-          lower(COALESCE("searchText", '')) LIKE ${like}
+          lower("searchText") LIKE ${like}
           OR lower("title") LIKE ${like}
         ) THEN 1 ELSE 0 END
       )`;
@@ -421,7 +423,7 @@ export class AwinCatalogService {
     const clauses = keywords.map((kw) => {
       const like = `%${kw}%`;
       return Prisma.sql`(
-        lower(COALESCE("searchText", '')) LIKE ${like}
+        lower("searchText") LIKE ${like}
         OR lower("title") LIKE ${like}
       )`;
     });
@@ -514,7 +516,7 @@ export class AwinCatalogService {
         OR COALESCE("categoryPath", '') ILIKE ${`%${tok}%`}
         OR COALESCE("productModel", '') ILIKE ${`%${tok}%`}
         OR COALESCE("modelNumber", '') ILIKE ${`%${tok}%`}
-        OR lower(COALESCE("searchText", '')) % ${tok}
+        OR lower("searchText") % ${tok}
       )`,
     );
     const mustMatchWhere = Prisma.join(mustMatchParts, ' AND ');
@@ -533,7 +535,7 @@ export class AwinCatalogService {
           + (word_similarity(${tok}, lower("title")) * 6)
           + (word_similarity(${tok}, lower(COALESCE("productModel", ''))) * 3)
           + (word_similarity(${tok}, lower(COALESCE("brand", ''))) * 2)
-          + (word_similarity(${tok}, lower(COALESCE("searchText", ''))) * 2)
+          + (word_similarity(${tok}, lower("searchText")) * 2)
         )`,
     );
     const rawScoreExpr =

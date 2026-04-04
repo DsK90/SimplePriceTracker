@@ -147,7 +147,11 @@ export class AwinCatalogService {
       if (byUrl.length > 0) return byUrl;
     }
 
-    return await this.searchByProductText(trimmed, limit, offset, techOnly, advertiser);
+    const strictText = await this.searchByProductText(trimmed, limit, offset, techOnly, advertiser);
+    if (strictText.length > 0 || !techOnly) return strictText;
+
+    // Graceful fallback: when strict tech scope is too narrow, return broad catalog matches.
+    return await this.searchByProductText(trimmed, limit, offset, false, advertiser);
   }
 
   /** 0.15–0.55: lower = fuzzier (more typos), more possible noise. */
@@ -205,12 +209,13 @@ export class AwinCatalogService {
       .slice(0, 20);
     const preferredScoreExpr = this.preferredOfferScoreSql(preferredKeywords);
     const compose = options.enforceOffersComposition === true;
+    const preferredWhereSql = this.preferredOfferWhereSql(preferredKeywords);
     const queryTake =
       adv && adv.length > 0
         ? take
         : compose
-          ? Math.min(320, Math.max(take * 10, 60))
-          : Math.min(180, Math.max(take * 6, take));
+          ? Math.min(180, Math.max(take * 8, 60))
+          : Math.min(120, Math.max(take * 5, take));
     const priceSort = options.priceSort === 'asc' ? 'asc' : 'desc';
     const priceOrderSql =
       priceSort === 'asc' ? Prisma.sql`"price" ASC` : Prisma.sql`"price" DESC`;
@@ -244,6 +249,7 @@ export class AwinCatalogService {
       ${advSql}
       ${minPriceSql}
       ${maxPriceSql}
+      ${preferredWhereSql}
       ORDER BY
         "__preferredScore" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
@@ -275,6 +281,7 @@ export class AwinCatalogService {
       ${advSql}
       ${minPriceSql}
       ${maxPriceSql}
+      ${preferredWhereSql}
       ORDER BY
         "__preferredScore" DESC,
         GREATEST(COALESCE("rrpPrice", 0) - "price", 0) DESC,
@@ -395,6 +402,25 @@ export class AwinCatalogService {
       )`;
     });
     return parts.length === 1 ? parts[0] : Prisma.sql`(${Prisma.join(parts, ' + ')})`;
+  }
+
+  /**
+   * When keywords are provided, pre-filter to rows that match at least one keyword.
+   * This keeps ranking queries responsive on large catalogs.
+   */
+  private preferredOfferWhereSql(keywords: string[]): Prisma.Sql {
+    if (keywords.length === 0) return Prisma.empty;
+    const clauses = keywords.map((kw) => {
+      const like = `%${kw}%`;
+      return Prisma.sql`(
+        lower("title") LIKE ${like}
+        OR lower(COALESCE("category", '')) LIKE ${like}
+        OR lower(COALESCE("categoryPath", '')) LIKE ${like}
+        OR lower(COALESCE("productModel", '')) LIKE ${like}
+        OR lower(COALESCE("searchText", '')) LIKE ${like}
+      )`;
+    });
+    return Prisma.sql`AND (${Prisma.join(clauses, ' OR ')})`;
   }
 
 

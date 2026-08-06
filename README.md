@@ -81,9 +81,11 @@ Workflows live in `.github/workflows/` (same ideas as ShowBK: rsync, `docker-upd
 | Name | Purpose |
 |------|---------|
 | `DEPLOY_SSH_KEY` | Private SSH key for `root` (or deploy user) on the server |
-| `DEPLOY_HOST` | Server hostname or IP |
+| `DEPLOY_HOST` | Server hostname or IP — production: **`178.104.108.222`** |
 
 **Deploy path** defaults to `/usr/src/pricefly` (set `DEPLOY_PATH` in each workflow file if your server uses another directory).
+
+**SSH:** `ssh root@178.104.108.222` — see [`deploy/hetzner-reikalabs.md`](deploy/hetzner-reikalabs.md) (different from ShowBK `49.13.136.153` and InboxDaemon `46.62.221.157`).
 
 | Workflow | Purpose |
 |----------|---------|

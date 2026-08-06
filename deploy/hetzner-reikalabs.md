@@ -1,11 +1,24 @@
 # Deploying `pricefly.reikalabs.com` + Umami + Cloudflare + Brevo
 
-Use this checklist on your Hetzner server together with the repo’s Docker Compose stack.
+## Production server (Hetzner)
+
+| | |
+|--|--|
+| **Public IPv4** | `178.104.108.222` |
+| **SSH** | `ssh root@178.104.108.222` |
+| **Deploy path** | `/usr/src/pricefly` |
+| **App URL** | https://pricefly.reikalabs.com |
+
+This is **not** the ShowBK host (`49.13.136.153`) and **not** the InboxDaemon / ReikaLabs cluster (`46.62.221.157`).
+
+GitHub Actions secret `DEPLOY_HOST` should be `178.104.108.222` (or a DNS name that resolves to it).
+
+Use this checklist on that Hetzner server together with the repo’s Docker Compose stack.
 
 ## 1. DNS (Cloudflare: zone `reikalabs.com`)
 
-1. **A record** `pricefly` → your Hetzner server **public IPv4** (proxy status: **Proxied** orange cloud if you want Cloudflare features).
-2. **A record** `umami` → **same** server IP (Proxied or **DNS only** — see SSL below).
+1. **A record** `pricefly` → **`178.104.108.222`** (proxy status: **Proxied** orange cloud if you want Cloudflare features).
+2. **A record** `umami` → **same** server IP (Proxied or **DNS only** — see SSL below), if Umami runs here.
 3. Optional: **AAAA** for IPv6 if your server has one.
 
 ### Cloudflare SSL mode

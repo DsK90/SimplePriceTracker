@@ -107,6 +107,7 @@
       "titleAccent": " buy at the right time",
       "sub": "Pricefly uses prices from a partner product catalog. Search for a product, add it, and optionally set price thresholds plus email or push notifications. Automatic checks run once per day for all products together; you can also refresh any item manually at any time.",
       "ctaPrimary": "Create account",
+      "ctaLoggedIn": "Open tracking",
       "ctaSecondary": "Pricing & limits",
       "learnMore": "How it works ↓"
     },

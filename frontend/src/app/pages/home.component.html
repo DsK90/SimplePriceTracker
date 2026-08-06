@@ -21,16 +21,24 @@
           {{ 'home.hero.sub' | translate }}
         </p>
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-          <a
-            routerLink="/register"
-            class="primary-gradient inline-flex items-center justify-center rounded-xl px-8 py-4 font-headline text-base font-bold text-on-primary-container shadow-lg transition hover:brightness-110 active:scale-[0.98]"
-            >{{ 'home.hero.ctaPrimary' | translate }}</a
-          >
-          <a
-            routerLink="/pricing"
-            class="inline-flex items-center justify-center rounded-xl border border-outline-variant/40 bg-surface-container-high px-8 py-4 font-headline text-base font-bold text-on-surface transition hover:bg-surface-bright active:scale-[0.98]"
-            >{{ 'home.hero.ctaSecondary' | translate }}</a
-          >
+          @if (auth.isLoggedIn()) {
+            <a
+              routerLink="/dashboard"
+              class="primary-gradient inline-flex items-center justify-center rounded-xl px-8 py-4 font-headline text-base font-bold text-on-primary-container shadow-lg transition hover:brightness-110 active:scale-[0.98]"
+              >{{ 'home.hero.ctaLoggedIn' | translate }}</a
+            >
+          } @else {
+            <a
+              routerLink="/register"
+              class="primary-gradient inline-flex items-center justify-center rounded-xl px-8 py-4 font-headline text-base font-bold text-on-primary-container shadow-lg transition hover:brightness-110 active:scale-[0.98]"
+              >{{ 'home.hero.ctaPrimary' | translate }}</a
+            >
+            <a
+              routerLink="/pricing"
+              class="inline-flex items-center justify-center rounded-xl border border-outline-variant/40 bg-surface-container-high px-8 py-4 font-headline text-base font-bold text-on-surface transition hover:bg-surface-bright active:scale-[0.98]"
+              >{{ 'home.hero.ctaSecondary' | translate }}</a
+            >
+          }
         </div>
         <a
           routerLink="/"
@@ -212,9 +220,9 @@
         {{ 'home.cta.sub' | translate }}
       </p>
       <a
-        routerLink="/register"
+        [routerLink]="auth.isLoggedIn() ? '/dashboard' : '/register'"
         class="primary-gradient mt-8 inline-flex rounded-xl px-10 py-4 font-headline text-lg font-bold text-on-primary-container shadow-lg transition hover:brightness-110 active:scale-[0.98] md:mt-10 md:px-12 md:py-5 md:text-xl"
-        >{{ 'home.cta.button' | translate }}</a
+        >{{ (auth.isLoggedIn() ? 'home.hero.ctaLoggedIn' : 'home.cta.button') | translate }}</a
       >
       <p class="mt-4 text-xs text-outline md:mt-6 md:text-sm">{{ 'home.cta.note' | translate }}</p>
     </div>

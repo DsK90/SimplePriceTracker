@@ -35,7 +35,7 @@ import { AuthService } from './core/auth.service';
         <router-outlet />
       </main>
       <app-landing-chrome-footer />
-      @if (isHomeRoute()) {
+      @if (isHomeRoute() && !auth.isLoggedIn()) {
         <div
           class="fixed bottom-0 left-0 z-40 w-full bg-gradient-to-t from-background from-60% to-transparent p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
         >

@@ -4,7 +4,7 @@
   "description": "Track prices and get notified when they change.",
   "display": "standalone",
   "scope": "./",
-  "start_url": "./",
+  "start_url": "./dashboard",
   "theme_color": "#0b1326",
   "background_color": "#0b1326",
   "icons": [

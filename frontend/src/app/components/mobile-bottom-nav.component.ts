@@ -144,7 +144,8 @@ export class MobileBottomNavComponent {
   showBar(): boolean {
     const u = this.router.url.split('?')[0];
     if (this.auth.isLoggedIn()) {
-      return u === '/dashboard' || u === '/pricing' || u === '/shops';
+      // Include home so returning PWA/mobile users are not stuck on /
+      return u === '/' || u === '/dashboard' || u === '/pricing' || u === '/shops';
     }
     return u === '/shops';
   }

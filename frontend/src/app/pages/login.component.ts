@@ -281,6 +281,10 @@ export class LoginComponent implements OnInit {
   });
 
   ngOnInit() {
+    if (this.auth.isLoggedIn()) {
+      void this.router.navigate(['/dashboard']);
+      return;
+    }
     this.route.queryParams.pipe(take(1)).subscribe((q) => {
       if (q['pendingVerification'] === '1' || q['needVerify'] === '1') {
         setTimeout(() => this.verificationModalOpen.set(true), 0);

@@ -107,6 +107,7 @@
       "titleAccent": " zum richtigen Zeitpunkt kaufen",
       "sub": "Pricefly nutzt Preise aus einem Partner-Produktkatalog. Du suchst ein Produkt, trägst es ein und kannst optional Preis-Schwellen sowie E-Mail- oder Push-Benachrichtigungen nutzen. Die automatische Abfrage läuft für alle Produkte gemeinsam einmal pro Tag; zusätzlich kannst du jederzeit manuell aktualisieren.",
       "ctaPrimary": "Konto anlegen",
+      "ctaLoggedIn": "Zur Übersicht",
       "ctaSecondary": "Preise & Limits",
       "learnMore": "So funktioniert's ↓"
     },

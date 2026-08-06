@@ -40,7 +40,7 @@ import { AuthService } from '../core/auth.service';
         @if (auth.isLoggedIn()) {
           <a
             routerLink="/dashboard"
-            class="hidden text-sm font-medium text-on-surface-variant transition-colors hover:text-on-surface md:inline"
+            class="text-sm font-medium text-primary transition-colors hover:text-on-surface md:text-on-surface-variant"
             >{{ 'nav.dashboard' | translate }}</a
           >
           <button

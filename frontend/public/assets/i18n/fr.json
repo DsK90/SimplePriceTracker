@@ -203,6 +203,8 @@
     "showing": "Affichage de {{count}} résultat",
     "showingPlural": "Affichage de {{count}} résultats",
     "empty": "Aucun suivi pour l’instant.",
+    "loadFailed": "Impossible de charger vos produits suivis. Vérifiez la connexion et réessayez.",
+    "loadRetry": "Réessayer",
     "bottomDash": "Suivi",
     "bottomPricing": "Tarifs",
     "bottomAlerts": "Alertes",

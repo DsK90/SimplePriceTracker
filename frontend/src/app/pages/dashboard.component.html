@@ -430,7 +430,15 @@
       <p class="mb-3 text-sm text-error">{{ patchError() }}</p>
     }
 
-    @if (loading()) {
+    @if (listError() && items().length) {
+      <p class="mb-3 text-sm text-error">
+        {{ listError() }}
+        <button type="button" (click)="load()" class="ml-2 font-semibold text-primary underline">
+          {{ 'dashboard.loadRetry' | translate }}
+        </button>
+      </p>
+    }
+    @if (loading() && !items().length) {
       <div class="flex items-center gap-2 py-6 text-on-surface-variant" role="status" aria-live="polite">
         <svg class="h-5 w-5 shrink-0 animate-spin text-primary" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
@@ -439,7 +447,20 @@
         <span>{{ 'dashboard.loading' | translate }}</span>
       </div>
     } @else if (!items().length) {
-      <p class="text-on-surface-variant">{{ 'dashboard.empty' | translate }}</p>
+      @if (listError()) {
+        <div class="space-y-2 py-2">
+          <p class="text-sm text-error">{{ listError() }}</p>
+          <button
+            type="button"
+            (click)="load()"
+            class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-sm"
+          >
+            {{ 'dashboard.loadRetry' | translate }}
+          </button>
+        </div>
+      } @else {
+        <p class="text-on-surface-variant">{{ 'dashboard.empty' | translate }}</p>
+      }
     } @else {
       @if (isMobileLayout()) {
       <section class="space-y-2">
@@ -482,9 +503,13 @@
             >
               <div class="flex items-center gap-2.5">
                 <div
-                  class="flex h-11 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-secondary-container/50 to-surface-container-highest font-headline text-sm font-bold text-primary"
+                  class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded bg-gradient-to-br from-secondary-container/50 to-surface-container-highest font-headline text-sm font-bold text-primary"
                 >
-                  {{ thumbChar(t) }}
+                  @if (productImage(t); as src) {
+                    <img [src]="src" [alt]="t.displayProductName" class="h-full w-full object-contain" />
+                  } @else {
+                    {{ thumbChar(t) }}
+                  }
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-[9px] font-semibold uppercase tracking-tight text-outline">
@@ -655,9 +680,13 @@
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <div
-                          class="flex h-10 w-8 shrink-0 items-center justify-center overflow-hidden rounded border border-outline-variant/10 bg-gradient-to-br from-secondary-container/40 to-surface-container-highest font-headline text-xs font-bold text-primary"
+                          class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded border border-outline-variant/10 bg-gradient-to-br from-secondary-container/40 to-surface-container-highest font-headline text-xs font-bold text-primary"
                         >
-                          {{ thumbChar(t) }}
+                          @if (productImage(t); as src) {
+                            <img [src]="src" [alt]="t.displayProductName" class="h-full w-full object-contain" />
+                          } @else {
+                            {{ thumbChar(t) }}
+                          }
                         </div>
                         <div>
                           @if (isDemoTracking(t)) {

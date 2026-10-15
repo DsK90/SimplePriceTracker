@@ -17,8 +17,8 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     // Returning mobile/PWA users land on / while still logged in — send them to tracking.
-    if (this.auth.isLoggedIn()) {
-      void this.router.navigateByUrl('/dashboard');
+    if (this.auth.readToken()) {
+      void this.router.navigateByUrl('/dashboard', { replaceUrl: true });
     }
   }
 }

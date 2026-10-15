@@ -203,6 +203,8 @@
     "showing": "Mostra {{count}} risultato",
     "showingPlural": "Mostra {{count}} risultati",
     "empty": "Nessun monitoraggio.",
+    "loadFailed": "Impossibile caricare i prodotti che segui. Controlla la connessione e riprova.",
+    "loadRetry": "Riprova",
     "bottomDash": "Monitoraggio",
     "bottomPricing": "Prezzi",
     "bottomAlerts": "Avvisi",

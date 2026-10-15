@@ -35,6 +35,21 @@ export class AuthService {
     private router: Router,
   ) {}
 
+  /**
+   * Token for the current request. Re-reads storage so a reopened PWA does not
+   * keep a stale in-memory null and call the API without Authorization.
+   */
+  readToken(): string | null {
+    try {
+      const stored = localStorage.getItem(TOKEN_KEY);
+      if (stored && stored !== this.tokenSig()) this.tokenSig.set(stored);
+      if (stored) return stored;
+    } catch {
+      /* storage unavailable */
+    }
+    return this.tokenSig();
+  }
+
   loadProfile() {
     return this.http.get<UserProfile>(`${environment.apiUrl}/auth/me`).pipe(
       tap((u) => this.user.set(u)),

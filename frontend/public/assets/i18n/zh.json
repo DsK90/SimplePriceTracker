@@ -203,6 +203,8 @@
     "showing": "显示 {{count}} 条结果",
     "showingPlural": "显示 {{count}} 条结果",
     "empty": "暂无追踪。",
+    "loadFailed": "无法加载你关注的商品。请检查网络后重试。",
+    "loadRetry": "重试",
     "bottomDash": "追踪",
     "bottomPricing": "定价",
     "bottomAlerts": "提醒",

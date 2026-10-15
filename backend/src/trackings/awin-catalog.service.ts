@@ -640,15 +640,39 @@ export class AwinCatalogService {
     });
   }
 
-  /** Batch UVP/RRP for dashboard list (one query). */
-  async getRrpByFeedKeys(feedKeys: string[]): Promise<Map<string, Prisma.Decimal | null>> {
+  /**
+   * Catalog fields the tracking list needs to show the real followed product
+   * (photo, current title, UVP). Plain strings so the JSON response cannot fail
+   * on Prisma Decimal serialization.
+   */
+  async getTrackingCardsByFeedKeys(feedKeys: string[]): Promise<
+    Map<
+      string,
+      {
+        title: string | null;
+        catalogListPrice: string | null;
+        imageUrl: string | null;
+        imageUrl2: string | null;
+      }
+    >
+  > {
     const unique = [...new Set(feedKeys.map((k) => k.trim()).filter((k) => k.length > 0))];
     if (unique.length === 0) return new Map();
     const rows = await this.prisma.awinCatalogProduct.findMany({
       where: { feedKey: { in: unique } },
-      select: { feedKey: true, rrpPrice: true },
+      select: { feedKey: true, title: true, rrpPrice: true, imageUrl: true, imageUrl2: true },
     });
-    return new Map(rows.map((r) => [r.feedKey, r.rrpPrice]));
+    return new Map(
+      rows.map((r) => [
+        r.feedKey,
+        {
+          title: r.title?.trim() || null,
+          catalogListPrice: r.rrpPrice != null ? r.rrpPrice.toString() : null,
+          imageUrl: r.imageUrl?.trim() || null,
+          imageUrl2: r.imageUrl2?.trim() || null,
+        },
+      ]),
+    );
   }
 
   async upsertMany(rows: AwinFeedRow[]): Promise<{ upserted: number }> {

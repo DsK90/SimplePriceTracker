@@ -203,6 +203,8 @@
     "showing": "Viser {{count}} resultat",
     "showingPlural": "Viser {{count}} resultater",
     "empty": "Ingen overvågninger endnu.",
+    "loadFailed": "Dine fulgte produkter kunne ikke indlæses. Tjek forbindelsen, og prøv igen.",
+    "loadRetry": "Prøv igen",
     "bottomDash": "Tracking",
     "bottomPricing": "Priser",
     "bottomAlerts": "Alarmer",

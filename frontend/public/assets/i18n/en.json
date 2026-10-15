@@ -419,6 +419,8 @@
     "showing": "Showing {{count}} result",
     "showingPlural": "Showing {{count}} results",
     "empty": "No trackings yet.",
+    "loadFailed": "Your tracked products could not be loaded. Check your connection and try again.",
+    "loadRetry": "Try again",
     "bottomDash": "Tracking",
     "bottomPricing": "Pricing",
     "bottomAlerts": "Alerts",

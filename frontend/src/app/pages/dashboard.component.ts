@@ -30,7 +30,11 @@ import {
   finalize,
   map,
   of,
+  retry,
   switchMap,
+  throwError,
+  timeout,
+  timer,
 } from 'rxjs';
 
 const CATALOG_SEARCH_PAGE_SIZE = 20;
@@ -91,6 +95,8 @@ type Tracking = {
   createdAt: string;
   sortOrder?: number;
   snapshots?: { price: string; recordedAt: string; currency?: string }[];
+  imageUrl?: string | null;
+  imageUrl2?: string | null;
 };
 
 type PriceAlertI18nPayload = {
@@ -141,7 +147,11 @@ export class DashboardComponent implements OnInit {
   /** Only one of mobile vs desktop lists is rendered — avoids duplicate CDK drop lists. */
   readonly isMobileLayout = toSignal(
     this.breakpointObserver.observe('(max-width: 767px)').pipe(map((r) => r.matches)),
-    { initialValue: false },
+    {
+      initialValue:
+        typeof globalThis.matchMedia === 'function' &&
+        globalThis.matchMedia('(max-width: 767px)').matches,
+    },
   );
 
   form = this.fb.nonNullable.group({
@@ -188,6 +198,11 @@ export class DashboardComponent implements OnInit {
   items = signal<Tracking[]>([]);
   profile = signal<UserProfile | null>(null);
   loading = signal(true);
+  /** Set when GET /trackings fails. Empty state is only for a successful empty list. */
+  listError = signal<string | null>(null);
+  private loadSeq = 0;
+  private retriedUnauthorizedLoad = false;
+  private lastLoadStarted = 0;
   saving = signal(false);
   savingEdit = signal(false);
   scheduleSaving = signal(false);
@@ -274,6 +289,19 @@ export class DashboardComponent implements OnInit {
   @HostListener('document:keydown.escape')
   onHistoryEscape(): void {
     if (this.historyTracking()) this.closePriceHistory();
+  }
+
+  /** Reopening the installed app often restores a frozen page without running ngOnInit again. */
+  @HostListener('document:visibilitychange')
+  onPageVisible(): void {
+    if (document.visibilityState !== 'visible') return;
+    if (Date.now() - this.lastLoadStarted < 1500) return;
+    this.load();
+  }
+
+  @HostListener('window:pageshow', ['$event'])
+  onPageShow(ev: PageTransitionEvent): void {
+    if (ev.persisted) this.load();
   }
 
   private messageFromApiError(err: { error?: ApiErrorBody }, fallbackKey: string): string {
@@ -379,12 +407,13 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     try {
-      if (
+      const collapsed =
         typeof localStorage !== 'undefined' &&
-        localStorage.getItem(DashboardComponent.DAILY_SCHEDULE_PANEL_KEY) === '1'
-      ) {
-        this.dailySchedulePanelOpen.set(false);
-      }
+        localStorage.getItem(DashboardComponent.DAILY_SCHEDULE_PANEL_KEY) === '1';
+      const mobile =
+        typeof matchMedia === 'function' && matchMedia('(max-width: 767px)').matches;
+      // On a phone the schedule card otherwise pushes the watchlist below the fold.
+      if (collapsed || mobile) this.dailySchedulePanelOpen.set(false);
     } catch {
       /* ignore */
     }
@@ -814,15 +843,62 @@ export class DashboardComponent implements OnInit {
   }
 
   load() {
-    this.loading.set(true);
-    this.http.get<Tracking[]>(`${environment.apiUrl}/trackings`).subscribe({
-      next: (rows) => {
-        this.items.set(rows);
-        this.loading.set(false);
-        this.schedulePushReminder();
-      },
-      error: () => this.loading.set(false),
-    });
+    const seq = ++this.loadSeq;
+    this.lastLoadStarted = Date.now();
+    if (this.items().length === 0) this.loading.set(true);
+    this.listError.set(null);
+    this.http
+      .get<unknown>(`${environment.apiUrl}/trackings`)
+      .pipe(
+        timeout(20000),
+        retry({
+          count: 2,
+          delay: (err) => {
+            const status = (err as { status?: number })?.status;
+            if (status === 401 || status === 403) return throwError(() => err);
+            return timer(600);
+          },
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (rows) => {
+          if (seq !== this.loadSeq) return;
+          if (!Array.isArray(rows)) {
+            this.loading.set(false);
+            this.listError.set(this.translate.instant('dashboard.loadFailed'));
+            return;
+          }
+          this.retriedUnauthorizedLoad = false;
+          this.items.set(rows as Tracking[]);
+          this.loading.set(false);
+          this.listError.set(null);
+          this.schedulePushReminder();
+        },
+        error: (e: { status?: number }) => {
+          if (seq !== this.loadSeq) return;
+          if (e?.status === 401 && !this.retriedUnauthorizedLoad) {
+            this.retriedUnauthorizedLoad = true;
+            this.auth.readToken();
+            this.load();
+            return;
+          }
+          this.loading.set(false);
+          if (e?.status === 401) {
+            this.auth.logout();
+            return;
+          }
+          this.listError.set(this.translate.instant('dashboard.loadFailed'));
+        },
+      });
+  }
+
+  /** Catalog photo for a followed product, only http(s). */
+  productImage(t: Tracking): string | null {
+    const src = (t.imageUrl || t.imageUrl2 || '').trim();
+    if (!src) return null;
+    if (src.startsWith('https://') || src.startsWith('http://')) return src;
+    return null;
   }
 
   loadNotifications() {

@@ -33,6 +33,9 @@ export type PublicTracking = TrackingRow & {
   displayCompanyName: string | null;
   /** Current catalog UVP/RRP when `awinFeedKey` is set (string decimal or null). */
   catalogListPrice?: string | null;
+  /** Catalog photo so the watchlist shows the real followed product. */
+  imageUrl?: string | null;
+  imageUrl2?: string | null;
 };
 
 @Injectable()
@@ -135,40 +138,140 @@ export class TrackingsService {
     };
   }
 
+  private decimalToString(v: Prisma.Decimal | null | undefined): string | null {
+    if (v == null) return null;
+    return v.toString();
+  }
+
   /**
-   * Pro: up to 30 snapshots (history dialog). Free: only last 2 in the JSON response (enough for % delta).
-   * Always use fixed `take: 30` in the query — Prisma 7 + pg can fail with a variable nested `take`
-   * (“column (not available) does not exist”); trimming in memory avoids that.
+   * Latest snapshots per tracking, without Prisma's nested `include.take`.
+   * That shape throws on Prisma 7 + the pg driver adapter (“column (not available)”),
+   * which made GET /trackings fail and the app show an empty watchlist.
+   */
+  private async latestSnapshots(
+    trackingIds: string[],
+    take: number,
+  ): Promise<Map<string, { price: string; currency: string; recordedAt: Date }[]>> {
+    const grouped = new Map<string, { price: string; currency: string; recordedAt: Date }[]>();
+    if (trackingIds.length === 0 || take < 1) return grouped;
+    const rows = await this.prisma.$queryRaw<
+      { trackingId: string; price: string; currency: string; recordedAt: Date }[]
+    >(Prisma.sql`
+      SELECT "trackingId", price::text AS price, currency, "recordedAt"
+      FROM (
+        SELECT
+          "trackingId",
+          price,
+          currency,
+          "recordedAt",
+          ROW_NUMBER() OVER (PARTITION BY "trackingId" ORDER BY "recordedAt" DESC) AS rn
+        FROM "PriceSnapshot"
+        WHERE "trackingId" IN (${Prisma.join(trackingIds)})
+      ) ranked
+      WHERE rn <= ${take}
+      ORDER BY "recordedAt" DESC
+    `);
+    for (const row of rows) {
+      const list = grouped.get(row.trackingId) ?? [];
+      const recordedAt = row.recordedAt instanceof Date ? row.recordedAt : new Date(row.recordedAt);
+      list.push({
+        price: row.price,
+        currency: row.currency,
+        recordedAt,
+      });
+      grouped.set(row.trackingId, list);
+    }
+    return grouped;
+  }
+
+  private async findUserTrackings(userId: string): Promise<PriceTracking[]> {
+    try {
+      return await this.prisma.priceTracking.findMany({
+        where: { userId },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+      });
+    } catch (err) {
+      this.log.warn(`Tracking list ordered query failed, retrying without sortOrder: ${err}`);
+      return this.prisma.priceTracking.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+  }
+
+  /**
+   * Pro: up to 30 snapshots (history dialog). Free: only last 2 (enough for % delta).
+   * Trackings are loaded without a nested snapshot include so a history-query failure
+   * cannot hide the user's followed products.
    */
   async list(userId: string): Promise<PublicTracking[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { planTier: true, email: true },
     });
-    const rows = await this.prisma.priceTracking.findMany({
-      where: { userId },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-      ...TRACKING_LIST,
-    });
-    const mapped = rows.map((t) => this.toPublicTracking(t));
-    const feedKeys = mapped
+    const rows = await this.findUserTrackings(userId);
+    const historyLimit = user?.planTier === PlanTier.PRO || user?.email === ADMIN_EMAIL ? 30 : 2;
+    let snapshotsByTracking = new Map<string, { price: string; currency: string; recordedAt: Date }[]>();
+    try {
+      snapshotsByTracking = await this.latestSnapshots(
+        rows.map((t) => t.id),
+        historyLimit,
+      );
+    } catch (err) {
+      this.log.warn(`Tracking price history failed; returning products without snapshots: ${err}`);
+    }
+
+    const feedKeys = rows
       .map((t) => t.awinFeedKey?.trim())
       .filter((k): k is string => !!k && k.length > 0);
-    const rrpMap = await this.awinCatalog.getRrpByFeedKeys(feedKeys);
-    const enriched = mapped.map((t) => {
-      const k = t.awinFeedKey?.trim();
-      if (!k) return { ...t, catalogListPrice: null as string | null };
-      const rrp = rrpMap.get(k);
+    let cards = new Map<
+      string,
+      {
+        title: string | null;
+        catalogListPrice: string | null;
+        imageUrl: string | null;
+        imageUrl2: string | null;
+      }
+    >();
+    try {
+      cards = await this.awinCatalog.getTrackingCardsByFeedKeys(feedKeys);
+    } catch (err) {
+      this.log.warn(`Catalog enrich failed; returning saved trackings without photos: ${err}`);
+    }
+
+    return rows.map((t) => {
+      const key = t.awinFeedKey?.trim() ?? '';
+      const card = key ? cards.get(key) : undefined;
+      const snapshots = snapshotsByTracking.get(t.id) ?? [];
+      const displayProductName =
+        t.productNameOverride?.trim() || card?.title?.trim() || t.productName?.trim() || 'Product';
       return {
-        ...t,
-        catalogListPrice: rrp != null ? rrp.toString() : null,
-      };
+        id: t.id,
+        userId: t.userId,
+        awinFeedKey: t.awinFeedKey,
+        url: t.url,
+        productName: t.productName,
+        companyName: t.companyName,
+        productNameOverride: t.productNameOverride,
+        companyNameOverride: t.companyNameOverride,
+        alertBelowPrice: this.decimalToString(t.alertBelowPrice),
+        alertAbovePrice: this.decimalToString(t.alertAbovePrice),
+        emailAlertsEnabled: t.emailAlertsEnabled,
+        lastPrice: this.decimalToString(t.lastPrice),
+        currency: t.currency,
+        lastCheckedAt: t.lastCheckedAt,
+        active: t.active,
+        sortOrder: t.sortOrder,
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt,
+        snapshots,
+        displayProductName,
+        displayCompanyName: t.companyNameOverride?.trim() || t.companyName,
+        catalogListPrice: card?.catalogListPrice ?? null,
+        imageUrl: card?.imageUrl ?? null,
+        imageUrl2: card?.imageUrl2 ?? null,
+      } as unknown as PublicTracking;
     });
-    if (user?.planTier === PlanTier.PRO || user?.email === ADMIN_EMAIL) return enriched;
-    return enriched.map((t) => ({
-      ...t,
-      snapshots: (t.snapshots ?? []).slice(0, 2),
-    }));
   }
 
   async create(userId: string, dto: CreateTrackingDto) {

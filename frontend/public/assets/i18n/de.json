@@ -419,6 +419,8 @@
     "showing": "{{count}} Ergebnis",
     "showingPlural": "{{count}} Ergebnisse",
     "empty": "Noch keine Beobachtungen.",
+    "loadFailed": "Deine beobachteten Produkte konnten nicht geladen werden. Prüfe die Verbindung und versuche es erneut.",
+    "loadRetry": "Erneut versuchen",
     "bottomDash": "Beobachtung",
     "bottomPricing": "Preise",
     "bottomAlerts": "Alarme",

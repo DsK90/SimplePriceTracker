@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -22,6 +23,7 @@ export class TrackingsController {
   constructor(private trackings: TrackingsService) {}
 
   @Get()
+  @Header('Cache-Control', 'private, no-store')
   list(@CurrentUser() user: RequestUser) {
     return this.trackings.list(user.userId);
   }
